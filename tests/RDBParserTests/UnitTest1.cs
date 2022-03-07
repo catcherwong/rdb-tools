@@ -8,10 +8,9 @@ namespace RDBParserTests
         [Fact]
         public void Test1()
         {
-            var dir = System.AppContext.BaseDirectory;
-            var path = System.IO.Path.Combine(dir, "dictionary.rdb");
+            var path = TestHelper.GetRDBPath("dictionary.rdb");
 
-            var parser = new DefaultRDBParser(new DefaultConsoleReaderCallBack());
+            var parser = new BinaryReaderRDBParser(new DefaultConsoleReaderCallBack());
             parser.Parse(path);
 
             Assert.True(true);

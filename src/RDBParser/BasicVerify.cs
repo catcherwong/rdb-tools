@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 
 namespace RDBParser
 {
@@ -12,7 +11,7 @@ namespace RDBParser
             var str = Encoding.UTF8.GetString(bytes);
             if (!str.Equals(REDIS))
             {
-                throw new Exception("Invalid RDB File Format");
+                throw new RDBParserException("Invalid RDB File Format");
             }        
         }
 
@@ -24,14 +23,14 @@ namespace RDBParser
             {
                 if (version < 1 || version > 9)
                 {
-                    throw new Exception($"Invalid RDB version number {version}");
+                    throw new RDBParserException($"Invalid RDB version number {version}");
                 }
 
                 return version;
             }
             else
             {
-                throw new Exception($"Invalid RDB version {str}");
+                throw new RDBParserException($"Invalid RDB version {str}");
             }
         }
     }

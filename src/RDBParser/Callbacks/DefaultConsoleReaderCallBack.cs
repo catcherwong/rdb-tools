@@ -7,7 +7,7 @@ namespace RDBParser
     {
         public void AuxField(byte[] key, byte[] value)
         {
-            throw new NotImplementedException();
+            Console.WriteLine($"AuxField, Key={GetString(key)}, value={GetString(value)}");
         }
 
         public void DbSize(uint dbSize, uint expiresSize)
