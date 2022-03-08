@@ -177,11 +177,94 @@ namespace RDBParser
             {
                 throw new RDBParserException($"Unable to read Redis Modules RDB objects (key {key})");
             }
-            else if (encType == Constant.DataType.MODULE_2) { }
-            else if (encType == Constant.DataType.STREAM_LISTPACKS) { }
+            else if (encType == Constant.DataType.MODULE_2) 
+            {
+                SkipModule(br);
+            }
+            else if (encType == Constant.DataType.STREAM_LISTPACKS) 
+            {
+                SkipStream(br);
+            }
             else
             {
                 throw new RDBParserException($"Invalid object type {encType} for {key} ");
+            }
+        }
+
+        private void SkipStream(BinaryReader br)
+        {
+            var listPacks = ReadLength(br).Length;
+
+            while (listPacks > 0)
+            {
+                _ = ReadString(br);
+                _ = ReadString(br);
+
+                listPacks--;
+            }
+
+            _ = ReadLength(br);
+            _ = ReadLength(br);
+            _ = ReadLength(br);
+
+            var cgroups = ReadLength(br).Length;
+            while (cgroups > 0)
+            {
+                _ = ReadString(br);
+                _ = ReadLength(br);
+                _ = ReadLength(br);
+                var pending = ReadLength(br).Length;
+                while (pending > 0)
+                {
+                    _ = br.ReadBytes(16);
+                    _ = br.ReadBytes(8);
+                    _ = ReadLength(br);
+
+                    pending--;
+                }
+                var consumers = ReadLength(br).Length;
+                while (consumers > 0)
+                {
+                    SkipString(br);
+                    br.ReadBytes(8);
+                    pending = ReadLength(br).Length;
+                    br.ReadBytes((int)(pending * 16));
+
+                    consumers--;
+                }
+            }
+        }
+
+        private void SkipModule(BinaryReader br)
+        {
+            _ = ReadLength(br);
+            var opCode = ReadLength(br).Length;
+
+            while (opCode != Constant.ModuleOpCode.EOF)
+            {
+                if (opCode == Constant.ModuleOpCode.SINT
+                    || opCode == Constant.ModuleOpCode.UINT)
+                {
+                    _ = ReadLength(br);
+                }
+                else if (opCode == Constant.ModuleOpCode.FLOAT)
+                {
+                    _ = br.ReadBytes(4);
+                }
+                else if (opCode == Constant.ModuleOpCode.DOUBLE)
+                {
+                    _ = br.ReadBytes(8);
+                }
+                else if (opCode == Constant.ModuleOpCode.STRING)
+                {
+                    SkipString(br);
+                }
+                else
+                {
+                    throw new RDBParserException($"Unknown module opcode {opCode}");
+                }
+
+                opCode = ReadLength(br).Length;
             }
         }
 
@@ -198,6 +281,42 @@ namespace RDBParser
             return float.TryParse(str, out var res)
                 ? res
                 : 0;
+        }
+
+        private void SkipString(BinaryReader br)
+        {
+            ulong bytesToSkip = 0;
+
+            var (length, isEncoded) = ReadLength(br);
+
+            if (!isEncoded)
+            {
+                bytesToSkip = length;
+            }
+            else
+            {
+                if (length == Constant.EncType.INT8)
+                {
+                    bytesToSkip = 1;
+                }
+                else if (length == Constant.EncType.INT16)
+                {
+                    bytesToSkip = 2;
+                }
+                else if (length == Constant.EncType.INT32)
+                {
+                    bytesToSkip = 4;
+                }
+                else if (length == Constant.EncType.LZF)
+                {
+                    var clen = ReadLength(br).Length;
+                    _ = ReadLength(br).Length;
+
+                    bytesToSkip = clen;
+                }
+            }
+
+            if (bytesToSkip > 0) br.ReadBytes(bytesToSkip);
         }
     }
 

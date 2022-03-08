@@ -60,12 +60,12 @@
 
         public static class ModuleOpCode
         {
-            public static readonly int EOF = 0;
-            public static readonly int SINT = 1;
-            public static readonly int UINT = 2;
-            public static readonly int FLOAT = 3;
-            public static readonly int DOUBLE = 4;
-            public static readonly int STRING = 5;
+            public static readonly uint EOF = 0;
+            public static readonly uint SINT = 1;
+            public static readonly uint UINT = 2;
+            public static readonly uint FLOAT = 3;
+            public static readonly uint DOUBLE = 4;
+            public static readonly uint STRING = 5;
         }
     }
 }
