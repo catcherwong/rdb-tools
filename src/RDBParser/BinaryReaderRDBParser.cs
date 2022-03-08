@@ -147,15 +147,14 @@ namespace RDBParser
 
         private void ReadZipMap(BinaryReader br, byte[] key, long expiry, Info info)
         {
-            int length = 0;
-            var zipMap = ReadString(br);
-            using MemoryStream stream = new MemoryStream(zipMap);
+            var rawString = ReadString(br);
+            using MemoryStream stream = new MemoryStream(rawString);
             using var rd = new BinaryReader(stream);
-            var lenByte = rd.ReadByte();
+            var numEntries = rd.ReadByte();
 
             info.Encoding = "zipmap";
-            info.SizeOfValue = zipMap.Length;
-            _callback.StartHash(key, length, expiry, info);
+            info.SizeOfValue = rawString.Length;
+            _callback.StartHash(key, numEntries, expiry, info);
 
             while (true)
             {
@@ -183,7 +182,7 @@ namespace RDBParser
             var num = br.ReadByte();
             if (num < 254) return num;
             else if (num == 254) return (int?)br.ReadUInt32();
-            else return num;
+            else return null;
         }
 
         private byte[] LzfDecompress(byte[] compressed, int ulen)
