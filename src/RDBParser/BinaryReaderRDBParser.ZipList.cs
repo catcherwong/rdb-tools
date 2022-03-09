@@ -6,7 +6,7 @@ namespace RDBParser
     {
         private void ReadZipList(BinaryReader br, byte[] key, long expiry, Info info)
         {
-            var ziplist = ReadString(br);
+            var ziplist = br.ReadStr();
             using MemoryStream stream = new MemoryStream(ziplist);
             using var rd = new BinaryReader(stream);
             var zlbytes = rd.ReadUInt32();
@@ -88,7 +88,7 @@ namespace RDBParser
 
         private void ReadHashFromZiplist(BinaryReader br, byte[] key, long expiry, Info info)
         {
-            var raw = ReadString(br);
+            var raw = br.ReadStr();
             using MemoryStream stream = new MemoryStream(raw);
             using var rd = new BinaryReader(stream);
             var zlbytes = rd.ReadUInt32();
@@ -118,7 +118,7 @@ namespace RDBParser
 
         private void ReadZSetFromZiplist(BinaryReader br, byte[] key, long expiry, Info info)
         {
-            var raw = ReadString(br);
+            var raw = br.ReadStr();
             using MemoryStream stream = new MemoryStream(raw);
             using var rd = new BinaryReader(stream);
             var zlbytes = rd.ReadUInt32();

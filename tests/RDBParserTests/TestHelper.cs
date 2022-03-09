@@ -30,7 +30,7 @@ namespace RDBParserTests
             }
         }
 
-        public bool Equals(byte[] obj1, byte[] obj2)
+        public bool Equals(byte[]? obj1, byte[]? obj2)
         {
             //    We can make use of the StructuralEqualityComparar class to see if these
             //    two arrays are equaly based on their value sequences.

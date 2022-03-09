@@ -70,7 +70,7 @@ namespace RDBParserTests
             throw new System.NotImplementedException();
         }
 
-        public void HandleModuleData(byte[] key, byte[] opCode, byte[] data)
+        public void HandleModuleData(byte[] key, ulong opCode, byte[] data)
         {
             throw new System.NotImplementedException();
         }
@@ -115,7 +115,7 @@ namespace RDBParserTests
             throw new System.NotImplementedException();
         }
 
-        public void StartModule(byte[] key, byte[] module_name, long expiry, Info info)
+        public bool StartModule(byte[] key, string module_name, long expiry, Info info)
         {
             throw new System.NotImplementedException();
         }

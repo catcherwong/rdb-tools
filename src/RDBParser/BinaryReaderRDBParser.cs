@@ -50,7 +50,7 @@ namespace RDBParser
 
                         if (opType == Constant.OpCode.IDLE)
                         {
-                            var idle = ReadLength(br).Length;
+                            var idle = br.ReadLength(); ;
                             lruIdle = idle;
                             opType = br.ReadByte();
                         }
@@ -67,23 +67,23 @@ namespace RDBParser
                             if (!isFirstDb)
                                 _callback.EndDatabase((int)db);
 
-                            db = ReadLength(br).Length;
+                            db = br.ReadLength(); ;
                             _callback.StartDatabase((int)db);
                             continue;
                         }
 
                         if (opType == Constant.OpCode.AUX)
                         {
-                            var auxKey = ReadString(br);
-                            var auxVal = ReadString(br);
+                            var auxKey = br.ReadStr(); ;
+                            var auxVal = br.ReadStr(); ;
                             _callback.AuxField(auxKey, auxVal);
                             continue;
                         }
 
                         if (opType == Constant.OpCode.RESIZEDB)
                         {
-                            var dbSize = ReadLength(br).Length;
-                            var expireSize = ReadLength(br).Length;
+                            var dbSize = br.ReadLength(); ;
+                            var expireSize = br.ReadLength(); ;
 
                             _callback.DbSize((uint)dbSize, (uint)expireSize);
                             continue;
@@ -91,7 +91,7 @@ namespace RDBParser
 
                         if (opType == Constant.OpCode.MODULE_AUX)
                         {
-                            ReadModule(br);
+                            ReadModule(br, null, opType, expiry, null);
                         }
 
                         if (opType == Constant.OpCode.EOF)
@@ -104,7 +104,7 @@ namespace RDBParser
                             break;
                         }
 
-                        var key = ReadString(br);
+                        var key = br.ReadStr();
 
                         Info info = new Info
                         {
@@ -120,10 +120,10 @@ namespace RDBParser
                 }
             }
         }
-      
+
         private void ReadIntSet(BinaryReader br, byte[] key, long expiry, Info info)
         {
-            var raw = ReadString(br);
+            var raw = br.ReadStr(); ;
             using MemoryStream stream = new MemoryStream(raw);
             using var rd = new BinaryReader(stream);
             var encoding = rd.ReadUInt32();
@@ -147,7 +147,7 @@ namespace RDBParser
 
         private void ReadZipMap(BinaryReader br, byte[] key, long expiry, Info info)
         {
-            var rawString = ReadString(br);
+            var rawString = br.ReadStr(); ;
             using MemoryStream stream = new MemoryStream(rawString);
             using var rd = new BinaryReader(stream);
             var numEntries = rd.ReadByte();
@@ -185,56 +185,9 @@ namespace RDBParser
             else return null;
         }
 
-        private byte[] LzfDecompress(byte[] compressed, int ulen)
-        {
-            var outStream = new List<byte>(ulen);
-            var outIndex = 0;
-
-            var inLen = compressed.Length;
-            var inIndex = 0;
-
-            while (inIndex < inLen)
-            {
-                var ctrl = compressed[inIndex];
-
-                inIndex = inIndex + 1;
-
-                if (ctrl < 32)
-                {
-                    for (int i = 0; i < ctrl + 1; i++)
-                    {
-                        outStream.Add(compressed[inIndex]);
-                        inIndex = inIndex + 1;
-                        outIndex = outIndex + 1;
-                    }
-                }
-                else
-                {
-                    var length = ctrl >> 5;
-                    if (length == 7)
-                    {
-                        length = length + compressed[inIndex];
-                        inIndex = inIndex + 1;
-                    }
-
-                    var @ref = outIndex - ((ctrl & 0x1f) << 8) - compressed[inIndex] - 1;
-                    inIndex = inIndex + 1;
-
-                    for (int i = 0; i < length + 2; i++)
-                    {
-                        outStream.Add(outStream[@ref]);
-                        @ref = @ref + 1;
-                        outIndex = outIndex + 1;
-                    }
-                }
-            }
-
-            return outStream.ToArray();
-        }
-
         private void ReadListFromQuickList(BinaryReader br, byte[] key, long expiry, Info info)
         {
-            var length = ReadLength(br).Length;
+            var length = br.ReadLength(); ;
             var totalSize = 0;
             info.Encoding = "quicklist";
             info.Zips = length;
@@ -244,7 +197,7 @@ namespace RDBParser
             {
                 length--;
 
-                var rawString = ReadString(br);
+                var rawString = br.ReadStr(); ;
                 totalSize += rawString.Length;
 
                 using (MemoryStream stream = new MemoryStream(rawString))
@@ -271,10 +224,140 @@ namespace RDBParser
 
         }
 
-        private void ReadModule(BinaryReader br)
+        private void ReadModule(BinaryReader br, byte[] key, int encType, long expiry, Info info)
         {
-            //var length = ReadLength(br).Length;
-            //_callback.StartModule(null, null, 0, null);
+            var wrapper = new IOWrapper(br.BaseStream);
+            wrapper.StartRecordingSize();
+            wrapper.StartRecording();
+            var length = wrapper.ReadLength();
+            var isRecordBuffer = _callback.StartModule(key, DecodeModuleId(length), expiry, info);
+
+            if (!isRecordBuffer) wrapper.StopRecording();
+
+            var opCode = wrapper.ReadLength();
+
+            while (opCode != Constant.ModuleOpCode.EOF)
+            {
+                byte[] data;
+
+                if (opCode == Constant.ModuleOpCode.SINT
+                    || opCode == Constant.ModuleOpCode.UINT)
+                {
+                    data = new byte[] { (byte)wrapper.ReadLength() };
+                }
+                else if (opCode == Constant.ModuleOpCode.FLOAT)
+                {
+                    data = wrapper.ReadBytes(4);
+                }
+                else if (opCode == Constant.ModuleOpCode.DOUBLE)
+                {
+                    data = wrapper.ReadBytes(8);
+                }
+                else if (opCode == Constant.ModuleOpCode.STRING)
+                {
+                    data = wrapper.ReadStr();
+                }
+                else
+                {
+                    throw new RDBParserException($"Unknown module opcode {opCode}");
+                }
+
+                _callback.HandleModuleData(null, opCode, data);
+
+                opCode = wrapper.ReadLength();
+            }
+
+            byte[] buff = null;
+
+            if (isRecordBuffer)
+            {
+                var tmp = new List<byte>();
+                tmp.Add(0x07);
+                tmp.AddRange(wrapper.GetRecordedBuff());
+                buff = tmp.ToArray();
+                wrapper.StopRecording();
+            }
+
+            _callback.EndModule(null, wrapper.GetRecordedSize(), buff);
+        }
+
+
+        private static string charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+        private string DecodeModuleId(ulong moduleId)
+        {
+            int len = 9;
+
+            var name = new string[len];
+            moduleId >>= 10;
+
+            while (len > 0)
+            {
+                len--;
+                var idx = moduleId & 63;
+                name[len] = charset[(int)idx].ToString();
+                moduleId >>= 6;
+            }
+
+            return string.Join("", name);
+        }
+        
+        public class IOWrapper : BinaryReader
+        {
+            private bool _recordBuff;
+            private bool _recordBuffSize;
+            private List<byte> _bytes;
+            private long _buffSize;
+
+            public IOWrapper(Stream input) : base(input)
+            {
+            }
+
+            public void StartRecording()
+                => _recordBuff = true;
+
+            public void StartRecordingSize()
+                => _recordBuffSize = true;
+
+            public byte[] GetRecordedBuff()
+                => _bytes.ToArray();
+
+            public long GetRecordedSize()
+                => _buffSize;
+
+            public void StopRecording()
+            {
+                _recordBuff = false;
+                _bytes = new List<byte>();
+            }
+
+            public void StopRecordingSize()
+            {
+                _recordBuffSize = false;
+                _buffSize = 0;
+            }
+
+            public override byte ReadByte()
+            {
+                var b = base.ReadByte();
+
+                if (_recordBuff) _bytes.Add(b);
+
+                if (_recordBuffSize) _buffSize += 1;
+
+                return b;
+
+            }
+
+            public override byte[] ReadBytes(int count)
+            {
+                var bytes = base.ReadBytes(count);
+
+                if (_recordBuff) _bytes.AddRange(bytes);
+
+                if (_recordBuffSize) _buffSize += bytes.Length;
+
+                return bytes;
+            }
         }
     }
 }

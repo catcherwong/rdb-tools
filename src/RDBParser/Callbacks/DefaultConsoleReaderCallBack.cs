@@ -55,7 +55,7 @@ namespace RDBParser
             throw new NotImplementedException();
         }
 
-        public void HandleModuleData(byte[] key, byte[] opCode, byte[] data)
+        public void HandleModuleData(byte[] key, ulong opCode, byte[] data)
         {
             throw new NotImplementedException();
         }
@@ -95,7 +95,7 @@ namespace RDBParser
             Console.WriteLine($"Start List, Key={GetString(key)}, expiry={expiry}, Info={info}");
         }
 
-        public void StartModule(byte[] key, byte[] module_name, long expiry, Info info)
+        public bool StartModule(byte[] key, string module_name, long expiry, Info info)
         {
             throw new NotImplementedException();
         }

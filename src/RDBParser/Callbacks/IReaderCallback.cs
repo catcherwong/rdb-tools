@@ -28,10 +28,18 @@
         /// <param name="database"></param>
         void StartDatabase(int database);
 
-        
-        void StartModule(byte[] key, byte[] module_name, long expiry, Info info);
 
-        void HandleModuleData(byte[] key, byte[] opCode, byte[] data);
+        /// <summary>
+        /// Called to indicate start of a module key
+        /// </summary>
+        /// <param name="key">string. if key is None, this is module AUX data</param>
+        /// <param name="module_name">string</param>
+        /// <param name="expiry"></param>
+        /// <param name="info">is a dictionary containing additional information about this object.</param>
+        /// <returns></returns>
+        bool StartModule(byte[] key, string module_name, long expiry, Info info);
+
+        void HandleModuleData(byte[] key, ulong opCode, byte[] data);
 
         void EndModule(byte[] key, long bufferSize, byte[] buffer);
 
