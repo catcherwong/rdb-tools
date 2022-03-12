@@ -1,19 +1,27 @@
 using RDBParser;
 using System.Text;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace RDBParserTests
 {
-    public class BinaryReaderRDBParserTests
+    public class PipeReaderRDBParserTests
     {
+        private Xunit.Abstractions.ITestOutputHelper _output;
+
+        public PipeReaderRDBParserTests(Xunit.Abstractions.ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+
         [Fact]
-        public void TestEmptyRDB()
+        public async Task TestEmptyRDB()
         {
             var path = TestHelper.GetRDBPath("empty_database.rdb");
 
-            var callback = new TestBinaryReaderCallback();
-            var parser = new BinaryReaderRDBParser(callback);
-            parser.Parse(path);
+            var callback = new TestPipeReaderCallback(_output);
+            var parser = new PipeReaderRDBParser(callback);
+            await parser.ParseAsync(path);
 
             Assert.Contains("StartRDB", callback.GetMethodsCalled());
             Assert.Contains("EndRDB", callback.GetMethodsCalled());
@@ -22,13 +30,13 @@ namespace RDBParserTests
         }
 
         [Fact]
-        public void TestMultipleDatabases()
+        public async Task TestMultipleDatabases()
         {
             var path = TestHelper.GetRDBPath("multiple_databases.rdb");
 
-            var callback = new TestBinaryReaderCallback();
-            var parser = new BinaryReaderRDBParser(callback);
-            parser.Parse(path);
+            var callback = new TestPipeReaderCallback(_output);
+            var parser = new PipeReaderRDBParser(callback);
+            await parser.ParseAsync(path);
 
             var databases = callback.GetDatabases();
 
@@ -43,13 +51,13 @@ namespace RDBParserTests
         }
 
         [Fact]
-        public void TestKeysWithExpiry()
+        public async Task TestKeysWithExpiry()
         {
             var path = TestHelper.GetRDBPath("keys_with_expiry.rdb");
 
-            var callback = new TestBinaryReaderCallback();
-            var parser = new BinaryReaderRDBParser(callback);
-            parser.Parse(path);
+            var callback = new TestPipeReaderCallback(_output);
+            var parser = new PipeReaderRDBParser(callback);
+            await parser.ParseAsync(path);
 
             var expiries = callback.GetExpiries();
             var expiry = expiries[0][Encoding.UTF8.GetBytes("expires_ms_precision")];
@@ -65,18 +73,18 @@ namespace RDBParserTests
             Assert.Equal(573, datetime.Millisecond);
         }
 
-        [Fact]
-        public void TestRdbVersion8WithModule()
-        {
-            var path = TestHelper.GetRDBPath("redis_40_with_module.rdb");
+        // [Fact]
+        // public void TestRdbVersion8WithModule()
+        // {
+        //     var path = TestHelper.GetRDBPath("redis_40_with_module.rdb");
 
-            var callback = new TestBinaryReaderCallback();
-            var parser = new BinaryReaderRDBParser(callback);
-            parser.Parse(path);
+        //     var callback = new TestPipeReaderCallback();
+        //     var parser = new PipeReaderRDBParser(callback);
+        //     await parser.ParseAsync(path);
 
-            var databases = callback.GetDatabases();
-            var res = databases[0][Encoding.UTF8.GetBytes("foo")];
-            Assert.Equal(Encoding.UTF8.GetBytes("ReJSON-RL"), res);
-        }
+        //     var databases = callback.GetDatabases();
+        //     var res = databases[0][Encoding.UTF8.GetBytes("foo")];
+        //     Assert.Equal(Encoding.UTF8.GetBytes("ReJSON-RL"), res);
+        // }
     }
 }

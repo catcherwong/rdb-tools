@@ -15,7 +15,7 @@ namespace RDBParserTests
 
     public class ByteArrayComparer : IEqualityComparer<byte[]>
     {
-        private static ByteArrayComparer _default;
+        private static ByteArrayComparer? _default;
 
         public static ByteArrayComparer Default
         {

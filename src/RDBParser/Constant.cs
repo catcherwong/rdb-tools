@@ -2,11 +2,22 @@
 {
     public static class Constant
     {
+        public static class RdbVersion
+        { 
+            public static readonly int Min = 1;
+            public static readonly int Max = 9;
+        }
+
         public static class MagicCount
         {
             public static readonly int REDIS = 5;
             public static readonly int VERSION = 4;
             public static readonly int CHECKSUM = 8;
+
+            public static readonly int One = 1;
+            public static readonly int Two = 2;
+            public static readonly int Four = 4;
+            public static readonly int Eight = 8;
         }
 
         public static class OpCode
