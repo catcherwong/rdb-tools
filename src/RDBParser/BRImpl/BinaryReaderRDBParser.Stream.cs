@@ -5,17 +5,20 @@ namespace RDBParser
 {
     public partial class BinaryReaderRDBParser : IRDBParser
     {
-        private void ReadStream(BinaryReader br, byte[] key, int encType, long expiry, Info info)
+        private void ReadStream(BinaryReader br)
         {
             var listPacks = br.ReadLength();
-
-            _callback.StartStream(key, (long)listPacks, _expiry, info);
+            
+            Info info = new Info();
+            info.Idle = _idle;
+            info.Freq = _freq;
+            _callback.StartStream(_key, (long)listPacks, _expiry, info);
 
             while (listPacks > 0)
             {
                 var entityId = br.ReadStr();
                 var data = br.ReadStr();
-                _callback.StreamListPack(key, entityId, data);
+                _callback.StreamListPack(_key, entityId, data);
 
                 listPacks--;
             }
@@ -89,7 +92,53 @@ namespace RDBParser
                 cgroups--;
             }
 
-            _callback.EndStream(key, items, lastEntryId, cgroupsData);
+            _callback.EndStream(_key, items, lastEntryId, cgroupsData);
+        }
+
+        private void SkipStream(BinaryReader br)
+        {
+            var listPacks = br.ReadLength();
+
+            while (listPacks > 0)
+            {
+                _ = br.ReadStr();
+                _ = br.ReadStr();
+
+                listPacks--;
+            }
+
+            _ = br.ReadLength();
+            _ = br.ReadLength();
+            _ = br.ReadLength();
+
+            var cgroups = br.ReadLength();
+            while (cgroups > 0)
+            {
+                _ = br.ReadStr();
+                _ = br.ReadLength();
+                _ = br.ReadLength();
+                var pending = br.ReadLength();
+                while (pending > 0)
+                {
+                    _ = br.ReadBytes(16);
+                    _ = br.ReadBytes(8);
+                    _ = br.ReadLength();
+
+                    pending--;
+                }
+                var consumers = br.ReadLength();
+                while (consumers > 0)
+                {
+                    br.SkipStr();
+                    br.ReadBytes(8);
+                    pending = br.ReadLength();
+                    br.ReadBytes((int)(pending * 16));
+
+                    consumers--;
+                }
+
+                cgroups--;
+            }
         }
     }
 }

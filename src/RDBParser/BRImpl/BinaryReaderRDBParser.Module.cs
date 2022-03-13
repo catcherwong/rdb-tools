@@ -5,13 +5,17 @@ namespace RDBParser
 {
     public partial class BinaryReaderRDBParser : IRDBParser
     {
-        private void ReadModule(BinaryReader br, byte[] key, int encType, long expiry, Info info)
+        private void ReadModule(BinaryReader br)
         {
             var wrapper = new IOWrapper(br.BaseStream);
             wrapper.StartRecordingSize();
             wrapper.StartRecording();
             var length = wrapper.ReadLength();
-            var isRecordBuffer = _callback.StartModule(key, DecodeModuleId(length), expiry, info);
+            
+            Info info = new Info();
+            info.Idle = _idle;
+            info.Freq = _freq;
+            var isRecordBuffer = _callback.StartModule(_key, DecodeModuleId(length), _expiry, info);
 
             if (!isRecordBuffer) wrapper.StopRecording();
 
@@ -43,7 +47,7 @@ namespace RDBParser
                     throw new RDBParserException($"Unknown module opcode {opCode}");
                 }
 
-                _callback.HandleModuleData(key, opCode, data);
+                _callback.HandleModuleData(_key, opCode, data);
 
                 opCode = wrapper.ReadLength();
             }
@@ -59,7 +63,7 @@ namespace RDBParser
                 wrapper.StopRecording();
             }
 
-            _callback.EndModule(key, wrapper.GetRecordedSize(), buff);
+            _callback.EndModule(_key, wrapper.GetRecordedSize(), buff);
         }
 
         private static string charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
@@ -80,6 +84,39 @@ namespace RDBParser
             }
 
             return string.Join("", name);
+        }
+
+        private void SkipModule(BinaryReader br)
+        {
+            _ = br.ReadLength();
+            var opCode = br.ReadLength();
+
+            while (opCode != Constant.ModuleOpCode.EOF)
+            {
+                if (opCode == Constant.ModuleOpCode.SINT
+                    || opCode == Constant.ModuleOpCode.UINT)
+                {
+                    _ = br.ReadLength();
+                }
+                else if (opCode == Constant.ModuleOpCode.FLOAT)
+                {
+                    _ = br.ReadBytes(4);
+                }
+                else if (opCode == Constant.ModuleOpCode.DOUBLE)
+                {
+                    _ = br.ReadBytes(8);
+                }
+                else if (opCode == Constant.ModuleOpCode.STRING)
+                {
+                    br.SkipStr();
+                }
+                else
+                {
+                    throw new RDBParserException($"Unknown module opcode {opCode}");
+                }
+
+                opCode = br.ReadLength();
+            }
         }
 
         public class IOWrapper : BinaryReader

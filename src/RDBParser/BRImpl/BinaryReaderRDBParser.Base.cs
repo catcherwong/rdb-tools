@@ -76,27 +76,27 @@ namespace RDBParser
             }
             else if (encType == Constant.DataType.HASH_ZIPMAP)
             {
-                ReadZipMap(br, key, expiry, info);
+                ReadZipMap(br);
             }
             else if (encType == Constant.DataType.LIST_ZIPLIST)
             {
-                ReadZipList(br, key, expiry, info);
+                ReadZipList(br);
             }
             else if (encType == Constant.DataType.SET_INTSET)
             {
-                ReadIntSet(br, key, expiry, info);
+                ReadIntSet(br);
             }
             else if (encType == Constant.DataType.ZSET_ZIPLIST)
             {
-                ReadZSetFromZiplist(br, key, expiry, info);
+                ReadZSetFromZiplist(br);
             }
             else if (encType == Constant.DataType.HASH_ZIPLIST)
             {
-                ReadHashFromZiplist(br, key, expiry, info);
+                ReadHashFromZiplist(br);
             }
             else if (encType == Constant.DataType.LIST_QUICKLIST)
             {
-                ReadListFromQuickList(br, key, expiry, info);
+                ReadListFromQuickList(br);
             }
             else if (encType == Constant.DataType.MODULE)
             {
@@ -104,16 +104,57 @@ namespace RDBParser
             }
             else if (encType == Constant.DataType.MODULE_2)
             {
-                ReadModule(br, key, encType, expiry, info);
+                ReadModule(br);
             }
             else if (encType == Constant.DataType.STREAM_LISTPACKS)
             {
-                ReadStream(br, key, encType, expiry, info);
+                ReadStream(br);
             }
             else
             {
                 throw new RDBParserException($"Invalid object type {encType} for {key} ");
             }
+        }
+
+        private void ReadListFromQuickList(BinaryReader br)
+        {
+            var length = br.ReadLength();
+            var totalSize = 0;
+            Info info = new Info();
+            info.Idle = _idle;
+            info.Freq = _freq;
+            info.Encoding = "quicklist";
+            info.Zips = length;
+            _callback.StartList(_key, _expiry, info);
+
+            while (length > 0)
+            {
+                length--;
+
+                var rawString = br.ReadStr();
+                totalSize += rawString.Length;
+
+                using (MemoryStream stream = new MemoryStream(rawString))
+                {
+                    var rd = new BinaryReader(stream);
+                    var zlbytes = rd.ReadBytes(4);
+                    var tail_offset = rd.ReadBytes(4);
+                    var num_entries = rd.ReadUInt16();
+
+                    for (int i = 0; i < num_entries; i++)
+                    {
+                        _callback.RPush(_key, ReadZipListEntry(rd));
+                    }
+
+                    var zlistEnd = rd.ReadByte();
+                    if (zlistEnd != 255)
+                    {
+                        throw new RDBParserException("Invalid zip list end");
+                    }
+                }
+            }
+
+            _callback.EndList(_key, info);
         }
     }
 }

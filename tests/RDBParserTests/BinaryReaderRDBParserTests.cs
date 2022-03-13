@@ -1,4 +1,5 @@
 using RDBParser;
+using System.Collections.Generic;
 using System.Text;
 using Xunit;
 
@@ -6,12 +7,19 @@ namespace RDBParserTests
 {
     public class BinaryReaderRDBParserTests
     {
+        private Xunit.Abstractions.ITestOutputHelper _output;
+
+        public BinaryReaderRDBParserTests(Xunit.Abstractions.ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+
         [Fact]
         public void TestEmptyRDB()
         {
             var path = TestHelper.GetRDBPath("empty_database.rdb");
 
-            var callback = new TestBinaryReaderCallback();
+            var callback = new TestBinaryReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -26,7 +34,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("multiple_databases.rdb");
 
-            var callback = new TestBinaryReaderCallback();
+            var callback = new TestBinaryReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -47,7 +55,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("keys_with_expiry.rdb");
 
-            var callback = new TestBinaryReaderCallback();
+            var callback = new TestBinaryReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -66,17 +74,52 @@ namespace RDBParserTests
         }
 
         [Fact]
+        public void TestIntegerKeys()
+        {
+            var path = TestHelper.GetRDBPath("integer_keys.rdb");
+
+            var callback = new TestBinaryReaderCallback(_output);
+            var parser = new BinaryReaderRDBParser(callback);
+            parser.Parse(path);
+
+            var databases = callback.GetDatabases();
+            
+            Assert.Equal(Encoding.UTF8.GetBytes("Positive 8 bit integer"), databases[0][new byte[]{125}]);
+            Assert.Equal(Encoding.UTF8.GetBytes("Positive 16 bit integer"), databases[0][System.BitConverter.GetBytes(0xABAB)]);
+            Assert.Equal(Encoding.UTF8.GetBytes("Positive 32 bit integer"), databases[0][System.BitConverter.GetBytes(0x0AEDD325)]);
+
+            Assert.Equal(Encoding.UTF8.GetBytes("Negative 8 bit integer"), databases[0][GetNegativeNumberBytes(-123)]);
+            Assert.Equal(Encoding.UTF8.GetBytes("Negative 16 bit integer"), databases[0][GetNegativeNumberBytes(-0x7325)]);
+            Assert.Equal(Encoding.UTF8.GetBytes("Negative 32 bit integer"), databases[0][GetNegativeNumberBytes(-0x0AEDD325)]);
+        }
+
+        [Fact]
         public void TestRdbVersion8WithModule()
         {
             var path = TestHelper.GetRDBPath("redis_40_with_module.rdb");
 
-            var callback = new TestBinaryReaderCallback();
+            var callback = new TestBinaryReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
             var databases = callback.GetDatabases();
             var res = databases[0][Encoding.UTF8.GetBytes("foo")];
             Assert.Equal(Encoding.UTF8.GetBytes("ReJSON-RL"), res);
+        }
+
+        private byte[] GetNegativeNumberBytes(int num)
+        {
+            var tmp = System.BitConverter.GetBytes(num);
+            var bytes = new List<byte>();
+            foreach(var item in tmp)
+            {
+                if(item != 255)
+                {
+                    bytes.Add((byte)(item + 256));
+                }
+            }
+            
+            return bytes.ToArray();
         }
     }
 }

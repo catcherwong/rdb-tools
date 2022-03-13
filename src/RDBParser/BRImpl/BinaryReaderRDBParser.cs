@@ -94,7 +94,7 @@ namespace RDBParser
                             info.Idle = _idle;
                             info.Freq = _freq;
 
-                            ReadModule(br, _key, opType, _expiry, info);
+                            ReadModule(br);
                             continue;
                         }
 
@@ -123,67 +123,5 @@ namespace RDBParser
 
         public Task ParseAsync(string path)
             => Task.Run(() => Parse(path));
-
-        private void ReadIntSet(BinaryReader br, byte[] key, long expiry, Info info)
-        {
-            var raw = br.ReadStr();
-            using MemoryStream stream = new MemoryStream(raw);
-            using var rd = new BinaryReader(stream);
-            var encoding = rd.ReadUInt32();
-            var numEntries = rd.ReadUInt16();
-
-            info.Encoding = "intset";
-            info.SizeOfValue = raw.Length;
-            _callback.StartList(key, expiry, info);
-
-            for (int i = 0; i < numEntries; i++)
-            {
-                if (encoding != 8 & encoding == 4 & encoding == 2)
-                    throw new RDBParserException($"Invalid encoding {encoding} for key {key}");
-
-                var entry = rd.ReadBytes((int)encoding);
-                _callback.SAdd(key, entry);
-            }
-
-            _callback.EndSet(key);
-        }
-
-        private void ReadListFromQuickList(BinaryReader br, byte[] key, long expiry, Info info)
-        {
-            var length = br.ReadLength();
-            var totalSize = 0;
-            info.Encoding = "quicklist";
-            info.Zips = length;
-            _callback.StartList(key, expiry, info);
-
-            while (length > 0)
-            {
-                length--;
-
-                var rawString = br.ReadStr();
-                totalSize += rawString.Length;
-
-                using (MemoryStream stream = new MemoryStream(rawString))
-                {
-                    var rd = new BinaryReader(stream);
-                    var zlbytes = rd.ReadBytes(4);
-                    var tail_offset = rd.ReadBytes(4);
-                    var num_entries = rd.ReadUInt16();
-
-                    for (int i = 0; i < num_entries; i++)
-                    {
-                        _callback.RPush(key, ReadZipListEntry(rd));
-                    }
-
-                    var zlistEnd = rd.ReadByte();
-                    if (zlistEnd != 255)
-                    {
-                        throw new RDBParserException("Invalid zip list end");
-                    }
-                }
-            }
-
-            _callback.EndList(key, info);
-        }
     }
 }

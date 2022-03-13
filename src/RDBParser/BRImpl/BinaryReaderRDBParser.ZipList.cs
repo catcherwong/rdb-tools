@@ -4,8 +4,9 @@ namespace RDBParser
 {
     public partial class BinaryReaderRDBParser
     {
-        private void ReadZipList(BinaryReader br, byte[] key, long expiry, Info info)
+        private void ReadZipList(BinaryReader br)
         {
+            // https://github.com/sripathikrishnan/redis-rdb-tools/wiki/Redis-RDB-Dump-File-Format#ziplist-encoding
             var raw = br.ReadStr();
             using MemoryStream stream = new MemoryStream(raw);
             using var rd = new BinaryReader(stream);
@@ -13,20 +14,23 @@ namespace RDBParser
             var tail_offset = rd.ReadUInt32();
             var numEntries = rd.ReadUInt16();
 
+            Info info = new Info();
+            info.Idle = _idle;
+            info.Freq = _freq;
             info.Encoding = "ziplist";
             info.SizeOfValue = raw.Length;
-            _callback.StartList(key, expiry, info);
+            _callback.StartList(_key, _expiry, info);
 
             for (int i = 0; i < numEntries; i++)
             {
                 var val = ReadZipListEntry(rd);
-                _callback.RPush(key, val);
+                _callback.RPush(_key, val);
             }
 
             var zlistEnd = rd.ReadByte();
-            if (zlistEnd != 255) throw new RDBParserException($"Invalid zip list end - {zlistEnd} for key {key}");
+            if (zlistEnd != 255) throw new RDBParserException($"Invalid zip list end - {zlistEnd} for key {_key}");
 
-            _callback.EndList(key, info);
+            _callback.EndList(_key, info);
         }
 
         private byte[] ReadZipListEntry(BinaryReader br)
@@ -86,8 +90,9 @@ namespace RDBParser
             return value;
         }
 
-        private void ReadHashFromZiplist(BinaryReader br, byte[] key, long expiry, Info info)
+        private void ReadHashFromZiplist(BinaryReader br)
         {
+            // https://github.com/sripathikrishnan/redis-rdb-tools/wiki/Redis-RDB-Dump-File-Format#hashmap-in-ziplist-encoding
             var raw = br.ReadStr();
             using MemoryStream stream = new MemoryStream(raw);
             using var rd = new BinaryReader(stream);
@@ -95,29 +100,32 @@ namespace RDBParser
             var tail_offset = rd.ReadUInt32();
             var numEntries = rd.ReadUInt16();
 
-            if (numEntries % 2 != 0) throw new RDBParserException($"Expected even number of elements, but found {numEntries} for key {key}");
+            if (numEntries % 2 != 0) throw new RDBParserException($"Expected even number of elements, but found {numEntries} for key {_key}");
 
             numEntries = (ushort)(numEntries / 2);
-
+            Info info = new Info();
+            info.Idle = _idle;
+            info.Freq = _freq;
             info.Encoding = "ziplist";
             info.SizeOfValue = raw.Length;
-            _callback.StartHash(key, numEntries, expiry, info);
+            _callback.StartHash(_key, numEntries, _expiry, info);
 
             for (int i = 0; i < numEntries; i++)
             {
                 var field = ReadZipListEntry(rd);
                 var value = ReadZipListEntry(rd);
-                _callback.HSet(key, field, value);
+                _callback.HSet(_key, field, value);
             }
 
             var zlistEnd = rd.ReadByte();
-            if (zlistEnd != 255) throw new RDBParserException($"Invalid zip list end - {zlistEnd} for key {key}");
+            if (zlistEnd != 255) throw new RDBParserException($"Invalid zip list end - {zlistEnd} for key {_key}");
 
-            _callback.EndHash(key);
+            _callback.EndHash(_key);
         }
 
-        private void ReadZSetFromZiplist(BinaryReader br, byte[] key, long expiry, Info info)
+        private void ReadZSetFromZiplist(BinaryReader br)
         {
+            // https://github.com/sripathikrishnan/redis-rdb-tools/wiki/Redis-RDB-Dump-File-Format#sorted-set-as-ziplist-encoding
             var raw = br.ReadStr();
             using MemoryStream stream = new MemoryStream(raw);
             using var rd = new BinaryReader(stream);
@@ -125,13 +133,16 @@ namespace RDBParser
             var tail_offset = rd.ReadUInt32();
             var numEntries = rd.ReadUInt16();
 
-            if (numEntries % 2 != 0) throw new RDBParserException($"Expected even number of elements, but found {numEntries} for key {key}");
+            if (numEntries % 2 != 0) throw new RDBParserException($"Expected even number of elements, but found {numEntries} for key {_key}");
 
             numEntries = (ushort)(numEntries / 2);
-
+            
+            Info info = new Info();
+            info.Idle = _idle;
+            info.Freq = _freq;
             info.Encoding = "ziplist";
             info.SizeOfValue = raw.Length;
-            _callback.StartSortedSet(key, numEntries, expiry, info);
+            _callback.StartSortedSet(_key, numEntries, _expiry, info);
 
             for (int i = 0; i < numEntries; i++)
             {
@@ -140,13 +151,13 @@ namespace RDBParser
 
                 var str = System.Text.Encoding.UTF8.GetString(score);
                 double.TryParse(str, out var realScore);
-                _callback.ZAdd(key, realScore, member);
+                _callback.ZAdd(_key, realScore, member);
             }
 
             var zlistEnd = rd.ReadByte();
-            if (zlistEnd != 255) throw new RDBParserException($"Invalid zip list end - {zlistEnd} for key {key}");
+            if (zlistEnd != 255) throw new RDBParserException($"Invalid zip list end - {zlistEnd} for key {_key}");
 
-            _callback.EndSortedSet(key);
+            _callback.EndSortedSet(_key);
         }
     }
 }

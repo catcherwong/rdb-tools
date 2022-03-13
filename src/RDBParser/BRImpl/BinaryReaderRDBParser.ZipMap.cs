@@ -5,16 +5,20 @@ namespace RDBParser
 {
     public partial class BinaryReaderRDBParser : IRDBParser
     {
-        private void ReadZipMap(BinaryReader br, byte[] key, long expiry, Info info)
+        private void ReadZipMap(BinaryReader br)
         {
+            // https://github.com/sripathikrishnan/redis-rdb-tools/wiki/Redis-RDB-Dump-File-Format#zipmap-encoding
             var rawString = br.ReadStr();
             using MemoryStream stream = new MemoryStream(rawString);
             using var rd = new BinaryReader(stream);
             var numEntries = rd.ReadByte();
 
+            Info info = new Info();
+            info.Idle = _idle;
+            info.Freq = _freq;
             info.Encoding = "zipmap";
             info.SizeOfValue = rawString.Length;
-            _callback.StartHash(key, numEntries, expiry, info);
+            _callback.StartHash(_key, numEntries, _expiry, info);
 
             while (true)
             {
@@ -24,17 +28,17 @@ namespace RDBParser
                 var filed = rd.ReadBytes((int)nextLength);
 
                 nextLength = ReadZipmapNextLength(rd);
-                if (!nextLength.HasValue) throw new RDBParserException($"Unexepcted end of zip map for key {key}");
+                if (!nextLength.HasValue) throw new RDBParserException($"Unexepcted end of zip map for key {_key}");
 
                 var free = rd.ReadByte();
                 var value = rd.ReadBytes((int)nextLength);
 
                 if (free > 0) rd.ReadBytes((int)free);
 
-                _callback.HSet(key, filed, value);
+                _callback.HSet(_key, filed, value);
             }
 
-            _callback.EndHash(key);
+            _callback.EndHash(_key);
         }
 
         private int? ReadZipmapNextLength(BinaryReader br)
