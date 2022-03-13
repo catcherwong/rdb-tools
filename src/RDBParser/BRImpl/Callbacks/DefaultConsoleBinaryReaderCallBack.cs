@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace RDBParser
@@ -50,9 +51,9 @@ namespace RDBParser
             Console.WriteLine($"End SortedSet, Key={GetString(key)}");
         }
 
-        public void EndStream(byte[] key, ulong items, string last_entry_id, StreamGroup cgroups)
+        public void EndStream(byte[] key, ulong items, string last_entry_id, List<StreamGroup> cgroups)
         {
-            throw new NotImplementedException();
+            Console.WriteLine($"End Stream, Key={GetString(key)}, items={items}, lastEntityId={last_entry_id}");
         }
 
         public void HandleModuleData(byte[] key, ulong opCode, byte[] data)
@@ -118,12 +119,12 @@ namespace RDBParser
 
         public void StartStream(byte[] key, long listpacks_count, long expiry, Info info)
         {
-            throw new NotImplementedException();
+            Console.WriteLine($"Start Stream, Key={GetString(key)}, length={listpacks_count},  expiry={expiry}, Info={info}");
         }
 
         public void StreamListPack(byte[] key, byte[] entry_id, byte[] data)
         {
-            throw new NotImplementedException();
+            Console.WriteLine($"StreamListPack, Key={GetString(key)}, entryId={GetString(entry_id)}, data={GetString(data)}");
         }
 
         public void ZAdd(byte[] key, double score, byte[] member)

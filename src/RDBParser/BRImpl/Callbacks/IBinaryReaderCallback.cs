@@ -1,4 +1,6 @@
-﻿namespace RDBParser
+﻿using System.Collections.Generic;
+
+namespace RDBParser
 {
     public interface IBinaryReaderCallback
     {
@@ -192,7 +194,7 @@
         /// <param name="items">total number of items in the stream</param>
         /// <param name="last_entry_id">in "<millisecondsTime>-<sequenceNumber>" format</param>
         /// <param name="cgroups">an array of consumer group metadata</param>
-        void EndStream(byte[] key, ulong items, string last_entry_id, StreamGroup cgroups);
+        void EndStream(byte[] key, ulong items, string last_entry_id, List<StreamGroup> cgroups);
 
         /// <summary>
         /// Called when the current database ends

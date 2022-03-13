@@ -102,13 +102,13 @@ namespace RDBParser
             {
                 throw new RDBParserException($"Unable to read Redis Modules RDB objects (key {key})");
             }
-            else if (encType == Constant.DataType.MODULE_2) 
+            else if (encType == Constant.DataType.MODULE_2)
             {
                 ReadModule(br, key, encType, expiry, info);
             }
-            else if (encType == Constant.DataType.STREAM_LISTPACKS) 
+            else if (encType == Constant.DataType.STREAM_LISTPACKS)
             {
-                br.SkipStream();
+                ReadStream(br, key, encType, expiry, info);
             }
             else
             {

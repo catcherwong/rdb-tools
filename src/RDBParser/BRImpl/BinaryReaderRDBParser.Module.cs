@@ -61,9 +61,9 @@ namespace RDBParser
 
             _callback.EndModule(key, wrapper.GetRecordedSize(), buff);
         }
-        
+
         private static string charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-        
+
         private string DecodeModuleId(ulong moduleId)
         {
             int len = 9;
@@ -81,7 +81,7 @@ namespace RDBParser
 
             return string.Join("", name);
         }
-        
+
         public class IOWrapper : BinaryReader
         {
             private bool _recordBuff;

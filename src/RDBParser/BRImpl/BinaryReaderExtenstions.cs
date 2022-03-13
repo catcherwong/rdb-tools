@@ -282,6 +282,8 @@ namespace RDBParser
 
                     consumers--;
                 }
+
+                cgroups--;
             }
         }
     }
