@@ -10,7 +10,22 @@ namespace RDBParserTests
             var dir = System.AppContext.BaseDirectory;
             var path = System.IO.Path.Combine(dir, fileName);
             return path;
-        }    
+        }
+
+        public static byte[] GetNegativeNumberBytes(int num)
+        {
+            var tmp = System.BitConverter.GetBytes(num);
+            var bytes = new List<byte>();
+            foreach (var item in tmp)
+            {
+                if (item != 255)
+                {
+                    bytes.Add((byte)(item + 256));
+                }
+            }
+
+            return bytes.ToArray();
+        }
     }
 
     public class ByteArrayComparer : IEqualityComparer<byte[]>

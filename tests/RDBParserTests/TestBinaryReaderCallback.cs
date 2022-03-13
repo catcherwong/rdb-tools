@@ -30,6 +30,13 @@ namespace RDBParserTests
         public Dictionary<int, Dictionary<byte[], long>> GetExpiries()
             => _expiries;
 
+        public Dictionary<int, Dictionary<byte[], long>> GetLengths()
+            => _lengths;
+
+        public Dictionary<int, Dictionary<byte[], Dictionary<byte[], byte[]>>> GetHashs()
+            => _hashs;
+
+
         public void AuxField(byte[] key, byte[] value)
         {
             System.Diagnostics.Trace.WriteLine(System.Text.Encoding.UTF8.GetString(key));
@@ -107,6 +114,9 @@ namespace RDBParserTests
             if (!_hashs[_database].ContainsKey(key))
                 throw new System.Exception("0");
 
+            _output.WriteLine(Encoding.UTF8.GetString(key));
+            _output.WriteLine(Encoding.UTF8.GetString(field));
+            _output.WriteLine(Encoding.UTF8.GetString(value));
             _hashs[_database][key][field] = value;
         }
 
@@ -149,13 +159,13 @@ namespace RDBParserTests
             if (_hashs[_database].ContainsKey(key))
                 throw new System.Exception("0");
 
-            _hashs[_database][key] = new Dictionary<byte[], byte[]>();
+            _hashs[_database][key] = new Dictionary<byte[], byte[]>(ByteArrayComparer.Default);
 
             if (expiry > 0)
                 _expiries[_database][key] = expiry;
 
             if (!_lengths.ContainsKey(_database))
-                _lengths[_database] = new Dictionary<byte[], long>();
+                _lengths[_database] = new Dictionary<byte[], long>(ByteArrayComparer.Default);
 
             _lengths[_database][key] = length;
         }

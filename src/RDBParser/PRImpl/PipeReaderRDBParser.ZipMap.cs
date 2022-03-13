@@ -1,5 +1,4 @@
-﻿using System.Buffers;
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
 
@@ -7,7 +6,7 @@ namespace RDBParser
 {
     public partial class PipeReaderRDBParser
     {
-        private async Task ReadZipMapAsync(PipeReader reader, ReadOnlySequence<byte> key, long expiry, Info info)
+        private async Task ReadZipMapAsync(PipeReader reader, Info info)
         {
             var rawString = await reader.ReadStringAsync();
 
@@ -16,7 +15,7 @@ namespace RDBParser
 
             info.Encoding = "zipmap";
             info.SizeOfValue = (int)rawString.Length;
-            _callback.StartHash(key, numEntries, expiry, info);
+            _callback.StartHash(_key, numEntries, _expiry, info);
 
             while (true)
             {
@@ -26,17 +25,17 @@ namespace RDBParser
                 var filed = await rd.ReadBytesAsync((int)nextLength);
 
                 nextLength = await ReadZipmapNextLengthAsync(rd);
-                if (!nextLength.HasValue) throw new RDBParserException($"Unexepcted end of zip map for key {key}");
+                if (!nextLength.HasValue) throw new RDBParserException($"Unexepcted end of zip map for key {_key}");
 
                 var free = await rd.ReadSingleByteAsync();
                 var value = await rd.ReadBytesAsync((int)nextLength);
 
                 if (free > 0) await rd.ReadBytesAsync((int)free);
 
-                _callback.HSet(key, filed, value);
+                _callback.HSet(_key, filed, value);
             }
 
-            _callback.EndHash(key);
+            _callback.EndHash(_key);
         }
 
         private async Task<int?> ReadZipmapNextLengthAsync(PipeReader reader)

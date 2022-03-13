@@ -8,7 +8,7 @@ namespace RDBParser
 {
     public partial class PipeReaderRDBParser
     {
-        private async Task ReadZipListAsync(PipeReader reader, ReadOnlySequence<byte> key, long expiry, Info info)
+        private async Task ReadZipListAsync(PipeReader reader, Info info)
         {
             var ziplist = await reader.ReadStringAsync();
 
@@ -25,18 +25,18 @@ namespace RDBParser
 
             info.Encoding = "ziplist";
             info.SizeOfValue = (int)ziplist.Length;
-            _callback.StartList(key, expiry, info);
+            _callback.StartList(_key, _expiry, info);
 
             for (int i = 0; i < numEntries; i++)
             {
                 var val = await ReadZipListEntryAsync(rd);
-                _callback.RPush(key, val);
+                _callback.RPush(_key, val);
             }
 
             var zlistEnd = await rd.ReadSingleByteAsync();
-            if (zlistEnd != 255) throw new RDBParserException($"Invalid zip list end - {zlistEnd} for key {key}");
+            if (zlistEnd != 255) throw new RDBParserException($"Invalid zip list end - {zlistEnd} for key {_key}");
 
-            _callback.EndList(key, info);
+            _callback.EndList(_key, info);
         }
 
         private async Task<ReadOnlySequence<byte>> ReadZipListEntryAsync(PipeReader reader)
@@ -99,7 +99,7 @@ namespace RDBParser
             return value;
         }
     
-        private async Task ReadHashFromZiplistAsync(PipeReader reader, ReadOnlySequence<byte> key, long expiry, Info info)
+        private async Task ReadHashFromZiplistAsync(PipeReader reader, Info info)
         {
             var raw = await reader.ReadStringAsync();
             
@@ -114,28 +114,28 @@ namespace RDBParser
             var numEntriesBuff = await rd.ReadBytesAsync(2);
             var numEntries = BinaryPrimitives.ReadUInt32LittleEndian(numEntriesBuff.FirstSpan);
 
-            if (numEntries % 2 != 0) throw new RDBParserException($"Expected even number of elements, but found {numEntries} for key {key}");
+            if (numEntries % 2 != 0) throw new RDBParserException($"Expected even number of elements, but found {numEntries} for key {_key}");
 
             numEntries = (ushort)(numEntries / 2);
 
             info.Encoding = "ziplist";
             info.SizeOfValue = (int)raw.Length;
-            _callback.StartHash(key, numEntries, expiry, info);
+            _callback.StartHash(_key, numEntries, _expiry, info);
 
             for (int i = 0; i < numEntries; i++)
             {
                 var field = await ReadZipListEntryAsync(rd);
                 var value = await ReadZipListEntryAsync(rd);
-                _callback.HSet(key, field, value);
+                _callback.HSet(_key, field, value);
             }
 
             var zlistEnd = await rd.ReadSingleByteAsync();
-            if (zlistEnd != 255) throw new RDBParserException($"Invalid zip list end - {zlistEnd} for key {key}");
+            if (zlistEnd != 255) throw new RDBParserException($"Invalid zip list end - {zlistEnd} for key {_key}");
 
-            _callback.EndHash(key);
+            _callback.EndHash(_key);
         }
 
-        private async Task ReadZSetFromZiplistAsync(PipeReader reader, ReadOnlySequence<byte> key, long expiry, Info info)
+        private async Task ReadZSetFromZiplistAsync(PipeReader reader, Info info)
         {
             var raw = await reader.ReadStringAsync();
             var rd = PipeReader.Create(raw);
@@ -149,11 +149,11 @@ namespace RDBParser
             var numEntriesBuff = await rd.ReadBytesAsync(2);
             var numEntries = BinaryPrimitives.ReadUInt32LittleEndian(numEntriesBuff.FirstSpan);
 
-            if (numEntries % 2 != 0) throw new RDBParserException($"Expected even number of elements, but found {numEntries} for key {key}");
+            if (numEntries % 2 != 0) throw new RDBParserException($"Expected even number of elements, but found {numEntries} for key {_key}");
 
             numEntries = (ushort)(numEntries / 2);
 
-            _callback.StartSortedSet(key, numEntries, expiry, info);
+            _callback.StartSortedSet(_key, numEntries, _expiry, info);
 
             for (int i = 0; i < numEntries; i++)
             {
@@ -162,13 +162,13 @@ namespace RDBParser
 
                 var str = EncodingExtensions.GetString(Encoding.UTF8, score);
                 double.TryParse(str, out var realScore);
-                _callback.ZAdd(key, realScore, member);
+                _callback.ZAdd(_key, realScore, member);
             }
 
             var zlistEnd = await rd.ReadSingleByteAsync();
-            if (zlistEnd != 255) throw new RDBParserException($"Invalid zip list end - {zlistEnd} for key {key}");
+            if (zlistEnd != 255) throw new RDBParserException($"Invalid zip list end - {zlistEnd} for key {_key}");
 
-            _callback.EndSortedSet(key);
+            _callback.EndSortedSet(_key);
         }
     }
 }

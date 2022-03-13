@@ -104,7 +104,7 @@ namespace RDBParser
                         if (opType == Constant.OpCode.MODULE_AUX)
                         {
                             // ReadModule(br, null, opType, expiry, null);
-                            await reader.SkipModuleAsync();
+                            await SkipModuleAsync(reader);
                         }
 
                         if (opType == Constant.OpCode.EOF)
@@ -118,7 +118,7 @@ namespace RDBParser
                         }
 
                         _key = await reader.ReadStringAsync();
-                        await ReadObjectAsync(reader, _key, opType, _expiry, null);
+                        await ReadObjectAsync(reader, opType);
 
                         _expiry = 0;
                     }
