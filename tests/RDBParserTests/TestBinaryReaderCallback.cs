@@ -36,6 +36,8 @@ namespace RDBParserTests
         public Dictionary<int, Dictionary<byte[], Dictionary<byte[], byte[]>>> GetHashs()
             => _hashs;
 
+        public Dictionary<int, Dictionary<byte[], List<byte[]>>> GetSets()
+           => _sets;
 
         public void AuxField(byte[] key, byte[] value)
         {
@@ -68,8 +70,12 @@ namespace RDBParserTests
             if (!_sets[_database].ContainsKey(key))
                 throw new System.Exception($"start_set not called for key = {key}");
 
-            if (_sets[_database][key].Count != _lengths[_database][key])
-                throw new System.Exception($"Lengths mismatch on list {key}, expected length = {_lengths[_database][key]}, actual = {_sets[_database][key].Count}");
+            if (!_lengths.ContainsKey(_database))
+            {
+                _lengths[_database] = new Dictionary<byte[], long>();
+            }
+
+            _lengths[_database][key] = _sets[_database][key].Count;
         }
 
         public void EndModule(byte[] key, long bufferSize, byte[] buffer)

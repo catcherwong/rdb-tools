@@ -76,7 +76,7 @@ namespace RDBParserTests
             throw new System.NotImplementedException();
         }
 
-        public void EndStream(ReadOnlySequence<byte> key, ulong items, string last_entry_id, StreamGroup cgroups)
+        public void EndStream(ReadOnlySequence<byte> key, ulong items, string last_entry_id, List<StreamGroup> cgroups)
         {
             throw new System.NotImplementedException();
         }

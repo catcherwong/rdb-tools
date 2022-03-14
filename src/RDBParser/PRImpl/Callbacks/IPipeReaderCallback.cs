@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using System.Collections.Generic;
 
 namespace RDBParser
 {
@@ -194,7 +195,7 @@ namespace RDBParser
         /// <param name="items">total number of items in the stream</param>
         /// <param name="last_entry_id">in "<millisecondsTime>-<sequenceNumber>" format</param>
         /// <param name="cgroups">an array of consumer group metadata</param>
-        void EndStream(ReadOnlySequence<byte> key, ulong items, string last_entry_id, StreamGroup cgroups);
+        void EndStream(ReadOnlySequence<byte> key, ulong items, string last_entry_id, List<StreamGroup> cgroups);
 
         /// <summary>
         /// Called when the current database ends

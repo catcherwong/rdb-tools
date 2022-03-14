@@ -19,7 +19,7 @@ namespace RDBParser
             info.Freq = _freq;
             info.Encoding = "intset";
             info.SizeOfValue = raw.Length;
-            _callback.StartList(_key, _expiry, info);
+            _callback.StartSet(_key, numEntries, _expiry, info);
 
             for (int i = 0; i < numEntries; i++)
             {
