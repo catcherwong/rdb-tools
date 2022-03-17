@@ -20,7 +20,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("empty_database.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -35,7 +35,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("multiple_databases.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -56,7 +56,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("keys_with_expiry.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -79,7 +79,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("integer_keys.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -99,7 +99,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("easily_compressible_string_key.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -114,7 +114,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("zipmap_that_compresses_easily.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -130,7 +130,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("zipmap_that_doesnt_compress.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -145,7 +145,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("zipmap_with_big_values.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -163,7 +163,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("hash_as_ziplist.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -179,7 +179,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("dictionary.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -196,7 +196,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("ziplist_that_compresses_easily.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -220,7 +220,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("ziplist_that_doesnt_compress.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -237,7 +237,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("ziplist_with_integers.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -262,7 +262,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("linkedlist.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -279,7 +279,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("intset_16.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -296,7 +296,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("intset_32.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -313,7 +313,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("intset_64.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -330,7 +330,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("regular_set.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -350,7 +350,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("sorted_set_as_ziplist.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -368,7 +368,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("rdb_version_5_with_checksum.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -387,7 +387,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("rdb_version_8_with_64b_length_and_scores.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -405,7 +405,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("multiple_databases.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -424,7 +424,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("redis_40_with_module.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 
@@ -438,7 +438,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("redis_50_with_streams.rdb");
 
-            var callback = new TestBinaryReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
             parser.Parse(path);
 

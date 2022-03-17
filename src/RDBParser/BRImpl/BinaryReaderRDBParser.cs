@@ -5,13 +5,13 @@ namespace RDBParser
 {
     public partial class BinaryReaderRDBParser : IRDBParser
     {
-        private readonly IBinaryReaderCallback _callback;
+        private readonly IReaderCallback _callback;
         private byte[] _key = null;
         private long _expiry = 0;
         private ulong _idle = 0;
         private int _freq = 0;
 
-        public BinaryReaderRDBParser(IBinaryReaderCallback callback)
+        public BinaryReaderRDBParser(IReaderCallback callback)
         {
             this._callback = callback;
         }

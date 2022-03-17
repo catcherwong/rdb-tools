@@ -1,4 +1,5 @@
-﻿using System.Buffers.Binary;
+﻿using System.Buffers;
+using System.Buffers.Binary;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
 
@@ -32,7 +33,7 @@ namespace RDBParser
 
                 if (free > 0) await rd.ReadBytesAsync((int)free);
 
-                _callback.HSet(_key, filed, value);
+                _callback.HSet(_key, filed.ToArray(), value.ToArray());
             }
 
             _callback.EndHash(_key);

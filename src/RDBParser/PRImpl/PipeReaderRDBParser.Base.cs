@@ -18,7 +18,7 @@ namespace RDBParser
             {
                 var value = await reader.ReadStringAsync();
                 info.Encoding = "string";
-                _callback.Set(_key, value, _expiry, info);
+                _callback.Set(_key, value.ToArray(), _expiry, info);
             }
             else if (encType == Constant.DataType.LIST)
             {
@@ -28,9 +28,15 @@ namespace RDBParser
                 while (length > 0)
                 {
                     length--;
+                    System.Console.WriteLine("============" + length);
+
+                    if (length < 922)
+                    { 
+                    
+                    }
 
                     var val = await reader.ReadStringAsync();
-                    _callback.RPush(_key, val);
+                    _callback.RPush(_key, val.ToArray());
                 }
                 _callback.EndList(_key, info);
             }
@@ -43,7 +49,7 @@ namespace RDBParser
                 {
                     cardinality--;
                     var member = await reader.ReadStringAsync();
-                    _callback.SAdd(_key, member);
+                    _callback.SAdd(_key, member.ToArray());
                 }
                 _callback.EndSet(_key);
             }
@@ -61,7 +67,7 @@ namespace RDBParser
                        ? await reader.ReadDoubleAsync()
                        : await reader.ReadFloatAsync();
 
-                    _callback.ZAdd(_key, score, member);
+                    _callback.ZAdd(_key, score, member.ToArray());
                 }
                 _callback.EndSortedSet(_key);
             }
@@ -78,7 +84,7 @@ namespace RDBParser
                     var field = await reader.ReadStringAsync();
                     var value = await reader.ReadStringAsync();
 
-                    _callback.HSet(_key, field, value);
+                    _callback.HSet(_key, field.ToArray(), value.ToArray());
                 }
                 _callback.EndHash(_key);
             }
@@ -149,7 +155,8 @@ namespace RDBParser
 
                 for (int i = 0; i < numEntries; i++)
                 {
-                    _callback.RPush(_key, await ReadZipListEntryAsync(rd));
+                    var entry = await ReadZipListEntryAsync(rd);
+                    _callback.RPush(_key, entry.ToArray());
                 }
 
                 var zlistEnd = await rd.ReadSingleByteAsync();

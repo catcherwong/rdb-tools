@@ -19,7 +19,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("empty_database.rdb");
 
-            var callback = new TestPipeReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new PipeReaderRDBParser(callback);
             await parser.ParseAsync(path);
 
@@ -34,7 +34,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("multiple_databases.rdb");
 
-            var callback = new TestPipeReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new PipeReaderRDBParser(callback);
             await parser.ParseAsync(path);
 
@@ -55,7 +55,7 @@ namespace RDBParserTests
         {
             var path = TestHelper.GetRDBPath("keys_with_expiry.rdb");
 
-            var callback = new TestPipeReaderCallback(_output);
+            var callback = new TestReaderCallback(_output);
             var parser = new PipeReaderRDBParser(callback);
             await parser.ParseAsync(path);
 

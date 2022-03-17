@@ -8,13 +8,13 @@ namespace RDBParser
 {
     public partial class PipeReaderRDBParser : IRDBParser
     {
-        private readonly IPipeReaderCallback _callback;
-        private ReadOnlySequence<byte> _key;
+        private readonly IReaderCallback _callback;
+        private byte[] _key;
         private long _expiry = 0;
         private ulong _idle = 0;
         private int _freq = 0;
 
-        public PipeReaderRDBParser(IPipeReaderCallback callback)
+        public PipeReaderRDBParser(IReaderCallback callback)
         {
             this._callback = callback;
         }
@@ -88,7 +88,7 @@ namespace RDBParser
                         {
                             var auxKey = await reader.ReadStringAsync();
                             var auxVal = await reader.ReadStringAsync();
-                            _callback.AuxField(auxKey, auxVal);
+                            _callback.AuxField(auxKey.ToArray(), auxVal.ToArray());
                             continue;
                         }
 
@@ -117,7 +117,8 @@ namespace RDBParser
                             break;
                         }
 
-                        _key = await reader.ReadStringAsync();
+                        var key = await reader.ReadStringAsync();
+                        _key = key.ToArray();
                         await ReadObjectAsync(reader, opType);
 
                         _expiry = 0;

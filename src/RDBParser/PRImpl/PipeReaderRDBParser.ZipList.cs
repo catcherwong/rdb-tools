@@ -30,7 +30,7 @@ namespace RDBParser
             for (int i = 0; i < numEntries; i++)
             {
                 var val = await ReadZipListEntryAsync(rd);
-                _callback.RPush(_key, val);
+                _callback.RPush(_key, val.ToArray());
             }
 
             var zlistEnd = await rd.ReadSingleByteAsync();
@@ -126,7 +126,7 @@ namespace RDBParser
             {
                 var field = await ReadZipListEntryAsync(rd);
                 var value = await ReadZipListEntryAsync(rd);
-                _callback.HSet(_key, field, value);
+                _callback.HSet(_key, field.ToArray(), value.ToArray());
             }
 
             var zlistEnd = await rd.ReadSingleByteAsync();
@@ -162,7 +162,7 @@ namespace RDBParser
 
                 var str = EncodingExtensions.GetString(Encoding.UTF8, score);
                 double.TryParse(str, out var realScore);
-                _callback.ZAdd(_key, realScore, member);
+                _callback.ZAdd(_key, realScore, member.ToArray());
             }
 
             var zlistEnd = await rd.ReadSingleByteAsync();

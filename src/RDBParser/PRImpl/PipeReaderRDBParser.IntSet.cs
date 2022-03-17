@@ -1,4 +1,5 @@
-﻿using System.IO.Pipelines;
+﻿using System.Buffers;
+using System.IO.Pipelines;
 using System.Threading.Tasks;
 
 namespace RDBParser
@@ -26,7 +27,7 @@ namespace RDBParser
                     throw new RDBParserException($"Invalid encoding {encoding} for key {_key}");
 
                 var entry = await rd.ReadBytesAsync((int)encoding);
-                _callback.SAdd(_key, entry);
+                _callback.SAdd(_key, entry.ToArray());
             }
 
             _callback.EndSet(_key);

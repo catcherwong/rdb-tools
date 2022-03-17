@@ -66,7 +66,7 @@ namespace RDBParser
             {
                 var entityId = await reader.ReadStringAsync();
                 var data = await reader.ReadStringAsync();
-                _callback.StreamListPack(_key, entityId, data);
+                _callback.StreamListPack(_key, entityId.ToArray(), data.ToArray());
 
                 listPacks--;
             }
