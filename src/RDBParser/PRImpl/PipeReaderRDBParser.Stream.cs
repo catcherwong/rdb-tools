@@ -85,48 +85,47 @@ namespace RDBParser
                 var r = await reader.ReadLengthAsync();
                 var lastCgEntryId = $"{l}-{r}";
                 var pending = await reader.ReadLengthAsync();
-                var group_pending_entries = new List<StreamPendingEntry>();
+                var groupPendingEntries = new List<StreamPendingEntry>();
                 while (pending > 0)
                 {
                     var eId = await reader.ReadBytesAsync(16);
                     var timeBuff = await reader.ReadBytesAsync(8);
-                    var delivery_time = (ulong)timeBuff.ReadInt64LittleEndianItem();
-                    var delivery_count = await reader.ReadLengthAsync();
-                    group_pending_entries.Add(new StreamPendingEntry
+                    var deliveryTime = timeBuff.ReadUInt64LittleEndianItem();
+                    var deliveryCount = await reader.ReadLengthAsync();
+                    groupPendingEntries.Add(new StreamPendingEntry
                     {
                         Id = eId.ToArray(),
-                        DeliveryTime = delivery_time,
-                        DeliveryCount = delivery_count,
+                        DeliveryTime = deliveryTime,
+                        DeliveryCount = deliveryCount,
                     });
 
                     pending--;
                 }
                 var consumers = await reader.ReadLengthAsync();
-                var consumers_data = new List<StreamConsumerData>();
+                var consumersData = new List<StreamConsumerData>();
                 while (consumers > 0)
                 {
                     var cname = await reader.ReadStringAsync();
                     var timeBuff = await reader.ReadBytesAsync(8);
-                    var seenTime = (ulong)timeBuff.ReadInt64LittleEndianItem();
+                    var seenTime = timeBuff.ReadUInt64LittleEndianItem();
                     pending = await reader.ReadLengthAsync();
-                    var consumer_pending_entries = new List<StreamConsumerPendingEntry>();
+                    var consumerPendingEntries = new List<StreamConsumerPendingEntry>();
                     while (pending > 0)
                     {
                         var eId = await reader.ReadBytesAsync(16);
-                        consumer_pending_entries.Add(new StreamConsumerPendingEntry
+                        consumerPendingEntries.Add(new StreamConsumerPendingEntry
                         {
                             Id = eId.ToArray()
                         });
 
                         pending--;
-
                     }
 
-                    consumers_data.Add(new StreamConsumerData
+                    consumersData.Add(new StreamConsumerData
                     {
                         Name = cname.ToArray(),
                         SeenTime = seenTime,
-                        Pending = consumer_pending_entries
+                        Pending = consumerPendingEntries
                     });
 
                     consumers--;
@@ -136,8 +135,8 @@ namespace RDBParser
                 {
                     Name = cgName.ToArray(),
                     LastEntryId = lastCgEntryId,
-                    Pending = group_pending_entries,
-                    Consumers = consumers_data,
+                    Pending = groupPendingEntries,
+                    Consumers = consumersData,
                 });
 
                 cgroups--;

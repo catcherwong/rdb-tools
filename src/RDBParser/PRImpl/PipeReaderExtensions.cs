@@ -71,16 +71,15 @@ namespace RDBParser
             var outStream = new List<byte>(ulen);
             var outIndex = 0;
 
-            Span<byte> span = null;
-            compressed.CopyTo(span);
+            var tmp = compressed.ToArray();
 
-            var inLen = span.Length;
+            var inLen = tmp.Length;
             var inIndex = 0;
 
             while (inIndex < inLen)
             {
 
-                var ctrl = span[inIndex];
+                var ctrl = tmp[inIndex];
 
                 inIndex++;
 
@@ -88,7 +87,7 @@ namespace RDBParser
                 {
                     for (int i = 0; i < ctrl + 1; i++)
                     {
-                        outStream.Add(span[inIndex]);
+                        outStream.Add(tmp[inIndex]);
                         inIndex++;
                         outIndex++;
                     }
@@ -98,11 +97,11 @@ namespace RDBParser
                     var length = ctrl >> 5;
                     if (length == 7)
                     {
-                        length += span[inIndex];
+                        length += tmp[inIndex];
                         inIndex++;
                     }
 
-                    var @ref = outIndex - ((ctrl & 0x1f) << 8) - span[inIndex] - 1;
+                    var @ref = outIndex - ((ctrl & 0x1f) << 8) - tmp[inIndex] - 1;
                     inIndex = inIndex + 1;
 
                     for (int i = 0; i < length + 2; i++)
@@ -195,7 +194,7 @@ namespace RDBParser
             }
 
             if (bytesToSkip > 0) await reader.ReadBytesAsync((int)bytesToSkip);
-        }
+        } 
         
         public static async Task<double> ReadDoubleAsync(this PipeReader reader)
         {
@@ -232,10 +231,23 @@ namespace RDBParser
             return item;
         }
 
+        public static uint ReadUInt32BigEndianItem(this ReadOnlySequence<byte> buff)
+        {
+            var val = ReadInt32BigEndianItem(buff);
+            return (uint)val;
+        }
+
         public static long ReadInt64BigEndianItem(this ReadOnlySequence<byte> buff)
         {
             SequenceReader<byte> reader = new(buff);
             reader.TryReadBigEndian(out long item);
+            return item;
+        }
+
+        public static short ReadInt16LittleEndianItem(this ReadOnlySequence<byte> buff)
+        {
+            SequenceReader<byte> reader = new(buff);
+            reader.TryReadLittleEndian(out short item);
             return item;
         }
 
@@ -251,6 +263,30 @@ namespace RDBParser
             SequenceReader<byte> reader = new(buff);
             reader.TryReadLittleEndian(out long item);
             return item;
+        }
+
+        public static ushort ReadUInt16LittleEndianItem(this ReadOnlySequence<byte> buff)
+        {
+            // https://github.com/dotnet/runtime/issues/30580
+            // cast it to ushort
+            var val = ReadInt16LittleEndianItem(buff);
+            return (ushort)val;
+        }
+
+        public static uint ReadUInt32LittleEndianItem(this ReadOnlySequence<byte> buff)
+        {
+            // https://github.com/dotnet/runtime/issues/30580
+            // cast it to uint
+            var val = ReadInt32LittleEndianItem(buff);
+            return (uint)val;
+        }
+
+        public static ulong ReadUInt64LittleEndianItem(this ReadOnlySequence<byte> buff)
+        {
+            // https://github.com/dotnet/runtime/issues/30580
+            // cast it to ulong
+            var val = ReadInt64LittleEndianItem(buff);
+            return (ulong)val;
         }
     }
 }

@@ -97,7 +97,7 @@ namespace RDBParser
             using MemoryStream stream = new MemoryStream(raw);
             using var rd = new BinaryReader(stream);
             var zlbytes = rd.ReadUInt32();
-            var tail_offset = rd.ReadUInt32();
+            var tailOffset = rd.ReadUInt32();
             var numEntries = rd.ReadUInt16();
 
             if (numEntries % 2 != 0) throw new RDBParserException($"Expected even number of elements, but found {numEntries} for key {_key}");
@@ -130,7 +130,7 @@ namespace RDBParser
             using MemoryStream stream = new MemoryStream(raw);
             using var rd = new BinaryReader(stream);
             var zlbytes = rd.ReadUInt32();
-            var tail_offset = rd.ReadUInt32();
+            var tailOffset = rd.ReadUInt32();
             var numEntries = rd.ReadUInt16();
 
             if (numEntries % 2 != 0) throw new RDBParserException($"Expected even number of elements, but found {numEntries} for key {_key}");
@@ -149,8 +149,22 @@ namespace RDBParser
                 var member = ReadZipListEntry(rd);
                 var score = ReadZipListEntry(rd);
 
+                double realScore = 0d;
                 var str = System.Text.Encoding.UTF8.GetString(score);
-                double.TryParse(str, out var realScore);
+                if (!double.TryParse(str, out realScore))
+                {
+                    if (score.Length == 2)
+                    {
+                        // 16 bit handle here
+                        realScore = System.BitConverter.ToInt16(score, 0);
+                    }
+                    else if (score.Length == 1)
+                    {
+                        // 8 bit handle here
+                        _ = double.TryParse(System.BitConverter.ToString(score), out realScore);
+                    }
+                }
+
                 _callback.ZAdd(_key, realScore, member);
             }
 

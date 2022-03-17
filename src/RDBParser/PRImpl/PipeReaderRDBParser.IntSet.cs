@@ -1,5 +1,4 @@
-﻿using System.Buffers.Binary;
-using System.IO.Pipelines;
+﻿using System.IO.Pipelines;
 using System.Threading.Tasks;
 
 namespace RDBParser
@@ -12,10 +11,10 @@ namespace RDBParser
             var rd = PipeReader.Create(raw);
 
             var encodingBuff = await rd.ReadBytesAsync(4);
-            var encoding = BinaryPrimitives.ReadUInt32LittleEndian(encodingBuff.FirstSpan);
+            var encoding = encodingBuff.ReadUInt32LittleEndianItem();
 
             var numEntriesBuff = await rd.ReadBytesAsync(2);
-            var numEntries = BinaryPrimitives.ReadUInt32LittleEndian(numEntriesBuff.FirstSpan);
+            var numEntries = numEntriesBuff.ReadUInt16LittleEndianItem();
 
             info.Encoding = "intset";
             info.SizeOfValue = (int)raw.Length;

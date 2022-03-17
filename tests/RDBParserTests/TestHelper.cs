@@ -27,6 +27,11 @@ namespace RDBParserTests
             return bytes.ToArray();
         }
 
+        public static bool FloatEqueal(float f1, float f2)
+        {
+            return System.MathF.Abs(f1 - f2) < 0.00001;
+        }
+
         public static byte[] GetPosNumberBytes(long num)
         {
            

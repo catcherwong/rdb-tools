@@ -84,28 +84,14 @@ namespace RDBParserTests
             parser.Parse(path);
 
             var databases = callback.GetDatabases();
-            
-            Assert.Equal(Encoding.UTF8.GetBytes("Positive 8 bit integer"), databases[0][new byte[]{125}]);
+
+            Assert.Equal(Encoding.UTF8.GetBytes("Positive 8 bit integer"), databases[0][new byte[] { 125 }]);
             Assert.Equal(Encoding.UTF8.GetBytes("Positive 16 bit integer"), databases[0][System.BitConverter.GetBytes(0xABAB)]);
             Assert.Equal(Encoding.UTF8.GetBytes("Positive 32 bit integer"), databases[0][System.BitConverter.GetBytes(0x0AEDD325)]);
 
             Assert.Equal(Encoding.UTF8.GetBytes("Negative 8 bit integer"), databases[0][TestHelper.GetNegativeNumberBytes(-123)]);
             Assert.Equal(Encoding.UTF8.GetBytes("Negative 16 bit integer"), databases[0][TestHelper.GetNegativeNumberBytes(-0x7325)]);
             Assert.Equal(Encoding.UTF8.GetBytes("Negative 32 bit integer"), databases[0][TestHelper.GetNegativeNumberBytes(-0x0AEDD325)]);
-        }
-
-        [Fact]
-        public void TestRdbVersion8WithModule()
-        {
-            var path = TestHelper.GetRDBPath("redis_40_with_module.rdb");
-
-            var callback = new TestBinaryReaderCallback(_output);
-            var parser = new BinaryReaderRDBParser(callback);
-            parser.Parse(path);
-
-            var databases = callback.GetDatabases();
-            var res = databases[0][Encoding.UTF8.GetBytes("foo")];
-            Assert.Equal(Encoding.UTF8.GetBytes("ReJSON-RL"), res);
         }
 
         [Fact]
@@ -133,7 +119,7 @@ namespace RDBParserTests
             parser.Parse(path);
 
             var hashs = callback.GetHashs();
-           
+
             Assert.Equal(Encoding.UTF8.GetBytes("aa"), hashs[0][Encoding.UTF8.GetBytes("zipmap_compresses_easily")][Encoding.UTF8.GetBytes("a")]);
             Assert.Equal(Encoding.UTF8.GetBytes("aaaa"), hashs[0][Encoding.UTF8.GetBytes("zipmap_compresses_easily")][Encoding.UTF8.GetBytes("aa")]);
             Assert.Equal(Encoding.UTF8.GetBytes("aaaaaaaaaaaaaa"), hashs[0][Encoding.UTF8.GetBytes("zipmap_compresses_easily")][Encoding.UTF8.GetBytes("aaaaa")]);
@@ -151,7 +137,7 @@ namespace RDBParserTests
             var hashs = callback.GetHashs();
 
             Assert.Equal(Encoding.UTF8.GetBytes("2"), hashs[0][Encoding.UTF8.GetBytes("zimap_doesnt_compress")][Encoding.UTF8.GetBytes("MKD1G6")]);
-            Assert.Equal(Encoding.UTF8.GetBytes("F7TI"), hashs[0][Encoding.UTF8.GetBytes("zimap_doesnt_compress")][Encoding.UTF8.GetBytes("YNNXK")]);            
+            Assert.Equal(Encoding.UTF8.GetBytes("F7TI"), hashs[0][Encoding.UTF8.GetBytes("zimap_doesnt_compress")][Encoding.UTF8.GetBytes("YNNXK")]);
         }
 
         [Fact]
@@ -220,7 +206,7 @@ namespace RDBParserTests
             Assert.Equal(6, lengths[0][Encoding.UTF8.GetBytes("ziplist_compresses_easily")]);
 
             int idx = 0;
-            foreach (var item in new List<int> { 6, 12, 18 , 24,30,36 })
+            foreach (var item in new List<int> { 6, 12, 18, 24, 30, 36 })
             {
                 var val = string.Join("", Enumerable.Range(1, item).Select(x => "a"));
                 var real = sets[0][Encoding.UTF8.GetBytes("ziplist_compresses_easily")];
@@ -243,7 +229,7 @@ namespace RDBParserTests
 
             Assert.Equal(2, lengths[0][Encoding.UTF8.GetBytes("ziplist_doesnt_compress")]);
             Assert.Contains(Encoding.UTF8.GetBytes("aj2410"), sets[0][Encoding.UTF8.GetBytes("ziplist_doesnt_compress")]);
-            Assert.Contains(Encoding.UTF8.GetBytes("cc953a17a8e096e76a44169ad3f9ac87c5f8248a403274416179aa9fbd852344"), sets[0][Encoding.UTF8.GetBytes("ziplist_doesnt_compress")]);            
+            Assert.Contains(Encoding.UTF8.GetBytes("cc953a17a8e096e76a44169ad3f9ac87c5f8248a403274416179aa9fbd852344"), sets[0][Encoding.UTF8.GetBytes("ziplist_doesnt_compress")]);
         }
 
         [Fact]
@@ -258,7 +244,7 @@ namespace RDBParserTests
             var sets = callback.GetSets();
             var lengths = callback.GetLengths();
 
-            var list = new List<long> 
+            var list = new List<long>
             {
                 0,1,2,3,4,5,6,7,8,9,10,11,12,-2,13,25,-61,63,16380,-1600,65535,-65523,4194304,9223372036854775807
             };
@@ -282,7 +268,7 @@ namespace RDBParserTests
 
             var sets = callback.GetSets();
             var lengths = callback.GetLengths();
-          
+
             Assert.Equal(1000, lengths[0][Encoding.UTF8.GetBytes("force_linkedlist")]);
             Assert.Contains(Encoding.UTF8.GetBytes("JYY4GIFI0ETHKP4VAJF5333082J4R1UPNPLE329YT0EYPGHSJQ"), sets[0][Encoding.UTF8.GetBytes("force_linkedlist")]);
             Assert.Contains(Encoding.UTF8.GetBytes("TKBXHJOX9Q99ICF4V78XTCA2Y1UYW6ERL35JCIL1O0KSGXS58S"), sets[0][Encoding.UTF8.GetBytes("force_linkedlist")]);
@@ -301,7 +287,7 @@ namespace RDBParserTests
             var lengths = callback.GetLengths();
 
             Assert.Equal(3, lengths[0][Encoding.UTF8.GetBytes("intset_16")]);
-            
+
             // TODO
         }
 
@@ -357,6 +343,110 @@ namespace RDBParserTests
             {
                 Assert.Contains(Encoding.UTF8.GetBytes(item), sets[0][Encoding.UTF8.GetBytes("regular_set")]);
             }
+        }
+
+        [Fact]
+        public void TestSortedSetAsZipList()
+        {
+            var path = TestHelper.GetRDBPath("sorted_set_as_ziplist.rdb");
+
+            var callback = new TestBinaryReaderCallback(_output);
+            var parser = new BinaryReaderRDBParser(callback);
+            parser.Parse(path);
+
+            var sortedSets = callback.GetSortedSets();
+            var lengths = callback.GetLengths();
+
+            Assert.Equal(3, lengths[0][Encoding.UTF8.GetBytes("sorted_set_as_ziplist")]);
+            Assert.True(TestHelper.FloatEqueal((float)sortedSets[0][Encoding.UTF8.GetBytes("sorted_set_as_ziplist")][Encoding.UTF8.GetBytes("8b6ba6718a786daefa69438148361901")], 1));
+            Assert.True(TestHelper.FloatEqueal((float)sortedSets[0][Encoding.UTF8.GetBytes("sorted_set_as_ziplist")][Encoding.UTF8.GetBytes("cb7a24bb7528f934b841b34c3a73e0c7")], 2.37f));
+            Assert.True(TestHelper.FloatEqueal((float)sortedSets[0][Encoding.UTF8.GetBytes("sorted_set_as_ziplist")][Encoding.UTF8.GetBytes("523af537946b79c4f8369ed39ba78605")], 3.423f));
+        }
+
+        [Fact]
+        public void TestRdbVersion5WithChecksum()
+        {
+            var path = TestHelper.GetRDBPath("rdb_version_5_with_checksum.rdb");
+
+            var callback = new TestBinaryReaderCallback(_output);
+            var parser = new BinaryReaderRDBParser(callback);
+            parser.Parse(path);
+
+            var databases = callback.GetDatabases();
+           
+            Assert.DoesNotContain(1, databases.Keys);
+            Assert.Equal(Encoding.UTF8.GetBytes("efgh"), databases[0][Encoding.UTF8.GetBytes("abcd")]);
+            Assert.Equal(Encoding.UTF8.GetBytes("bar"), databases[0][Encoding.UTF8.GetBytes("foo")]);
+            Assert.Equal(Encoding.UTF8.GetBytes("baz"), databases[0][Encoding.UTF8.GetBytes("bar")]);
+            Assert.Equal(Encoding.UTF8.GetBytes("abcdef"), databases[0][Encoding.UTF8.GetBytes("abcdef")]);
+            Assert.Equal(Encoding.UTF8.GetBytes("thisisalongerstring.idontknowwhatitmeans"), databases[0][Encoding.UTF8.GetBytes("longerstring")]);
+        }
+
+        [Fact]
+        public void TestRdbVersion8With64bLengthAndScores()
+        {
+            var path = TestHelper.GetRDBPath("rdb_version_8_with_64b_length_and_scores.rdb");
+
+            var callback = new TestBinaryReaderCallback(_output);
+            var parser = new BinaryReaderRDBParser(callback);
+            parser.Parse(path);
+
+            var databases = callback.GetDatabases();
+            var sortedSets = callback.GetSortedSets();
+            Assert.Equal(Encoding.UTF8.GetBytes("bar"), databases[0][Encoding.UTF8.GetBytes("foo")]);
+
+            var zset = sortedSets[0][Encoding.UTF8.GetBytes("bigset")];
+            Assert.Equal(1000, zset.Count);
+            Assert.True(TestHelper.FloatEqueal((float)zset[Encoding.UTF8.GetBytes("finalfield")], 2.718f));
+        }
+
+        [Fact]
+        public void TestMultipleDatabasesStream()
+        {
+            var path = TestHelper.GetRDBPath("multiple_databases.rdb");
+
+            var callback = new TestBinaryReaderCallback(_output);
+            var parser = new BinaryReaderRDBParser(callback);
+            parser.Parse(path);
+
+            var databases = callback.GetDatabases();
+
+            Assert.Equal(2, databases.Count);
+            Assert.DoesNotContain(1, databases.Keys);
+
+            Assert.Equal(Encoding.UTF8.GetBytes("zero"), databases[0][Encoding.UTF8.GetBytes("key_in_zeroth_database")]);
+            Assert.Equal(Encoding.UTF8.GetBytes("second"), databases[2][Encoding.UTF8.GetBytes("key_in_second_database")]);
+        }
+
+
+        [Fact]
+        public void TestRdbVersion8WithModule()
+        {
+            var path = TestHelper.GetRDBPath("redis_40_with_module.rdb");
+
+            var callback = new TestBinaryReaderCallback(_output);
+            var parser = new BinaryReaderRDBParser(callback);
+            parser.Parse(path);
+
+            var databases = callback.GetDatabases();
+            var res = databases[0][Encoding.UTF8.GetBytes("foo")];
+            Assert.Equal(Encoding.UTF8.GetBytes("ReJSON-RL"), res);
+        }
+
+        [Fact]
+        public void TestRdbVersion9WithStream()
+        {
+            var path = TestHelper.GetRDBPath("redis_50_with_streams.rdb");
+
+            var callback = new TestBinaryReaderCallback(_output);
+            var parser = new BinaryReaderRDBParser(callback);
+            parser.Parse(path);
+
+            var hashs = callback.GetHashs();
+            var lengths = callback.GetLengths();
+
+            Assert.Equal(4, lengths[0][Encoding.UTF8.GetBytes("mystream")]);
+            Assert.Single(hashs[0][Encoding.UTF8.GetBytes("mystream")]);
         }
     }
 }

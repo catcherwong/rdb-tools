@@ -45,8 +45,7 @@ namespace RDBParser
             else if (num == 254)
             { 
                 var buff = await reader.ReadBytesAsync(4);
-                var d = BinaryPrimitives.ReadUInt32LittleEndian(buff.FirstSpan);
-                return (int?)d;
+                return (int?)buff.ReadUInt32LittleEndianItem();
             }
 
             else return null;

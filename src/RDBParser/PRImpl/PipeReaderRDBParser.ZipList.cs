@@ -17,11 +17,11 @@ namespace RDBParser
             var zlBuff = await rd.ReadBytesAsync(4);
             var zlbytes = BinaryPrimitives.ReadUInt32LittleEndian(zlBuff.FirstSpan);
 
-            var tail_offsetBuff = await rd.ReadBytesAsync(4);
-            var tail_offset = BinaryPrimitives.ReadUInt32LittleEndian(tail_offsetBuff.FirstSpan);
+            var tailOffsetBuff = await rd.ReadBytesAsync(4);
+            var tailOffset = tailOffsetBuff.ReadUInt32LittleEndianItem();
 
             var numEntriesBuff = await rd.ReadBytesAsync(2);
-            var numEntries = BinaryPrimitives.ReadUInt32LittleEndian(numEntriesBuff.FirstSpan);
+            var numEntries = numEntriesBuff.ReadUInt16LittleEndianItem();
 
             info.Encoding = "ziplist";
             info.SizeOfValue = (int)ziplist.Length;
@@ -44,25 +44,25 @@ namespace RDBParser
             var length = 0;
             ReadOnlySequence<byte> value = default;
             var prevLength = await reader.ReadSingleByteAsync();
-            
+
             if (prevLength == 254) _ = await reader.ReadBytesAsync(4);
 
             var entryHeader = await reader.ReadSingleByteAsync();
 
-            if(entryHeader >> 6 == 0)
+            if (entryHeader >> 6 == 0)
             {
                 length = entryHeader & 0x3F;
                 value = await reader.ReadBytesAsync(length);
             }
-            else if(entryHeader >> 6 == 1)
+            else if (entryHeader >> 6 == 1)
             {
                 length = (entryHeader & 0x3F) << 8 | await reader.ReadSingleByteAsync();
                 value = await reader.ReadBytesAsync(length);
             }
-             else if(entryHeader >> 6 == 2)
+            else if (entryHeader >> 6 == 2)
             {
                 var d = await reader.ReadBytesAsync(4);
-                length = (int)BinaryPrimitives.ReadUInt32BigEndian(d.FirstSpan);
+                length = (int)d.ReadUInt32BigEndianItem();
                 value = await reader.ReadBytesAsync(length);
             }
             else if (entryHeader >> 4 == 12)
@@ -83,7 +83,7 @@ namespace RDBParser
                 bytes[1] = await reader.ReadSingleByteAsync();
                 bytes[2] = await reader.ReadSingleByteAsync();
                 bytes[3] = await reader.ReadSingleByteAsync();
-                
+
                 return new ReadOnlySequence<byte>(bytes);
             }
             else if (entryHeader == 254)
@@ -92,27 +92,27 @@ namespace RDBParser
             }
             else if (entryHeader >= 241 && entryHeader <= 253)
             {
-                var b = new byte[]{(byte)(entryHeader - 241)};
+                var b = new byte[] { (byte)(entryHeader - 241) };
                 value = new ReadOnlySequence<byte>(b);
             }
 
             return value;
         }
-    
+
         private async Task ReadHashFromZiplistAsync(PipeReader reader, Info info)
         {
             var raw = await reader.ReadStringAsync();
-            
+
             var rd = PipeReader.Create(raw);
 
             var zlBuff = await rd.ReadBytesAsync(4);
-            var zlbytes = BinaryPrimitives.ReadUInt32LittleEndian(zlBuff.FirstSpan);
+            var zlbytes = zlBuff.ReadUInt32LittleEndianItem();
 
-            var tail_offsetBuff = await rd.ReadBytesAsync(4);
-            var tail_offset = BinaryPrimitives.ReadUInt32LittleEndian(tail_offsetBuff.FirstSpan);
+            var tailOffsetBuff = await rd.ReadBytesAsync(4);
+            var tailOffset = tailOffsetBuff.ReadUInt32LittleEndianItem();
 
             var numEntriesBuff = await rd.ReadBytesAsync(2);
-            var numEntries = BinaryPrimitives.ReadUInt32LittleEndian(numEntriesBuff.FirstSpan);
+            var numEntries = numEntriesBuff.ReadUInt16LittleEndianItem();
 
             if (numEntries % 2 != 0) throw new RDBParserException($"Expected even number of elements, but found {numEntries} for key {_key}");
 
@@ -141,13 +141,13 @@ namespace RDBParser
             var rd = PipeReader.Create(raw);
 
             var zlBuff = await rd.ReadBytesAsync(4);
-            var zlbytes = BinaryPrimitives.ReadUInt32LittleEndian(zlBuff.FirstSpan);
+            var zlbytes = zlBuff.ReadUInt32LittleEndianItem();
 
-            var tail_offsetBuff = await rd.ReadBytesAsync(4);
-            var tail_offset = BinaryPrimitives.ReadUInt32LittleEndian(tail_offsetBuff.FirstSpan);
+            var tailOffsetBuff = await rd.ReadBytesAsync(4);
+            var tailOffset = tailOffsetBuff.ReadUInt32LittleEndianItem();
 
             var numEntriesBuff = await rd.ReadBytesAsync(2);
-            var numEntries = BinaryPrimitives.ReadUInt32LittleEndian(numEntriesBuff.FirstSpan);
+            var numEntries = numEntriesBuff.ReadUInt16LittleEndianItem();
 
             if (numEntries % 2 != 0) throw new RDBParserException($"Expected even number of elements, but found {numEntries} for key {_key}");
 

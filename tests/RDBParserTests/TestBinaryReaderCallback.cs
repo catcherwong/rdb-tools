@@ -15,6 +15,7 @@ namespace RDBParserTests
         private Dictionary<int, Dictionary<byte[], long>> _lengths = new Dictionary<int, Dictionary<byte[], long>>();
         private Dictionary<int, Dictionary<byte[], Dictionary<byte[], byte[]>>> _hashs = new Dictionary<int, Dictionary<byte[], Dictionary<byte[], byte[]>>>();
         private Dictionary<int, Dictionary<byte[], List<byte[]>>> _sets = new Dictionary<int, Dictionary<byte[], List<byte[]>>>();
+        private Dictionary<int, Dictionary<byte[], Dictionary<byte[], double>>> _sortedSets = new Dictionary<int, Dictionary<byte[], Dictionary<byte[], double>>>();
 
         public TestBinaryReaderCallback(Xunit.Abstractions.ITestOutputHelper output)
         {
@@ -39,6 +40,9 @@ namespace RDBParserTests
         public Dictionary<int, Dictionary<byte[], List<byte[]>>> GetSets()
            => _sets;
 
+        public Dictionary<int, Dictionary<byte[], Dictionary<byte[], double>>> GetSortedSets()
+           => _sortedSets;
+        
         public void AuxField(byte[] key, byte[] value)
         {
             System.Diagnostics.Trace.WriteLine(System.Text.Encoding.UTF8.GetString(key));
@@ -102,12 +106,24 @@ namespace RDBParserTests
 
         public void EndSortedSet(byte[] key)
         {
-            throw new System.NotImplementedException();
+            if (!_sortedSets[_database].ContainsKey(key))
+                throw new System.Exception($"start_set not called for key = {key}");
+
+            if (_sortedSets[_database][key].Count != _lengths[_database][key])
+                throw new System.Exception($"Lengths mismatch on hash {key}, expected length = {_lengths[_database][key]}, actual = {_sortedSets[_database][key].Count}");
         }
 
         public void EndStream(byte[] key, ulong items, string last_entry_id, List<StreamGroup> cgroups)
         {
-            throw new System.NotImplementedException();
+            if (!_hashs[_database].ContainsKey(key))
+                throw new System.Exception($"start_stream not called for key = {key}");
+
+            if (!_lengths.ContainsKey(_database))
+            {
+                _lengths[_database] = new Dictionary<byte[], long>();
+            }
+
+            _lengths[_database][key] = (long)items;
         }
 
         public void HandleModuleData(byte[] key, ulong opCode, byte[] data)
@@ -158,6 +174,7 @@ namespace RDBParserTests
             _lengths[_database] = new Dictionary<byte[], long>(ByteArrayComparer.Default);
             _hashs[_database] = new Dictionary<byte[], Dictionary<byte[], byte[]>>(ByteArrayComparer.Default);
             _sets[_database] = new Dictionary<byte[], List<byte[]>>(ByteArrayComparer.Default);
+            _sortedSets[_database] = new Dictionary<byte[], Dictionary<byte[], double>>(ByteArrayComparer.Default);
         }
 
         public void StartHash(byte[] key, long length, long expiry, Info info)
@@ -235,22 +252,48 @@ namespace RDBParserTests
 
         public void StartSortedSet(byte[] key, long length, long expiry, Info info)
         {
-            throw new System.NotImplementedException();
+            if (_sortedSets[_database].ContainsKey(key))
+                throw new System.Exception($"start_sorted_set called with key {key} that already exists");
+            else
+                _sortedSets[_database][key] = new Dictionary<byte[], double>(ByteArrayComparer.Default);
+
+            if (expiry > 0)
+                _expiries[_database][key] = expiry;
+
+            if (!_lengths.ContainsKey(_database))
+                _lengths[_database] = new Dictionary<byte[], long>();
+
+            _lengths[_database][key] = length;
         }
 
         public void StartStream(byte[] key, long listpacks_count, long expiry, Info info)
         {
-            throw new System.NotImplementedException();
+            if (_hashs[_database].ContainsKey(key))
+                throw new System.Exception($"start_stream called with key {key} that already exists");
+            else
+                _hashs[_database][key] = new Dictionary<byte[], byte[]>();
+
+            if (expiry > 0)
+                _expiries[_database][key] = expiry;
         }
 
         public void StreamListPack(byte[] key, byte[] entry_id, byte[] data)
         {
-            throw new System.NotImplementedException();
+            if (!_hashs[_database].ContainsKey(key))
+                throw new System.Exception("start_hash not called for key =");
+
+            _output.WriteLine(Encoding.UTF8.GetString(key));
+            _output.WriteLine(Encoding.UTF8.GetString(entry_id));
+            _output.WriteLine(Encoding.UTF8.GetString(data));
+            _hashs[_database][key][entry_id] = data;
         }
 
         public void ZAdd(byte[] key, double score, byte[] member)
         {
-            throw new System.NotImplementedException();
+            if (!_sortedSets[_database].ContainsKey(key))
+                throw new System.Exception("start_sorted_set not called for key =");
+
+            _sortedSets[_database][key][member] = score;
         }
     }
 }

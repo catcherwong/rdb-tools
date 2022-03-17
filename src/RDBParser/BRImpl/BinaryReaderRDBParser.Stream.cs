@@ -37,13 +37,13 @@ namespace RDBParser
                 var r = br.ReadLength();
                 var lastCgEntryId = $"{l}-{r}";
                 var pending = br.ReadLength();
-                var group_pending_entries = new List<StreamPendingEntry>();
+                var groupPendingEntries = new List<StreamPendingEntry>();
                 while (pending > 0)
                 {
                     var eId = br.ReadBytes(16);
                     var delivery_time = br.ReadUInt64();
                     var delivery_count = br.ReadLength();
-                    group_pending_entries.Add(new StreamPendingEntry
+                    groupPendingEntries.Add(new StreamPendingEntry
                     {
                         Id = eId,
                         DeliveryTime = delivery_time,
@@ -53,17 +53,17 @@ namespace RDBParser
                     pending--;
                 }
                 var consumers = br.ReadLength();
-                var consumers_data = new List<StreamConsumerData>();
+                var consumersData = new List<StreamConsumerData>();
                 while (consumers > 0)
                 {
                     var cname = br.ReadStr();
                     var seenTime = br.ReadUInt64();
                     pending = br.ReadLength();
-                    var consumer_pending_entries = new List<StreamConsumerPendingEntry>();
+                    var consumerPendingEntries = new List<StreamConsumerPendingEntry>();
                     while (pending > 0)
                     {
                         var eId = br.ReadBytes(16);
-                        consumer_pending_entries.Add(new StreamConsumerPendingEntry
+                        consumerPendingEntries.Add(new StreamConsumerPendingEntry
                         {
                             Id = eId
                         });
@@ -71,11 +71,11 @@ namespace RDBParser
                         pending--;
                     }
 
-                    consumers_data.Add(new StreamConsumerData
+                    consumersData.Add(new StreamConsumerData
                     {
                         Name = cname,
                         SeenTime = seenTime,
-                        Pending = consumer_pending_entries
+                        Pending = consumerPendingEntries
                     });
 
                     consumers--;
@@ -85,8 +85,8 @@ namespace RDBParser
                 {
                     Name = cgName,
                     LastEntryId = lastCgEntryId,
-                    Pending = group_pending_entries,
-                    Consumers = consumers_data,
+                    Pending = groupPendingEntries,
+                    Consumers = consumersData,
                 });
 
                 cgroups--;

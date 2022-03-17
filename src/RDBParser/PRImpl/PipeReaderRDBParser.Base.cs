@@ -1,11 +1,13 @@
-﻿using System.Buffers.Binary;
+﻿using System.Buffers;
+using System.Buffers.Binary;
 using System.IO.Pipelines;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace RDBParser
 {
     public partial class PipeReaderRDBParser
-    {        
+    {
         private async Task ReadObjectAsync(PipeReader reader, int encType)
         {
             Info info = new Info();
@@ -14,7 +16,7 @@ namespace RDBParser
 
             if (encType == Constant.DataType.STRING)
             {
-                var value = await reader.ReadStringAsync();              
+                var value = await reader.ReadStringAsync();
                 info.Encoding = "string";
                 _callback.Set(_key, value, _expiry, info);
             }
@@ -26,6 +28,7 @@ namespace RDBParser
                 while (length > 0)
                 {
                     length--;
+
                     var val = await reader.ReadStringAsync();
                     _callback.RPush(_key, val);
                 }
@@ -113,14 +116,14 @@ namespace RDBParser
             }
             else if (encType == Constant.DataType.STREAM_LISTPACKS)
             {
-                await SkipStreamAsync(reader);
+                await ReadStreamAsync(reader);
             }
             else
             {
                 throw new RDBParserException($"Invalid object type {encType} for {_key} ");
             }
         }
-       
+
         private async Task ReadListFromQuickListAsync(PipeReader reader, Info info)
         {
             var length = await reader.ReadLengthAsync();
@@ -139,10 +142,10 @@ namespace RDBParser
                 var rd = PipeReader.Create(rawString);
 
                 var zlbytes = await reader.ReadBytesAsync(4);
-                var tail_offset = await reader.ReadBytesAsync(4);
+                var tailOffset = await reader.ReadBytesAsync(4);
 
                 var numEntriesBuff = await rd.ReadBytesAsync(2);
-                var numEntries = BinaryPrimitives.ReadUInt32LittleEndian(numEntriesBuff.FirstSpan);
+                var numEntries = numEntriesBuff.ReadUInt16LittleEndianItem();
 
                 for (int i = 0; i < numEntries; i++)
                 {

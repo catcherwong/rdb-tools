@@ -138,10 +138,10 @@ namespace RDBParser
                 {
                     var rd = new BinaryReader(stream);
                     var zlbytes = rd.ReadBytes(4);
-                    var tail_offset = rd.ReadBytes(4);
-                    var num_entries = rd.ReadUInt16();
+                    var tailOffset = rd.ReadBytes(4);
+                    var numEntries = rd.ReadUInt16();
 
-                    for (int i = 0; i < num_entries; i++)
+                    for (int i = 0; i < numEntries; i++)
                     {
                         _callback.RPush(_key, ReadZipListEntry(rd));
                     }
