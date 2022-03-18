@@ -31,35 +31,6 @@ namespace RDBParserTests
         {
             return System.MathF.Abs(f1 - f2) < 0.00001;
         }
-
-        public static byte[] GetPosNumberBytes(long num)
-        {
-           
-            if (num <= int.MaxValue)
-            {
-                byte[] src = new byte[4];
-                src[0] = (byte)(((int)num >> 24) & 0xFF);
-                src[1] = (byte)(((int)num >> 16) & 0xFF);
-                src[2] = (byte)(((int)num >> 8) & 0xFF);
-                src[3] = (byte)((int)num & 0xFF);
-                System.Array.Reverse(src);
-                return src;
-            }
-            else
-            {
-                byte[] tmp = System.BitConverter.GetBytes(num);
-                var bytes = new List<byte>();
-                foreach (var item in tmp)
-                {
-                    if (item != 0)
-                    {
-                        bytes.Add((byte)(item));
-                    }
-                }
-
-                return bytes.ToArray();
-            }           
-        }
     }
 
     public class ByteArrayComparer : IEqualityComparer<byte[]>
