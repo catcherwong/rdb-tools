@@ -1,16 +1,30 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
+		<OutputType>Exe</OutputType>
 		<TargetFramework>net6.0</TargetFramework>
 		<PackageProjectUrl>https://github.com/catcherwong/rdb-tools</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/catcherwong/rdb-tools</RepositoryUrl>
 		<Description></Description>
-		<PackageTags>csharp,rdb,parser,redis</PackageTags>
+		<PackageTags>csharp,rdb,parser,redis,cli</PackageTags>
 		<VersionPrefix>0.1.0</VersionPrefix>
 		<VersionSuffix></VersionSuffix>
 		<Authors>catcherwong</Authors>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+
+		<AssemblyName>rdb-cli</AssemblyName>
+		<PackageId>$(AssemblyName)</PackageId>
+		<ToolCommandName>$(AssemblyName)</ToolCommandName>
+		<PackAsTool>true</PackAsTool>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="System.CommandLine" Version="2.0.0-beta3.22114.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\RDBParser\RDBParser.csproj" />
+	</ItemGroup>
 
 </Project>

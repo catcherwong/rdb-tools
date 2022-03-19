@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RDBParser", "src\RDBParser\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E2804824-991A-48E7-9B56-A5E299008978}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RDBParserTests", "tests\RDBParserTests\RDBParserTests.csproj", "{FE631ED0-4AEA-4054-B30F-D3874B9D10A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RDBParserTests", "tests\RDBParserTests\RDBParserTests.csproj", "{FE631ED0-4AEA-4054-B30F-D3874B9D10A2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RDBCli", "src\RDBCli\RDBCli.csproj", "{AEAD6E76-44BD-4161-8768-577FE9F48C07}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,6 +27,10 @@ Global
 		{FE631ED0-4AEA-4054-B30F-D3874B9D10A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE631ED0-4AEA-4054-B30F-D3874B9D10A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FE631ED0-4AEA-4054-B30F-D3874B9D10A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AEAD6E76-44BD-4161-8768-577FE9F48C07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEAD6E76-44BD-4161-8768-577FE9F48C07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEAD6E76-44BD-4161-8768-577FE9F48C07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEAD6E76-44BD-4161-8768-577FE9F48C07}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -32,6 +38,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{33113E5C-BEF6-4C22-BF8C-00F82D875087} = {9037D323-1B2A-45E5-8CD8-9953CAD065F8}
 		{FE631ED0-4AEA-4054-B30F-D3874B9D10A2} = {E2804824-991A-48E7-9B56-A5E299008978}
+		{AEAD6E76-44BD-4161-8768-577FE9F48C07} = {9037D323-1B2A-45E5-8CD8-9953CAD065F8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AE57446D-ABB0-4E09-B2AE-6ECEE1F2AB36}
