@@ -1,5 +1,6 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Invocation;
+using clicb = RDBCli.Callbacks;
 
 namespace RDBCli.Commands
 {
@@ -14,19 +15,25 @@ namespace RDBCli.Commands
 
             this.SetHandler((InvocationContext context) => 
             {
-                context.Console.WriteLine($"Begin print all keys command");
-
                 var files = context.ParseResult.GetValueForArgument<string>(arg);
+                Do(context, files);
 
-                Do(files);
-
-                context.Console.WriteLine($"End print all keys command");
+                context.Console.WriteLine($"");
             });
 
         }
 
-        private void Do(string files)
+        private void Do(InvocationContext context, string files)
         {
+            var console = context.Console;
+            var cb = new clicb.KeysOnlyCallback(console);
+
+            console.WriteLine($"");
+            console.WriteLine($"Find keys in [{files}] are as follow:");
+            console.WriteLine($"");
+
+            var parser = new RDBParser.BinaryReaderRDBParser(cb);
+            parser.Parse(files);
         }
     }
 }

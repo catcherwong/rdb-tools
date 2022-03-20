@@ -5,7 +5,7 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<PackageProjectUrl>https://github.com/catcherwong/rdb-tools</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/catcherwong/rdb-tools</RepositoryUrl>
-		<Description></Description>
+		<Description>rdb-cli is a command line tool for redis rdb files.</Description>
 		<PackageTags>csharp,rdb,parser,redis,cli</PackageTags>
 		<VersionPrefix>0.1.0</VersionPrefix>
 		<VersionSuffix></VersionSuffix>
@@ -24,7 +24,19 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\RDBParser\RDBParser.csproj" />
+		<ProjectReference Include="..\RDBParser\RDBParser.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ResolvedFileToPublish Include="../../README.md">
+			<RelativePath>README.md</RelativePath>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</ResolvedFileToPublish>
+
+		<ResolvedFileToPublish Include="../../LICENSE">
+			<RelativePath>LICENSE</RelativePath>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</ResolvedFileToPublish>
 	</ItemGroup>
 
 </Project>
