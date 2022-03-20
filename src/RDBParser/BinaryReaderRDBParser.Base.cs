@@ -116,6 +116,89 @@ namespace RDBParser
             }
         }
 
+        private void SkipObject(BinaryReader br, int encType)
+        {
+            var skip = 0;
+
+            if (encType == Constant.DataType.STRING)
+            {
+                skip = 1;
+            }
+            else if (encType == Constant.DataType.LIST)
+            {
+                var length = br.ReadLength();
+                skip = (int)length;
+            }
+            else if (encType == Constant.DataType.SET)
+            {
+                var length = br.ReadLength();
+                skip = (int)length;
+            }
+            else if (encType == Constant.DataType.ZSET || encType == Constant.DataType.ZSET_2)
+            {
+                var length = br.ReadLength();
+                skip = (int)length;
+                while (length > 0)
+                {
+                    br.SkipStr();
+                    double score = encType == Constant.DataType.ZSET_2
+                        ? br.ReadDouble()
+                        : br.ReadFloat();
+                }
+            }
+            else if (encType == Constant.DataType.HASH)
+            {
+                var length = br.ReadLength();
+                skip = (int)length * 2;
+            }
+            else if (encType == Constant.DataType.HASH_ZIPMAP)
+            {
+                skip = 1;
+            }
+            else if (encType == Constant.DataType.LIST_ZIPLIST)
+            {
+                skip = 1;
+            }
+            else if (encType == Constant.DataType.SET_INTSET)
+            {
+                skip = 1;
+            }
+            else if (encType == Constant.DataType.ZSET_ZIPLIST)
+            {
+                skip = 1;
+            }
+            else if (encType == Constant.DataType.HASH_ZIPLIST)
+            {
+                skip = 1;
+            }
+            else if (encType == Constant.DataType.LIST_QUICKLIST)
+            {
+                var length = br.ReadLength();
+                skip = (int)length;
+            }
+            else if (encType == Constant.DataType.MODULE)
+            {
+                throw new RDBParserException($"Unable to read Redis Modules RDB objects (key {_key})");
+            }
+            else if (encType == Constant.DataType.MODULE_2)
+            {
+                SkipModule(br);
+            }
+            else if (encType == Constant.DataType.STREAM_LISTPACKS)
+            {
+                SkipStream(br);
+            }
+            else
+            {
+                throw new RDBParserException($"Invalid object type {encType} for {_key} ");
+            }
+
+            for (int i = 0; i < skip; i++)
+            {
+                br.SkipStr();
+            }
+        }
+
         private void ReadListFromQuickList(BinaryReader br)
         {
             var length = br.ReadLength();

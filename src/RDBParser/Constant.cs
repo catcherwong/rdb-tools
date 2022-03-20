@@ -67,6 +67,25 @@
             public static readonly int HASH_ZIPLIST = 13;
             public static readonly int LIST_QUICKLIST = 14;
             public static readonly int STREAM_LISTPACKS = 15;
+
+            public static readonly System.Collections.Generic.Dictionary<int, string> MAPPING = new System.Collections.Generic.Dictionary<int, string>
+            {
+                { 0, "string" },
+                { 1, "list" },
+                { 2, "set" },
+                { 3, "sortedset" },
+                { 4, "hash" },
+                { 5, "sortedset" },
+                { 6, "module" },
+                { 7, "module" },
+                { 9, "hash" },
+                { 10, "list" },
+                { 11, "set" },
+                { 12, "sortedset" },
+                { 13, "hash" },
+                { 14, "list" },
+                { 15, "stream" },
+            };
         }
 
         public static class ModuleOpCode

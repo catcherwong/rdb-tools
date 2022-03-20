@@ -6,14 +6,16 @@ namespace RDBParser
     public partial class BinaryReaderRDBParser : IRDBParser
     {
         private readonly IReaderCallback _callback;
+        private ParserFilter _filter;
         private byte[] _key = null;
         private long _expiry = 0;
         private ulong _idle = 0;
         private int _freq = 0;
 
-        public BinaryReaderRDBParser(IReaderCallback callback)
+        public BinaryReaderRDBParser(IReaderCallback callback, ParserFilter filter = null)
         {
             this._callback = callback;
+            this._filter = filter;
         }
 
         public void Parse(string path)
@@ -108,14 +110,29 @@ namespace RDBParser
                             break;
                         }
 
-                        _key = br.ReadStr();
+                        if (MatchFilter(database: (int)db))
+                        {
+                            _key = br.ReadStr();
 
-                        info.Idle = _idle;
-                        info.Freq = _freq;
+                            if (MatchFilter(dataType: opType))
+                            {
+                                info.Idle = _idle;
+                                info.Freq = _freq;
 
-                        ReadObject(br, _key, opType, _expiry, info);
-
-                        _expiry = 0;
+                                ReadObject(br, _key, opType, _expiry, info);
+                            }
+                            else
+                            { 
+                                SkipObject(br, opType);
+                            }
+                            
+                            _expiry = 0;
+                        }
+                        else
+                        {
+                            br.SkipStr();
+                            SkipObject(br, opType);
+                        }
                     }
                 }
             }
@@ -123,5 +140,31 @@ namespace RDBParser
 
         public Task ParseAsync(string path)
             => Task.Run(() => Parse(path));
+
+        private bool MatchFilter(int database = -1, int dataType = -1)
+        {
+            if (_filter == null) return true;
+
+            // filter databse
+            if (database >= 0 
+                && _filter.Databases != null 
+                && !_filter.Databases.Contains(database))
+            {
+                return false;
+            }
+
+            // filter data type
+            if (dataType >= 0
+                && _filter.Types != null
+                && !_filter.Types.Contains(GetLogicalType(dataType)))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private string GetLogicalType(int type)
+            => Constant.DataType.MAPPING[type];
     }
 }
