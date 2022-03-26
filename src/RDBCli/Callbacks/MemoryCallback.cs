@@ -7,6 +7,7 @@ namespace RDBCli.Callbacks
     {
         // for x64
         private ulong _pointerSize = 8;
+        private ulong _longSize = 8;
 
         private uint _dbExpires = 0;
 
