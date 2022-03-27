@@ -14,6 +14,7 @@ namespace RDBCli
             var root = new RootCommand
             {
                 new Commands.PrintAllKeysCommand(),
+                new Commands.MemoryCommand(),
 
             };
 

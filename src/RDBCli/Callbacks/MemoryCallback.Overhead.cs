@@ -217,5 +217,31 @@ typedef struct dictEntry {
 
             return level < 32 ? level : 32;
         }
+
+        private ulong SizeofStreamRadixTree(ulong numElements)
+        {
+            var numNodes = (ulong)(numElements * 2.5);
+            return 16 * numElements + numNodes * 4 + numNodes * 30 * _longSize;
+        }
+
+        private ulong StreamOverhead()
+        {
+            return 2 * _pointerSize + 8 + 16 + _pointerSize + 8 * 2;
+        }
+
+        private ulong StreamConsumer(byte[] name)
+        {
+            return 2 * _pointerSize + 8 + SizeOfString(name);
+        }
+
+        private ulong StreamCG()
+        {
+            return 2 * _pointerSize + 16;
+        }
+
+        private ulong StreamNACK(ulong length)
+        {
+            return length * (_pointerSize + 8 + 8);
+        }
     }
 }

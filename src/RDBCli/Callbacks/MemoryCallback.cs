@@ -16,6 +16,8 @@ namespace RDBCli.Callbacks
 
         private Record _currentRecord = new Record();
 
+        public RdbDataInfo GetRdbDataInfo() => _rdbDataInfo;
+
         public void AuxField(byte[] key, byte[] value)
         {
             var keyStr = System.Text.Encoding.UTF8.GetString(key);
@@ -51,72 +53,112 @@ namespace RDBCli.Callbacks
 
         public void DbSize(uint dbSize, uint expiresSize)
         {
-            throw new System.NotImplementedException();
         }
 
         public void EndDatabase(int dbNumber)
         {
-            throw new System.NotImplementedException();
         }
 
         public void EndHash(byte[] key)
         {
             _rdbDataInfo.Records.Add(_currentRecord);
             _rdbDataInfo.Count++;
-            _currentRecord = new Record();
+            _currentRecord = null;
         }
 
         public void EndList(byte[] key, Info info)
         {
-            throw new System.NotImplementedException();
+            if (_currentRecord.Encoding.Equals("ziplist"))
+            {
+                _currentRecord.Bytes += ZiplistHeaderOverHead();
+            }
+            else if (_currentRecord.Encoding.Equals("quicklist"))
+            {
+                _currentRecord.Bytes += QuicklistOverhead(0);
+                _currentRecord.Bytes += ZiplistHeaderOverHead();
+            }
+            else if (_currentRecord.Encoding.Equals("linkedlist"))
+            {
+                _currentRecord.Bytes += LinkedlistOverhead();
+            }
+            else
+            {
+                throw new System.Exception($"unknown encoding: {_currentRecord.Encoding}");
+            }
+
+            _rdbDataInfo.Records.Add(_currentRecord);
+            _rdbDataInfo.Count++;
+            _currentRecord = null;
         }
 
         public void EndModule(byte[] key, long bufferSize, byte[] buffer)
         {
-            throw new System.NotImplementedException();
+            _currentRecord.Bytes += (ulong)bufferSize;
+
+            _rdbDataInfo.Records.Add(_currentRecord);
+            _rdbDataInfo.Count++;
+            _currentRecord = null;
         }
 
         public void EndRDB()
         {
-            throw new System.NotImplementedException();
         }
 
         public void EndSet(byte[] key)
         {
-            throw new System.NotImplementedException();
+            _rdbDataInfo.Records.Add(_currentRecord);
+            _rdbDataInfo.Count++;
+            _currentRecord = null;
         }
 
         public void EndSortedSet(byte[] key)
         {
-            throw new System.NotImplementedException();
+            _rdbDataInfo.Records.Add(_currentRecord);
+            _rdbDataInfo.Count++;
+            _currentRecord = null;
         }
 
         public void EndStream(byte[] key, ulong items, string last_entry_id, List<StreamGroup> cgroups)
         {
-            throw new System.NotImplementedException();
+            foreach (var cg in cgroups)
+            {
+                var pendingLength = (ulong)cg.Pending.Count;
+                _currentRecord.Bytes += SizeofStreamRadixTree(pendingLength);
+                _currentRecord.Bytes += StreamNACK(pendingLength);
+
+                foreach (var c in cg.Consumers)
+                {
+                    _currentRecord.Bytes += StreamConsumer(c.Name);
+                    pendingLength = (ulong)cg.Pending.Count;
+                    _currentRecord.Bytes += SizeofStreamRadixTree(pendingLength);
+                }
+            }
+
+            _rdbDataInfo.Records.Add(_currentRecord);
+            _rdbDataInfo.Count++;
+            _currentRecord = null;
         }
 
         public void HandleModuleData(byte[] key, ulong opCode, byte[] data)
         {
-            throw new System.NotImplementedException();
         }
 
         public void HSet(byte[] key, byte[] field, byte[] value)
         {
             var lenOfElem = ElementLength(field) + ElementLength(value);
-            if(lenOfElem > _currentRecord.LenOfLargestElem)
+            if (lenOfElem > _currentRecord.LenOfLargestElem)
             {
                 _currentRecord.FieldOfLargestElem = System.Text.Encoding.UTF8.GetString(field);
                 _currentRecord.LenOfLargestElem = lenOfElem;
             }
 
-            if(_currentRecord.Encoding.Equals("hashtable"))
+            if (_currentRecord.Encoding.Equals("hashtable"))
             {
                 _currentRecord.Bytes += SizeOfString(field);
                 _currentRecord.Bytes += SizeOfString(value);
                 _currentRecord.Bytes += HashtableEntryOverhead();
 
-                if(_rdbDataInfo.RdbVer < 8)
+                if (_rdbDataInfo.RdbVer < 8)
                 {
                     _currentRecord.Bytes += 2 * RobjOverhead();
                 }
@@ -125,12 +167,65 @@ namespace RDBCli.Callbacks
 
         public void RPush(byte[] key, byte[] value)
         {
-            throw new System.NotImplementedException();
+            _currentRecord.NumOfElem++;
+
+            if (_currentRecord.Encoding.Equals("ziplist"))
+            {
+                _currentRecord.Bytes += ZiplistEntryOverhead(value);
+            }
+            else if (_currentRecord.Encoding.Equals("quicklist"))
+            {
+                _currentRecord.Bytes += ZiplistEntryOverhead(value);
+            }
+            else if (_currentRecord.Encoding.Equals("linkedlist"))
+            {
+                ulong size = 0;
+                var str = System.Text.Encoding.UTF8.GetString(value);
+                if (!int.TryParse(str, out _))
+                {
+                    size = SizeOfString(value);
+                }
+
+                _currentRecord.Bytes += LinkedlistEntryOverhead();
+                _currentRecord.Bytes += size;
+
+                if (_rdbDataInfo.RdbVer < 8)
+                {
+                    _currentRecord.Bytes += RobjOverhead();
+                }
+            }
+            else
+            {
+                throw new System.Exception($"unknown encoding: {_currentRecord.Encoding}");
+            }
+
+            var lenOfElem = ElementLength(value);
+            if (lenOfElem > _currentRecord.LenOfLargestElem)
+            {
+                _currentRecord.FieldOfLargestElem = System.Text.Encoding.UTF8.GetString(value);
+                _currentRecord.LenOfLargestElem = lenOfElem;
+            }
         }
 
         public void SAdd(byte[] key, byte[] member)
         {
-            throw new System.NotImplementedException();
+            var lenOfElem = ElementLength(member);
+            if (lenOfElem > _currentRecord.LenOfLargestElem)
+            {
+                _currentRecord.FieldOfLargestElem = System.Text.Encoding.UTF8.GetString(member);
+                _currentRecord.LenOfLargestElem = lenOfElem;
+            }
+
+            if (_currentRecord.Encoding.Equals("hashtable"))
+            {
+                _currentRecord.Bytes += SizeOfString(member);
+                _currentRecord.Bytes += HashtableEntryOverhead();
+
+                if (_rdbDataInfo.RdbVer < 8)
+                {
+                    _currentRecord.Bytes += RobjOverhead();
+                }
+            }
         }
 
         public void Set(byte[] key, byte[] value, long expiry, Info info)
@@ -163,17 +258,17 @@ namespace RDBCli.Callbacks
             var keyStr = System.Text.Encoding.UTF8.GetString(key);
             var bytes = TopLevelObjOverhead(key, expiry);
 
-            if(info.SizeOfValue > 0)
+            if (info.SizeOfValue > 0)
             {
                 bytes += (ulong)info.SizeOfValue;
             }
-            else if(info.Encoding == "hashtable")
+            else if (info.Encoding == "hashtable")
             {
                 bytes += HashtableOverhead((ulong)length);
             }
             else
             {
-                throw new System.Exception("");
+                throw new System.Exception($"unexpected size(0) or encoding:{info.Encoding}");
             }
 
             _currentRecord = new Record
@@ -190,12 +285,42 @@ namespace RDBCli.Callbacks
 
         public void StartList(byte[] key, long expiry, Info info)
         {
-            
+            var keyStr = System.Text.Encoding.UTF8.GetString(key);
+            var bytes = TopLevelObjOverhead(key, expiry);
+
+            var encoding = info.Encoding;
+
+            _currentRecord = new Record
+            {
+                Key = keyStr,
+                Bytes = bytes,
+                Type = "list",
+                NumOfElem = 0,
+                Encoding = encoding,
+                Expiry = expiry,
+                Database = _dbNum,
+            };
         }
 
         public bool StartModule(byte[] key, string module_name, long expiry, Info info)
         {
-            throw new System.NotImplementedException();
+            var keyStr = key == null ? string.Empty : System.Text.Encoding.UTF8.GetString(key);
+            var bytes = key == null ? 0 : TopLevelObjOverhead(key, expiry);
+
+            bytes += 8 + 1;
+
+            _currentRecord = new Record
+            {
+                Key = keyStr,
+                Bytes = bytes,
+                Type = "module",
+                Encoding = module_name,
+                Expiry = expiry,
+                NumOfElem = 1,
+                Database = _dbNum,
+            };
+
+            return false;
         }
 
         public void StartRDB(int version)
@@ -205,27 +330,90 @@ namespace RDBCli.Callbacks
 
         public void StartSet(byte[] key, long cardinality, long expiry, Info info)
         {
-            throw new System.NotImplementedException();
+            this.StartHash(key, cardinality, expiry, info);
+            _currentRecord.Type = "set";
         }
 
         public void StartSortedSet(byte[] key, long length, long expiry, Info info)
         {
-            throw new System.NotImplementedException();
+            var keyStr = System.Text.Encoding.UTF8.GetString(key);
+            var bytes = TopLevelObjOverhead(key, expiry);
+
+            if (info.SizeOfValue > 0)
+            {
+                bytes += (ulong)info.SizeOfValue;
+            }
+            else if (info.Encoding.Equals("skiplist"))
+            {
+                bytes += SkiplistOverhead((ulong)length);
+            }
+            else
+            {
+                throw new System.Exception($"unexpected size(0) or encoding:{info.Encoding}");
+            }
+
+            _currentRecord = new Record
+            {
+                Key = keyStr,
+                Bytes = bytes,
+                Type = "sortedset",
+                NumOfElem = (ulong)length,
+                Encoding = info.Encoding,
+                Expiry = expiry,
+                Database = _dbNum,
+            };
         }
 
         public void StartStream(byte[] key, long listpacks_count, long expiry, Info info)
         {
-            throw new System.NotImplementedException();
+            var keyStr = System.Text.Encoding.UTF8.GetString(key);
+            var bytes = TopLevelObjOverhead(key, expiry);
+            bytes += 2 * _pointerSize + 8 + 16;
+            bytes += _pointerSize + 2 * 8;
+
+            _currentRecord = new Record
+            {
+                Key = keyStr,
+                Bytes = bytes,
+                Type = "stream",
+                NumOfElem = 0,
+                Encoding = info.Encoding,
+                Expiry = expiry,
+                Database = _dbNum,
+            };
         }
 
         public void StreamListPack(byte[] key, byte[] entry_id, byte[] data)
         {
-            throw new System.NotImplementedException();
+            if ((ulong)data.Length > _currentRecord.LenOfLargestElem)
+            {
+                _currentRecord.FieldOfLargestElem = System.Text.Encoding.UTF8.GetString(data);
+                _currentRecord.LenOfLargestElem = (ulong)data.Length;
+            }
+
+            _currentRecord.Bytes += MemProfiler.MallocOverhead((ulong)data.Length);
         }
 
         public void ZAdd(byte[] key, double score, byte[] member)
         {
-            throw new System.NotImplementedException();
+            var lenOfElem = ElementLength(member);
+            if (lenOfElem > _currentRecord.LenOfLargestElem)
+            {
+                _currentRecord.FieldOfLargestElem = System.Text.Encoding.UTF8.GetString(member);
+                _currentRecord.LenOfLargestElem = lenOfElem;
+            }
+
+            if (_currentRecord.Encoding.Equals("skiplist"))
+            {
+                _currentRecord.Bytes += 8;
+                _currentRecord.Bytes += SizeOfString(member);
+                _currentRecord.Bytes += SkiplistEntiryOverhead();
+
+                if (_rdbDataInfo.RdbVer < 8)
+                {
+                    _currentRecord.Bytes += RobjOverhead();
+                }
+            }
         }
     }
 }
