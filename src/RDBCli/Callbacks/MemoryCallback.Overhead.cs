@@ -5,6 +5,21 @@ namespace RDBCli.Callbacks
 {
     internal partial class MemoryCallback
     {
+        private ulong TopLevelObjOverhead(byte[] @string, long expiry)
+        {
+            // Each top level object is an entry in a dictionary, and so we have to include 
+            // the overhead of a dictionary entry
+            return HashtableEntryOverhead() + SizeOfString(@string) + RobjOverhead() + KeyExpiryOverhead(expiry);
+        }
+
+        private ulong ElementLength(byte[] element)
+        {
+            // TODO: byte[] => long
+            var str = System.Text.Encoding.UTF8.GetString(element);
+            if (long.TryParse(str, out _)) return 8;
+            return (ulong)element.Length;
+        }
+
         private ulong SizeOfString(byte[] @string)
         {
             var str = System.Text.Encoding.UTF8.GetString(@string);
