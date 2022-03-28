@@ -102,6 +102,7 @@ namespace RDBCli.Callbacks
 
         public void EndRDB()
         {
+            _rdbDataInfo.Records.CompleteAdding();
         }
 
         public void EndSet(byte[] key)

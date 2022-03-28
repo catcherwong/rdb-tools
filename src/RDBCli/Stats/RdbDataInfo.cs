@@ -1,8 +1,13 @@
-﻿namespace RDBCli
+﻿using System.Collections.Concurrent;
+
+namespace RDBCli
 {
     internal class RdbDataInfo
     {
-        public System.Collections.Concurrent.ConcurrentBag<Record> Records { get; set; } = new System.Collections.Concurrent.ConcurrentBag<Record>();
+        /// <summary>
+        /// Do store all records here, consider of RAM
+        /// </summary>
+        public BlockingCollection<Record> Records { get; set; } = new BlockingCollection<Record>(1024);
 
         public long UsedMem { get; set; }
 
