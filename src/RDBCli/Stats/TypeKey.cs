@@ -6,7 +6,14 @@ namespace RDBCli
 {
     internal class TypeKey
     {
+        /// <summary>
+        /// The redis type, such as string hash..
+        /// </summary>
         public string Type { get; set; }
+
+        /// <summary>
+        /// The key prefix
+        /// </summary>
         public string Key { get; set; }
 
         public override string ToString()
@@ -32,5 +39,36 @@ namespace RDBCli
                 return base.GetHashCode();
             }
         }
+    }
+
+    internal class TypeKeyValue
+    {
+        /// <summary>
+        /// The key prefix's total bytes
+        /// </summary>
+        public ulong Bytes { get; set; }
+
+        /// <summary>
+        /// The key prefix's total count
+        /// </summary>
+        public ulong Num { get; set; }
+
+        /// <summary>
+        /// The key prefix's total elements
+        /// </summary>
+        public ulong Elements { get; set; }
+    }
+
+    internal class TypeStatValue
+    {
+        /// <summary>
+        /// The redis type's total bytes
+        /// </summary>
+        public ulong Bytes { get; set; }
+
+        /// <summary>
+        /// The redis type's total count
+        /// </summary>
+        public ulong Num { get; set; }
     }
 }

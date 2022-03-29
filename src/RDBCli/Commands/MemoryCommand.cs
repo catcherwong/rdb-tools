@@ -1,6 +1,10 @@
-﻿using System.CommandLine;
+﻿using System;
+using System.Collections.Generic;
+using System.CommandLine;
 using System.CommandLine.Invocation;
-using System.Linq;
+using System.Diagnostics;
+using System.IO;
+using System.Text.Json;
 using clicb = RDBCli.Callbacks;
 
 namespace RDBCli.Commands
@@ -10,21 +14,25 @@ namespace RDBCli.Commands
         public MemoryCommand()
             : base("memory", "Get memory info from rdb files")
         {
-            var arg = new Argument<string>("file", "The path of rdb files");
+            var arg = new Argument<string>("file", "The path of rdb files.");
 
+            var outputOption = new Option<string>("--output", "The output path of parsing result.");
+
+            this.AddOption(outputOption);
             this.AddArgument(arg);
-
+            
             this.SetHandler((InvocationContext context) =>
             {
                 var files = context.ParseResult.GetValueForArgument<string>(arg);
-                Do(context, files);
+                var output = context.ParseResult.GetValueForOption<string>(outputOption);
+
+                Do(context, files, output);
 
                 context.Console.WriteLine($"");
             });
-
         }
 
-        private void Do(InvocationContext context, string files)
+        private void Do(InvocationContext context, string files, string output)
         {
             var console = context.Console;
             var cb = new clicb.MemoryCallback();
@@ -34,10 +42,10 @@ namespace RDBCli.Commands
             counter.Count();
 
             console.WriteLine($"");
-            console.WriteLine($"Find keys in [{files}] are as follow:");
-            console.WriteLine($"");
+            console.WriteLine($"Prepare to parse [{files}]");
+            console.WriteLine($"Please wait for a moment...\n");
 
-            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            var sw = new Stopwatch();
             sw.Start();
 
             var parser = new RDBParser.BinaryReaderRDBParser(cb);
@@ -45,25 +53,51 @@ namespace RDBCli.Commands
 
             sw.Stop();
             console.WriteLine($"parse cost: {sw.ElapsedMilliseconds}ms");
-            
-            var options = new System.Text.Json.JsonSerializerOptions
+            sw.Start();
+
+            var largestRecords = counter.GetLargestRecords(10);
+            var largestKeyPrefix = counter.GetLargestKeyPrefixes(10);
+            var typeRecords = counter.GetTypeRecords();
+            var expiryInfo = counter.GetExpiryInfo();
+
+            var dict = new Dictionary<string, object>();
+
+            dict.Add("usedMem", rdbDataInfo.UsedMem);
+            dict.Add("cTime", rdbDataInfo.CTime);
+            dict.Add("count", rdbDataInfo.Count);
+            dict.Add("rdbVer", rdbDataInfo.RdbVer);
+            dict.Add("redisVer", rdbDataInfo.RedisVer);
+            dict.Add("redisBits", rdbDataInfo.RedisBits);
+            dict.Add("typeRecords", typeRecords);
+            dict.Add("largestRecords", largestRecords);
+            dict.Add("largestKeyPrefix", largestKeyPrefix);
+            dict.Add("expiryInfo", expiryInfo);
+
+            var path = WriteJsonFile(dict, output);
+
+            sw.Stop();
+            console.WriteLine($"total cost: {sw.ElapsedMilliseconds}ms");
+            console.WriteLine($"result path: {path}");
+        }
+
+        private string WriteJsonFile(Dictionary<string, object> dict, string output)
+        {
+            var options = new JsonSerializerOptions
             {
                 WriteIndented = true,
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
             };
 
-            rdbDataInfo.Records = null;
-            var str0 = System.Text.Json.JsonSerializer.Serialize(rdbDataInfo, options);
-            console.WriteLine($"{str0}");
+            var stream = JsonSerializer.SerializeToUtf8Bytes(dict, options);
 
-            var str = System.Text.Json.JsonSerializer.Serialize(counter.TypeNum, options);
-            console.WriteLine($"{str}");
+            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "res.json");
 
-            //var tmp = counter.KeyPrefixNum
-            //    .Select(x => new { k = x.Key.ToString(), v = x.Value })
-            //    .OrderByDescending(x => x.v)
-            //    .ToList();
+            if (!string.IsNullOrWhiteSpace(output)) path = output;
 
-            console.WriteLine(counter.KeyPrefixNum.Keys.Count.ToString());            
+            using FileStream fs = new(path, FileMode.Create, FileAccess.Write);
+            fs.Write(stream, 0, stream.Length);
+
+            return path;
         }
     }
 }
