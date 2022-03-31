@@ -65,7 +65,7 @@ namespace RDBCli.Commands
 
             var dict = new Dictionary<string, object>();
 
-            dict.Add("usedMem", rdbDataInfo.UsedMem);
+            dict.Add("usedMem", rdbDataInfo.UsedMem > 0 ? rdbDataInfo.UsedMem : rdbDataInfo.TotalMem);
             dict.Add("cTime", rdbDataInfo.CTime);
             dict.Add("count", rdbDataInfo.Count);
             dict.Add("rdbVer", rdbDataInfo.RdbVer);

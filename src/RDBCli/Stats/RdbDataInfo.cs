@@ -15,6 +15,11 @@ namespace RDBCli
         /// </summary>
         public long UsedMem { get; set; }
 
+        /// <summary>
+        /// Sum all callback bytes
+        /// </summary>
+        public ulong TotalMem { get; set; }
+
         public long CTime { get; set; }
 
         /// <summary>

@@ -63,6 +63,7 @@ namespace RDBCli.Callbacks
 
         public void EndHash(byte[] key)
         {
+            _rdbDataInfo.TotalMem += _currentRecord.Bytes;
             _rdbDataInfo.Records.Add(_currentRecord);
             _rdbDataInfo.Count++;
             _currentRecord = null;
@@ -88,6 +89,7 @@ namespace RDBCli.Callbacks
                 throw new System.Exception($"unknown encoding: {_currentRecord.Encoding}");
             }
 
+            _rdbDataInfo.TotalMem += _currentRecord.Bytes;
             _rdbDataInfo.Records.Add(_currentRecord);
             _rdbDataInfo.Count++;
             _currentRecord = null;
@@ -97,6 +99,7 @@ namespace RDBCli.Callbacks
         {
             _currentRecord.Bytes += (ulong)bufferSize;
 
+            _rdbDataInfo.TotalMem += _currentRecord.Bytes;
             _rdbDataInfo.Records.Add(_currentRecord);
             _rdbDataInfo.Count++;
             _currentRecord = null;
@@ -109,6 +112,7 @@ namespace RDBCli.Callbacks
 
         public void EndSet(byte[] key)
         {
+            _rdbDataInfo.TotalMem += _currentRecord.Bytes;
             _rdbDataInfo.Records.Add(_currentRecord);
             _rdbDataInfo.Count++;
             _currentRecord = null;
@@ -116,6 +120,7 @@ namespace RDBCli.Callbacks
 
         public void EndSortedSet(byte[] key)
         {
+            _rdbDataInfo.TotalMem += _currentRecord.Bytes;
             _rdbDataInfo.Records.Add(_currentRecord);
             _rdbDataInfo.Count++;
             _currentRecord = null;
@@ -140,6 +145,7 @@ namespace RDBCli.Callbacks
                 }
             }
 
+            _rdbDataInfo.TotalMem += _currentRecord.Bytes;
             _rdbDataInfo.Records.Add(_currentRecord);
             _rdbDataInfo.Count++;
             _currentRecord = null;
@@ -250,6 +256,7 @@ namespace RDBCli.Callbacks
                 Database = _dbNum,
             };
 
+            _rdbDataInfo.TotalMem += record.Bytes;
             _rdbDataInfo.Records.Add(record);
             _rdbDataInfo.Count++;
         }
