@@ -13,8 +13,8 @@ namespace RDBCli
         private PriorityQueue<Record, ulong> _largestRecords;
         private PriorityQueue<PrefixRecord, PrefixRecord> _largestKeyPrefixes;
         private Dictionary<TypeKey, TypeKeyValue> _keyPrefix;
-        private Dictionary<string, TypeStatValue> _typeDict;
-        private Dictionary<string, ulong> _expiryDict;
+        private Dictionary<string, CommonStatValue> _typeDict;
+        private Dictionary<string, CommonStatValue> _expiryDict;
 
         private readonly BlockingCollection<Record> _records;
 
@@ -24,8 +24,8 @@ namespace RDBCli
             this._largestRecords = new PriorityQueue<Record, ulong>();
             this._largestKeyPrefixes = new PriorityQueue<PrefixRecord, PrefixRecord>(PrefixRecord.Comparer);
             this._keyPrefix = new Dictionary<TypeKey, TypeKeyValue>(TypeKey.Comparer);
-            this._typeDict = new Dictionary<string, TypeStatValue>();
-            this._expiryDict = new Dictionary<string, ulong>();
+            this._typeDict = new Dictionary<string, CommonStatValue>();
+            this._expiryDict = new Dictionary<string, CommonStatValue>();
         }
 
         public void Count()
@@ -83,76 +83,63 @@ namespace RDBCli
                 .ToList();
         }
 
-        public Dictionary<string, ulong> GetExpiryInfo()
+        public List<ExpiryRecord> GetExpiryInfo()
         {
-            return _expiryDict;
+            return _expiryDict
+               .Select(x => new ExpiryRecord { Expiry = x.Key, Num = x.Value.Num, Bytes = x.Value.Bytes })
+               .OrderBy(x => x.Expiry)
+               .ToList();
         }
 
         private void CountExpiry(Record item)
         {
+            var key = string.Empty;
+
             if (item.Expiry > 0)
             {
                 var sub = DateTimeOffset.FromUnixTimeMilliseconds(item.Expiry).Subtract(DateTimeOffset.UtcNow);
 
                 // 0~1h, 1~3h, 3~12h, 12~24h, 24~72h, 72~168h, 168h~
                 var hour = sub.TotalHours;
-
                 if (hour < 1)
                 {
-                    InitOrAdd(_expiryDict, "0~1h", 1);
+                    key = "0~1h";
                 }
                 else if (hour >= 1 && hour < 3)
                 {
-                    InitOrAdd(_expiryDict, "0~3h", 1);
+                    key = "1~3h";
                 }
                 else if (hour >= 3 && hour < 12)
                 {
-                    InitOrAdd(_expiryDict, "3~12h", 1);
+                    key = "3~12h";
                 }
                 else if (hour >= 12 && hour < 24)
                 {
-                    InitOrAdd(_expiryDict, "12~24h", 1);
+                    key = "12~24h";
                 }
                 else if (hour >= 24 && hour < 72)
                 {
-                    InitOrAdd(_expiryDict, "1~3d", 1);
+                    key = "1~3d";
                 }
                 else if (hour >= 72 && hour < 168)
                 {
-                    InitOrAdd(_expiryDict, "3~7d", 1);
+                    key = "3~7d";
                 }
                 else if (hour >= 168)
                 {
-                    InitOrAdd(_expiryDict, ">7d", 1);
+                    key = ">7d";
                 }
             }
             else if (item.Expiry == 0)
             {
-                InitOrAdd(_expiryDict, "None", 1);
+                key = "Permanent";
             }
             else
             {
-                if (_expiryDict.ContainsKey(item.Expiry.ToString()))
-                {
-                    _expiryDict[item.Expiry.ToString()]++;
-                }
-                else
-                {
-                    _expiryDict[item.Expiry.ToString()] = 1;
-                }
+                key = item.Expiry.ToString();
             }
-        }
 
-        private void InitOrAdd(Dictionary<string, ulong> dict, string key, ulong val)
-        {
-            if (dict.ContainsKey(key))
-            {
-                dict[key] += val;
-            }
-            else
-            {
-                dict[key] = val;
-            }
+            InitOrAddStat(this._expiryDict, key, item.Bytes);
         }
 
         private void CalcuLargestKeyPrefix(int num)
@@ -237,16 +224,21 @@ namespace RDBCli
 
         private void CounteByType(Record record)
         {
-            if (this._typeDict.ContainsKey(record.Type))
+            InitOrAddStat(this._typeDict, record.Type, record.Bytes);
+        }
+
+        private void InitOrAddStat(Dictionary<string, CommonStatValue> dict, string key, ulong bytes)
+        {
+            if (dict.ContainsKey(key))
             {
-                this._typeDict[record.Type].Num++;
-                this._typeDict[record.Type].Bytes += record.Bytes;
+                dict[key].Num++;
+                dict[key].Bytes += bytes;
             }
             else
             {
-                this._typeDict[record.Type] = new TypeStatValue
+                dict[key] = new CommonStatValue
                 {
-                    Bytes = record.Bytes,
+                    Bytes = bytes,
                     Num = 1,
                 };
             }

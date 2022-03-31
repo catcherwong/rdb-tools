@@ -11,6 +11,8 @@ namespace RDBCli.Callbacks
         private uint _dbExpires = 0;
 
         private int _dbNum = 0;
+        // For Stream
+        private ulong _listpacksCount;
 
         private RdbDataInfo _rdbDataInfo = new RdbDataInfo();
 
@@ -121,11 +123,14 @@ namespace RDBCli.Callbacks
 
         public void EndStream(byte[] key, ulong items, string last_entry_id, List<StreamGroup> cgroups)
         {
+            _currentRecord.Bytes += SizeofStreamRadixTree(_listpacksCount);
+
             foreach (var cg in cgroups)
             {
                 var pendingLength = (ulong)cg.Pending.Count;
                 _currentRecord.Bytes += SizeofStreamRadixTree(pendingLength);
                 _currentRecord.Bytes += StreamNACK(pendingLength);
+                _currentRecord.Bytes += StreamCG();
 
                 foreach (var c in cg.Consumers)
                 {
@@ -369,9 +374,10 @@ namespace RDBCli.Callbacks
         {
             var keyStr = System.Text.Encoding.UTF8.GetString(key);
             var bytes = TopLevelObjOverhead(key, expiry);
-            bytes += 2 * _pointerSize + 8 + 16;
-            bytes += _pointerSize + 2 * 8;
+            bytes += StreamOverhead();
+            bytes += RaxOverhead();
 
+            _listpacksCount = (ulong)listpacks_count;
             _currentRecord = new Record
             {
                 Key = keyStr,

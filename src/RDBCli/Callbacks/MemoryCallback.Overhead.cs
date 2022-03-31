@@ -163,6 +163,8 @@ typedef struct dictEntry {
             var str = System.Text.Encoding.UTF8.GetString(value);
             if (long.TryParse(str, out var n))
             {
+                // https://github.com/redis/redis/blob/6.2.6/src/ziplist.c#L92-L101
+                // Integer encoded
                 header = 1;
                 if (n < 12) size = 0;
                 else if (n < 256) size = 1;
@@ -174,15 +176,21 @@ typedef struct dictEntry {
             else
             {
                 size = (ulong)value.Length;
+
+                // https://github.com/redis/redis/blob/6.2.6/src/ziplist.c#L80-L91
+                // String value
                 if (size <= 63) header = 1;
                 else if (size <= 16383) header = 2;
                 else header = 5;
             }
 
+            // https://github.com/redis/redis/blob/6.2.6/src/ziplist.c#L56
+            // If this length is smaller than 254 bytes, it will only consume a single byte representing the length as an unsinged 8 bit integer.
+            // When the length is greater than or equal to 254, it will consume 5 bytes.
             ulong prevLen = 1;
-
             if (size >= 254) prevLen = 5;
 
+            // <prevlen> <encoding> <entry-data>
             return prevLen + header + size;
         }
 
@@ -194,18 +202,20 @@ typedef struct dictEntry {
 
         private ulong SkiplistEntiryOverhead()
         {
-            // https://github.com/redis/redis/blob/6.2.6/src/t_zset.c#L73
+            // exit
             return HashtableEntryOverhead() + 2 * _pointerSize + 8 + (_pointerSize + 8) * ZsetRandomLevel();
         }
 
         private ulong RobjOverhead()
         {
-            // https://github.com/redis/redis/blob/unstable/src/server.h#L842
+            // https://github.com/redis/redis/blob/6.2.6/src/server.h#L673
+            // 4 unsigned + 4 unsigned + 24 unsigned + 1 int + 1 pointer
             return 4 + 4 + 24 + 4 + _pointerSize;
         }
 
         private ulong ZsetRandomLevel()
         {
+            // https://github.com/redis/redis/blob/6.2.6/src/t_zset.c#L122
             ulong level = 1;
             var rint = new System.Random().Next(0, 0xFFFF);
 
@@ -220,27 +230,44 @@ typedef struct dictEntry {
 
         private ulong SizeofStreamRadixTree(ulong numElements)
         {
+            // https://github.com/redis/redis/blob/6.2.6/src/rax.h#L133
             var numNodes = (ulong)(numElements * 2.5);
             return 16 * numElements + numNodes * 4 + numNodes * 30 * _longSize;
         }
 
         private ulong StreamOverhead()
         {
-            return 2 * _pointerSize + 8 + 16 + _pointerSize + 8 * 2;
+            // https://github.com/redis/redis/blob/6.2.6/src/stream.h#L16
+            // https://github.com/redis/redis/blob/6.2.6/src/stream.h#L11
+            // 2 pointers + 1 long + 1 streamID ( 2 long )
+            return 2 * _pointerSize + 8 + 16;
+        }
+
+        private ulong RaxOverhead()
+        {
+            // https://github.com/redis/redis/blob/6.2.6/src/rax.h#L133
+            // 1 pointers + 2 long
+            return _pointerSize + 2 * 8;
         }
 
         private ulong StreamConsumer(byte[] name)
         {
+            // https://github.com/redis/redis/blob/6.2.6/src/stream.h#L67
+            // 1 mstime_t + 1 sds + 1 pointer
             return 2 * _pointerSize + 8 + SizeOfString(name);
         }
 
         private ulong StreamCG()
         {
-            return 2 * _pointerSize + 16;
+            // https://github.com/redis/redis/blob/6.2.6/src/stream.h#L51
+            // 1 streamID ( 2 long ) + 2 pointer
+            return 2 * 8 + 2 * _pointerSize ;
         }
 
         private ulong StreamNACK(ulong length)
         {
+            // https://github.com/redis/redis/blob/6.2.6/src/stream.h#L82
+            // 1 pointer + 1 long + 1 mstime_t (1 long)
             return length * (_pointerSize + 8 + 8);
         }
     }

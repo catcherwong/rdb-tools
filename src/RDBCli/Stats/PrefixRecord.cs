@@ -84,4 +84,27 @@ namespace RDBCli
             return $"{Type}-{Bytes}-{Num}";
         }
     }
+
+    internal class ExpiryRecord
+    {
+        /// <summary>
+        /// The expiry category.
+        /// </summary>
+        public string Expiry { get; set; }
+
+        /// <summary>
+        /// The expiry category's total bytes
+        /// </summary>
+        public ulong Bytes { get; set; }
+
+        /// <summary>
+        /// The expiry category's total count
+        /// </summary>
+        public ulong Num { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Expiry}-{Bytes}-{Num}";
+        }
+    }
 }

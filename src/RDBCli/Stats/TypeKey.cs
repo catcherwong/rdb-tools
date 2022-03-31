@@ -59,7 +59,7 @@ namespace RDBCli
         public ulong Elements { get; set; }
     }
 
-    internal class TypeStatValue
+    internal class CommonStatValue
     {
         /// <summary>
         /// The redis type's total bytes
