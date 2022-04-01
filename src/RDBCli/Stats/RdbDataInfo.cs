@@ -6,7 +6,8 @@ namespace RDBCli
     {
         /// <summary>
         /// Do not store all records here!!!!!!!!!
-        /// Consider of RAM in client
+        /// Producer/Consumer mode to handle the parser callback
+        /// Otherwise, client's memory may increase quickly
         /// </summary>
         public BlockingCollection<Record> Records { get; set; } = new BlockingCollection<Record>(1024);
 
@@ -20,6 +21,9 @@ namespace RDBCli
         /// </summary>
         public ulong TotalMem { get; set; }
 
+        /// <summary>
+        /// The creation time of this RDB file, the unit is second
+        /// </summary>
         public long CTime { get; set; }
 
         /// <summary>

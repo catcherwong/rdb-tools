@@ -17,6 +17,7 @@
 		<PackageId>$(AssemblyName)</PackageId>
 		<ToolCommandName>$(AssemblyName)</ToolCommandName>
 		<PackAsTool>true</PackAsTool>
+		<InvariantGlobalization>true</InvariantGlobalization>
 	</PropertyGroup>
 
 	<ItemGroup>

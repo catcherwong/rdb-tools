@@ -133,6 +133,7 @@ typedef struct dictEntry {
             // https://github.com/redis/redis/blob/6.2.6/src/quicklist.h#L105
             // quicklist is a 40 byte struct (on 64-bit systems) describing a quicklist
             // so 40 is ok?
+            // ulong quicklist = 2 * _pointerSize + _longSize + 2 * 4;
             ulong quicklist = 40;
 
             // https://github.com/redis/redis/blob/6.2.6/src/quicklist.h#L124
@@ -202,7 +203,9 @@ typedef struct dictEntry {
 
         private ulong SkiplistEntiryOverhead()
         {
-            // exit
+            // https://github.com/redis/redis/blob/6.2.6/src/t_zset.c#L73
+            // https://github.com/redis/redis/blob/6.2.6/src/server.h#L997
+            // https://github.com/redis/redis/blob/6.2.6/src/server.h#L1001
             return HashtableEntryOverhead() + 2 * _pointerSize + 8 + (_pointerSize + 8) * ZsetRandomLevel();
         }
 

@@ -11,31 +11,43 @@ namespace RDBCli.Commands
 {
     internal class MemoryCommand : Command
     {
+        public static Argument<string> Arg = new Argument<string>("file", "The path of rdb file.");
+        // TODO: check output path valid or not
+        public static Option<string> OutputOption = new Option<string>(new string[] { "--output", "-o" }, "The output path of parsing result.");
+        public static Option<string> OutputTypeOption = new Option<string>(new string[] { "--output-type", "-ot" }, () => "json", "The output type of parsing result.").FromAmong("json", "html");
+        public static Option<int> TopPrefixCountOption = new Option<int>(new string[] { "--top-prefixes", "-tp" }, () => 50, "The number of top key prefixes.");
+        public static Option<int> TopBigKeyCountOption = new Option<int>(new string[] { "--top-bigkeys", "-tb" }, () => 50, "The number of top big keys.");
+
         public MemoryCommand()
             : base("memory", "Get memory info from rdb files")
         {
-            var arg = new Argument<string>("file", "The path of rdb files.");
+            TopPrefixCountOption.AddValidator(x => 
+            {
+                var c = x.GetValueOrDefault<int>();
+                if (c > 200) x.ErrorMessage = "The number can not greater than 200!!";
+            });
 
-            var outputOption = new Option<string>("--output", "The output path of parsing result.");
-            var outputTypeOption = new Option<string>("--output-type", () => "json", "The output type of parsing result.").FromAmong("json", "html");
+            TopBigKeyCountOption.AddValidator(x =>
+            {
+                var c = x.GetValueOrDefault<int>();
+                if (c > 200) x.ErrorMessage = "The number can not greater than 200!!";
+            });
 
-            this.AddOption(outputOption);
-            this.AddOption(outputTypeOption);
-            this.AddArgument(arg);
+            this.AddOption(OutputOption);
+            this.AddOption(OutputTypeOption);
+            this.AddOption(TopPrefixCountOption);
+            this.AddOption(TopBigKeyCountOption);
+            this.AddArgument(Arg);
             
             this.SetHandler((InvocationContext context) =>
             {
-                var files = context.ParseResult.GetValueForArgument<string>(arg);
-                var output = context.ParseResult.GetValueForOption<string>(outputOption);
-                var outputType = context.ParseResult.GetValueForOption<string>(outputTypeOption);
+                var opt = CommandOptions.FromContext(context);
 
-                Do(context, files, output, outputType);
-
-                context.Console.WriteLine($"");
+                Do(context, opt);
             });
         }
 
-        private void Do(InvocationContext context, string files, string output, string outputType)
+        private void Do(InvocationContext context, CommandOptions options)
         {
             var console = context.Console;
             var cb = new clicb.MemoryCallback();
@@ -45,21 +57,21 @@ namespace RDBCli.Commands
             counter.Count();
 
             console.WriteLine($"");
-            console.WriteLine($"Prepare to parse [{files}]");
+            console.WriteLine($"Prepare to parse [{options.Files}]");
             console.WriteLine($"Please wait for a moment...\n");
 
             var sw = new Stopwatch();
             sw.Start();
 
             var parser = new RDBParser.BinaryReaderRDBParser(cb);
-            parser.Parse(files);
+            parser.Parse(options.Files);
 
             sw.Stop();
             console.WriteLine($"parse cost: {sw.ElapsedMilliseconds}ms");
             sw.Start();
 
-            var largestRecords = counter.GetLargestRecords(50);
-            var largestKeyPrefix = counter.GetLargestKeyPrefixes(50);
+            var largestRecords = counter.GetLargestRecords(options.TopBigKeyCount);
+            var largestKeyPrefix = counter.GetLargestKeyPrefixes(options.TopPrefixCount);
             var typeRecords = counter.GetTypeRecords();
             var expiryInfo = counter.GetExpiryInfo();
 
@@ -69,27 +81,20 @@ namespace RDBCli.Commands
             dict.Add("cTime", rdbDataInfo.CTime);
             dict.Add("count", rdbDataInfo.Count);
             dict.Add("rdbVer", rdbDataInfo.RdbVer);
-            dict.Add("redisVer", rdbDataInfo.RedisVer);
+            dict.Add("redisVer", string.IsNullOrWhiteSpace(rdbDataInfo.RedisVer) ? CommonHelper.GetFuzzyRedisVersion(rdbDataInfo.RdbVer) : rdbDataInfo.RedisVer);
             dict.Add("redisBits", rdbDataInfo.RedisBits);
             dict.Add("typeRecords", typeRecords);
             dict.Add("largestRecords", largestRecords);
             dict.Add("largestKeyPrefix", largestKeyPrefix);
             dict.Add("expiryInfo", expiryInfo);
 
-            var path = string.Empty;
-
-            if (outputType == "json")
-            {
-                path = WriteJsonFile(dict, output);
-            }
-            else
-            { 
-                path = WriteHtmlFile(dict, output);
-            }
+            var path = options.OutputType == "json"
+                ? WriteJsonFile(dict, options.Output)
+                : WriteHtmlFile(dict, options.Output);
 
             sw.Stop();
             console.WriteLine($"total cost: {sw.ElapsedMilliseconds}ms");
-            console.WriteLine($"result path: {path}");
+            console.WriteLine($"result path: {path}\n");
         }
 
         private string WriteJsonFile(Dictionary<string, object> dict, string output)
@@ -138,6 +143,33 @@ namespace RDBCli.Commands
             fs.Write(bytes, 0, bytes.Length);
 
             return path;
+        }
+
+        private class CommandOptions
+        {
+            public string Files { get; set; }
+            public string Output { get; set; }
+            public string OutputType { get; set; }
+            public int TopPrefixCount { get; set; }
+            public int TopBigKeyCount { get; set; }
+
+            public static CommandOptions FromContext(InvocationContext context)
+            {
+                var files = context.ParseResult.GetValueForArgument<string>(Arg);
+                var output = context.ParseResult.GetValueForOption<string>(OutputOption);
+                var outputType = context.ParseResult.GetValueForOption<string>(OutputTypeOption);
+                var pc = context.ParseResult.GetValueForOption<int>(TopPrefixCountOption);
+                var bc = context.ParseResult.GetValueForOption<int>(TopBigKeyCountOption);
+
+                return new CommandOptions
+                {
+                    Files = files,
+                    Output = output,
+                    OutputType = outputType,
+                    TopBigKeyCount = bc,
+                    TopPrefixCount = pc,
+                };
+            }
         }
     }
 }

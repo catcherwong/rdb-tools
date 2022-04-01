@@ -18,7 +18,7 @@ namespace RDBCli
 
             };
 
-            root.Description = "rdb-cli is a command line tool for redis rdb files.";
+            root.Description = "rdb-cli is a command line tool, analysis redis rdb files.";
 
             var parser = new CommandLineBuilder(root)
                 .UseHelp()
