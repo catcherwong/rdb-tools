@@ -14,16 +14,13 @@ namespace RDBCli.Callbacks
 
         private ulong ElementLength(byte[] element)
         {
-            // TODO: byte[] => long
-            var str = System.Text.Encoding.UTF8.GetString(element);
-            if (long.TryParse(str, out _)) return 8;
+            if (RDBParser.RedisRdbObjectHelper.IsInt(element, out _)) return 8;
             return (ulong)element.Length;
         }
 
         private ulong SizeOfString(byte[] @string)
         {
-            var str = System.Text.Encoding.UTF8.GetString(@string);
-            if (int.TryParse(str, out var num))
+            if (RDBParser.RedisRdbObjectHelper.IsInt(@string, out var num))
             {
                 if (num < 10000 & num > 0) return 0;
                 return 8;
@@ -161,8 +158,7 @@ typedef struct dictEntry {
             ulong header = 0;
             ulong size = 0;
 
-            var str = System.Text.Encoding.UTF8.GetString(value);
-            if (long.TryParse(str, out var n))
+            if (RDBParser.RedisRdbObjectHelper.IsInt(value, out var n))
             {
                 // https://github.com/redis/redis/blob/6.2.6/src/ziplist.c#L92-L101
                 // Integer encoded

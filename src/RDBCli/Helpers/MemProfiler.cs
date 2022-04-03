@@ -68,8 +68,7 @@ namespace RDBCli
 
         internal static ulong SizeOfString(byte[] @string)
         {
-            var str = System.Text.Encoding.UTF8.GetString(@string);
-            if (int.TryParse(str, out var num))
+            if (RDBParser.RedisRdbObjectHelper.IsInt(@string, out var num))
             {
                 if (num < 10000 & num > 0) return 0;
                 return 8;

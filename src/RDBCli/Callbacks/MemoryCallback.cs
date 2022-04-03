@@ -192,8 +192,7 @@ namespace RDBCli.Callbacks
             else if (_currentRecord.Encoding.Equals("linkedlist"))
             {
                 ulong size = 0;
-                var str = System.Text.Encoding.UTF8.GetString(value);
-                if (!int.TryParse(str, out _))
+                if (!RDBParser.RedisRdbObjectHelper.IsInt(value, out _))
                 {
                     size = SizeOfString(value);
                 }

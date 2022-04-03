@@ -85,13 +85,13 @@ namespace RDBParserTests
 
             var databases = callback.GetDatabases();
 
-            Assert.Equal(Encoding.UTF8.GetBytes("Positive 8 bit integer"), databases[0][new byte[] { 125 }]);
-            Assert.Equal(Encoding.UTF8.GetBytes("Positive 16 bit integer"), databases[0][System.BitConverter.GetBytes(0xABAB)]);
-            Assert.Equal(Encoding.UTF8.GetBytes("Positive 32 bit integer"), databases[0][System.BitConverter.GetBytes(0x0AEDD325)]);
+            Assert.Equal(Encoding.UTF8.GetBytes("Positive 8 bit integer"), databases[0][RedisRdbObjectHelper.ConvertInt32ToBytes(125)]);
+            Assert.Equal(Encoding.UTF8.GetBytes("Positive 16 bit integer"), databases[0][RedisRdbObjectHelper.ConvertInt32ToBytes(0xABAB)]);
+            Assert.Equal(Encoding.UTF8.GetBytes("Positive 32 bit integer"), databases[0][RedisRdbObjectHelper.ConvertInt32ToBytes(0x0AEDD325)]);
 
-            Assert.Equal(Encoding.UTF8.GetBytes("Negative 8 bit integer"), databases[0][TestHelper.GetNegativeNumberBytes(-123)]);
-            Assert.Equal(Encoding.UTF8.GetBytes("Negative 16 bit integer"), databases[0][TestHelper.GetNegativeNumberBytes(-0x7325)]);
-            Assert.Equal(Encoding.UTF8.GetBytes("Negative 32 bit integer"), databases[0][TestHelper.GetNegativeNumberBytes(-0x0AEDD325)]);
+            Assert.Equal(Encoding.UTF8.GetBytes("Negative 8 bit integer"), databases[0][RedisRdbObjectHelper.ConvertInt32ToBytes(-123)]);
+            Assert.Equal(Encoding.UTF8.GetBytes("Negative 16 bit integer"), databases[0][RedisRdbObjectHelper.ConvertInt32ToBytes(-0x7325)]);
+            Assert.Equal(Encoding.UTF8.GetBytes("Negative 32 bit integer"), databases[0][RedisRdbObjectHelper.ConvertInt32ToBytes(-0x0AEDD325)]);
         }
 
         [Fact]
