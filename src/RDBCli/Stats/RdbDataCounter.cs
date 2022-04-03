@@ -28,9 +28,10 @@ namespace RDBCli
             this._expiryDict = new Dictionary<string, CommonStatValue>();
         }
 
-        public void Count()
+        public Task Count()
         {
-            Task.Factory.StartNew(() => 
+            System.Threading.CancellationTokenSource cts = new System.Threading.CancellationTokenSource();
+            var task = Task.Factory.StartNew(() => 
             {
                 while (!_records.IsAddingCompleted)
                 {
@@ -55,7 +56,10 @@ namespace RDBCli
                 }
 
                 CalcuLargestKeyPrefix(500);
-            });
+                cts.Cancel();
+            }, cts.Token);
+
+            return task;
         }
        
         public List<PrefixRecord> GetLargestKeyPrefixes(int num = 100)

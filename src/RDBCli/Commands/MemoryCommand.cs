@@ -12,8 +12,7 @@ namespace RDBCli.Commands
     internal class MemoryCommand : Command
     {
         public static Argument<string> Arg = new Argument<string>("file", "The path of rdb file.");
-        // TODO: check output path valid or not
-        public static Option<string> OutputOption = new Option<string>(new string[] { "--output", "-o" }, "The output path of parsing result.");
+        public static Option<string> OutputOption = new Option<string>(new string[] { "--output", "-o" }, "The output path of parsing result.").LegalFilePathsOnly();
         public static Option<string> OutputTypeOption = new Option<string>(new string[] { "--output-type", "-ot" }, () => "json", "The output type of parsing result.").FromAmong("json", "html");
         public static Option<int> TopPrefixCountOption = new Option<int>(new string[] { "--top-prefixes", "-tp" }, () => 50, "The number of top key prefixes.");
         public static Option<int> TopBigKeyCountOption = new Option<int>(new string[] { "--top-bigkeys", "-tb" }, () => 50, "The number of top big keys.");
@@ -21,7 +20,7 @@ namespace RDBCli.Commands
         public MemoryCommand()
             : base("memory", "Get memory info from rdb files")
         {
-            TopPrefixCountOption.AddValidator(x => 
+            TopPrefixCountOption.AddValidator(x =>
             {
                 var c = x.GetValueOrDefault<int>();
                 if (c > 200) x.ErrorMessage = "The number can not greater than 200!!";
@@ -38,7 +37,7 @@ namespace RDBCli.Commands
             this.AddOption(TopPrefixCountOption);
             this.AddOption(TopBigKeyCountOption);
             this.AddArgument(Arg);
-            
+
             this.SetHandler((InvocationContext context) =>
             {
                 var opt = CommandOptions.FromContext(context);
@@ -54,7 +53,7 @@ namespace RDBCli.Commands
             var rdbDataInfo = cb.GetRdbDataInfo();
 
             var counter = new RdbDataCounter(rdbDataInfo.Records);
-            counter.Count();
+            var task = counter.Count();
 
             console.WriteLine($"");
             console.WriteLine($"Prepare to parse [{options.Files}]");
@@ -69,6 +68,8 @@ namespace RDBCli.Commands
             sw.Stop();
             console.WriteLine($"parse cost: {sw.ElapsedMilliseconds}ms");
             sw.Start();
+
+            task.Wait();
 
             var largestRecords = counter.GetLargestRecords(options.TopBigKeyCount);
             var largestKeyPrefix = counter.GetLargestKeyPrefixes(options.TopPrefixCount);
@@ -88,62 +89,57 @@ namespace RDBCli.Commands
             dict.Add("largestKeyPrefix", largestKeyPrefix);
             dict.Add("expiryInfo", expiryInfo);
 
-            var path = options.OutputType == "json"
-                ? WriteJsonFile(dict, options.Output)
-                : WriteHtmlFile(dict, options.Output);
+            var path = WriteFile(dict, options.Output, options.OutputType);
 
             sw.Stop();
             console.WriteLine($"total cost: {sw.ElapsedMilliseconds}ms");
             console.WriteLine($"result path: {path}\n");
         }
 
-        private string WriteJsonFile(Dictionary<string, object> dict, string output)
+        private string WriteFile(Dictionary<string, object> dict, string output, string type)
         {
-            var options = new JsonSerializerOptions
+            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"res.{type}");
+
+            if (!string.IsNullOrWhiteSpace(output))
             {
-                WriteIndented = true,
-                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-            };
+                if (!Directory.Exists(output)) Directory.CreateDirectory(output);
+                path = Path.Combine(output, $"res.{type}");
+            }
 
-            var stream = JsonSerializer.SerializeToUtf8Bytes(dict, options);
+            byte[] bytes = null;
 
-            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "res.json");
-
-            if (!string.IsNullOrWhiteSpace(output)) path = output;
-
-            using FileStream fs = new(path, FileMode.Create, FileAccess.Write);
-            fs.Write(stream, 0, stream.Length);
-
-            return path;
-        }
-
-        private string WriteHtmlFile(Dictionary<string, object> dict, string output)
-        {
-            var options = new JsonSerializerOptions
+            if (type.Equals("json"))
             {
-                WriteIndented = true,
-                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-            };
+                bytes = JsonSerializer.SerializeToUtf8Bytes(dict, _jsonOptions);
+            }
+            else if (type.Equals("html"))
+            {
+                var str = JsonSerializer.Serialize(dict, _jsonOptions);
+                var tplStream = this.GetType().Assembly.GetManifestResourceStream("RDBCli.Tpl.tpl.html");
+                var tpl = string.Empty;
 
-            var str = JsonSerializer.Serialize(dict, options);
+                using var reader = new StreamReader(tplStream, System.Text.Encoding.UTF8);
+                tpl = reader.ReadToEnd();
+                tpl = tpl.Replace("{{CLIDATA}}", str);
 
-            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "res.html");
+                bytes = System.Text.Encoding.UTF8.GetBytes(tpl);
+            }
+            else
+            {
+                bytes = new byte[1];
+            }
 
-            if (!string.IsNullOrWhiteSpace(output)) path = output;
-
-            var tplStream = this.GetType().Assembly.GetManifestResourceStream("RDBCli.Tpl.tpl.html");
-            var tpl = string.Empty;
-
-            using var reader = new StreamReader(tplStream, System.Text.Encoding.UTF8);
-            tpl = reader.ReadToEnd();
-            tpl = tpl.Replace("{{CLIDATA}}", str);
-
-            var bytes = System.Text.Encoding.UTF8.GetBytes(tpl);
             using FileStream fs = new(path, FileMode.Create, FileAccess.Write);
             fs.Write(bytes, 0, bytes.Length);
 
             return path;
         }
+
+        private static JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+        {
+            // WriteIndented = true,
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        };
 
         private class CommandOptions
         {
