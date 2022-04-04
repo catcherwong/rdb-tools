@@ -1,0 +1,72 @@
+name: Release_CLI_Unstable
+
+on:
+    push:
+      tags:
+        - "*.*.*-beta*"
+        - "*.*.*-rc*"
+
+jobs:
+    publish_cli:
+      name: Build and upload cli artifact
+      runs-on: ubuntu-latest    
+      strategy:
+          matrix:
+              targets:
+                  [
+                      "linux-x64",
+                      "linux-musl-x64",
+                      "linux-arm",
+                      "linux-arm64",
+                      "osx-x64",
+                      "win-x64",
+                      "win-x86",
+                      "win-arm",
+                      "win-arm64",
+                  ]
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v1
+        - name: Set up .NET Core
+          uses: actions/setup-dotnet@v1
+          with:
+              dotnet-version: "6.0.x"
+        - name: Publish .NET app
+          env:
+              RID: ${{ matrix.targets }}
+              VERSION: ${{ github.ref_name }}
+          run: dotnet publish src/RDBCli/RDBCli.csproj -c Release -r $RID -p:PublishSingleFile=true -p:PublishTrimmed=true -p:DebugType=None -p:DebugSymbols=false --self-contained true --output /home/runner/work/clis/$RID
+
+        - name: Package assets
+          env:
+              RID: ${{ matrix.targets }}
+              VERSION: ${{ github.ref_name }}
+          run: |
+              mkdir /home/runner/work/release
+              ls /home/runner/work/clis/
+              zip -j /home/runner/work/release/rdb-cli.$VERSION.$RID.zip /home/runner/work/clis/$RID/*
+        - name: Upload artifacts
+          uses: actions/upload-artifact@v2
+          with:
+              name: rdb-cli
+              path: /home/runner/work/release
+
+    release_cli:
+        name: Publish release
+        needs: publish_cli
+        runs-on: ubuntu-latest
+    
+        steps:          
+          - name: Download build artifacts
+            uses: actions/download-artifact@v1
+            with:
+              name: rdb-cli
+          - name: list rdb-cli
+            run: ls rdb-cli    
+          - name: Release
+            uses: softprops/action-gh-release@v1
+            if: startsWith(github.ref, 'refs/tags/')
+            with:
+                prerelease: true
+                files: rdb-cli/**
+                generate_release_notes: true
