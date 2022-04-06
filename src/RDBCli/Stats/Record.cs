@@ -1,6 +1,6 @@
 ﻿namespace RDBCli
 {
-    internal class Record
+    public class Record
     {
         /// <summary>
         /// The redis database that this record in

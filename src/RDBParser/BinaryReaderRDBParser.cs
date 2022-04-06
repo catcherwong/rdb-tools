@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace RDBParser
@@ -100,6 +101,11 @@ namespace RDBParser
                             continue;
                         }
 
+                        if (opType == Constant.OpCode.FUNCTION || opType == Constant.OpCode.FUNCTION2)
+                        { 
+                            // TODO function
+                        }
+
                         if (opType == Constant.OpCode.EOF)
                         {
                             _callback.EndDatabase((int)db);
@@ -148,6 +154,7 @@ namespace RDBParser
             // filter databse
             if (database >= 0 
                 && _filter.Databases != null 
+                && _filter.Databases.Any()
                 && !_filter.Databases.Contains(database))
             {
                 return false;
@@ -156,6 +163,7 @@ namespace RDBParser
             // filter data type
             if (dataType >= 0
                 && _filter.Types != null
+                && _filter.Types.Any()
                 && !_filter.Types.Contains(GetLogicalType(dataType)))
             {
                 return false;

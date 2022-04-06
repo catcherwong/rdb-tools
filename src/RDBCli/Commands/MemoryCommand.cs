@@ -5,6 +5,7 @@ using System.CommandLine.Invocation;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using clicb = RDBCli.Callbacks;
 
 namespace RDBCli.Commands
@@ -16,6 +17,8 @@ namespace RDBCli.Commands
         public static Option<string> OutputTypeOption = new Option<string>(new string[] { "--output-type", "-ot" }, () => "json", "The output type of parsing result.").FromAmong("json", "html");
         public static Option<int> TopPrefixCountOption = new Option<int>(new string[] { "--top-prefixes", "-tp" }, () => 50, "The number of top key prefixes.");
         public static Option<int> TopBigKeyCountOption = new Option<int>(new string[] { "--top-bigkeys", "-tb" }, () => 50, "The number of top big keys.");
+        public static Option<List<int>> DBsOption = new Option<List<int>>(new string[] { "--db" }, "The redis databases.");
+        public static Option<List<string>> TypesOption = new Option<List<string>>(new string[] { "--type" }, "The redis types.");
 
         public MemoryCommand()
             : base("memory", "Get memory info from rdb files")
@@ -36,6 +39,8 @@ namespace RDBCli.Commands
             this.AddOption(OutputTypeOption);
             this.AddOption(TopPrefixCountOption);
             this.AddOption(TopBigKeyCountOption);
+            this.AddOption(DBsOption);
+            this.AddOption(TypesOption);
             this.AddArgument(Arg);
 
             this.SetHandler((InvocationContext context) =>
@@ -62,7 +67,7 @@ namespace RDBCli.Commands
             var sw = new Stopwatch();
             sw.Start();
 
-            var parser = new RDBParser.BinaryReaderRDBParser(cb);
+            var parser = new RDBParser.BinaryReaderRDBParser(cb, options.ParserFilter);
             parser.Parse(options.Files);
 
             sw.Stop();
@@ -148,6 +153,7 @@ namespace RDBCli.Commands
             public string OutputType { get; set; }
             public int TopPrefixCount { get; set; }
             public int TopBigKeyCount { get; set; }
+            public RDBParser.ParserFilter ParserFilter { get; set; }
 
             public static CommandOptions FromContext(InvocationContext context)
             {
@@ -156,7 +162,15 @@ namespace RDBCli.Commands
                 var outputType = context.ParseResult.GetValueForOption<string>(OutputTypeOption);
                 var pc = context.ParseResult.GetValueForOption<int>(TopPrefixCountOption);
                 var bc = context.ParseResult.GetValueForOption<int>(TopBigKeyCountOption);
+                var databases = context.ParseResult.GetValueForOption<List<int>>(DBsOption);
+                var types = context.ParseResult.GetValueForOption<List<string>>(TypesOption);
 
+                var parseFilter = new RDBParser.ParserFilter()
+                {
+                    Databases = databases,
+                    Types = types
+                };
+                
                 return new CommandOptions
                 {
                     Files = files,
@@ -164,6 +178,7 @@ namespace RDBCli.Commands
                     OutputType = outputType,
                     TopBigKeyCount = bc,
                     TopPrefixCount = pc,
+                    ParserFilter = parseFilter
                 };
             }
         }

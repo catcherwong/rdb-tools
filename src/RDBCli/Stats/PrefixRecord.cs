@@ -2,7 +2,7 @@
 
 namespace RDBCli
 {
-    internal class PrefixRecord
+    public class PrefixRecord
     {
         /// <summary>
         /// The redis type, such as string hash..
@@ -62,7 +62,7 @@ namespace RDBCli
         }
     }
 
-    internal class TypeRecord
+    public class TypeRecord
     {
         /// <summary>
         /// The redis type, such as string hash..
@@ -85,7 +85,7 @@ namespace RDBCli
         }
     }
 
-    internal class ExpiryRecord
+    public class ExpiryRecord
     {
         /// <summary>
         /// The expiry category.

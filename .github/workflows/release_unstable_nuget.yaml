@@ -2,8 +2,9 @@ name: Release_NUGET_Unstable
 
 on:
     push:
-      branches:
-      - main
+      tags:
+        - "*.*.*-beta*"
+        - "*.*.*-rc*"
 
 jobs:
   publish_nuget:    

@@ -212,5 +212,4 @@ namespace RDBParser
         /// </summary>
         void EndRDB();
     }
-
 }

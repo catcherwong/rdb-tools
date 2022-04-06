@@ -94,8 +94,10 @@ namespace RDBParser
             {
                 ReadHashFromZiplist(br);
             }
-            else if (encType == Constant.DataType.LIST_QUICKLIST)
+            else if (encType == Constant.DataType.LIST_QUICKLIST
+                || encType == Constant.DataType.LIST_QUICKLIST_2)
             {
+                // TODO: LIST_QUICKLIST_2
                 ReadListFromQuickList(br);
             }
             else if (encType == Constant.DataType.MODULE)
@@ -106,9 +108,19 @@ namespace RDBParser
             {
                 ReadModule(br);
             }
-            else if (encType == Constant.DataType.STREAM_LISTPACKS)
+            else if (encType == Constant.DataType.STREAM_LISTPACKS
+                || encType == Constant.DataType.STREAM_LISTPACKS_2)
             {
+                // TODO: STREAM_LISTPACKS_2
                 ReadStream(br);
+            }
+            else if (encType == Constant.DataType.HASH_LISTPACK)
+            {
+                // TODO: HASH_LISTPACK
+            }
+            else if (encType == Constant.DataType.ZSET_LISTPACK)
+            {
+                // TODO: ZSET_LISTPACK
             }
             else
             {

@@ -253,6 +253,7 @@ namespace RDBCli.Callbacks
                 NumOfElem = length,
                 Expiry = expiry,
                 Database = _dbNum,
+                LenOfLargestElem = length,
             };
 
             _rdbDataInfo.TotalMem += record.Bytes;
