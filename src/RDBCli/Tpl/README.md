@@ -6,3 +6,5 @@ It contains some of the following components:
 - jquery
 - chart.js
 - bootstrap-table
+
+> NOTE: When update this file, do not forget to update **TplHtmlString** in `Helpers/CommonHelper.cs`.

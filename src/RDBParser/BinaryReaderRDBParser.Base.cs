@@ -98,7 +98,7 @@ namespace RDBParser
                 || encType == Constant.DataType.LIST_QUICKLIST_2)
             {
                 // TODO: LIST_QUICKLIST_2
-                ReadListFromQuickList(br);
+                ReadListFromQuickList(br, encType);
             }
             else if (encType == Constant.DataType.MODULE)
             {
@@ -211,7 +211,7 @@ namespace RDBParser
             }
         }
 
-        private void ReadListFromQuickList(BinaryReader br)
+        private void ReadListFromQuickList(BinaryReader br, int encType)
         {
             var length = br.ReadLength();
             var totalSize = 0;
@@ -222,9 +222,23 @@ namespace RDBParser
             info.Zips = length;
             _callback.StartList(_key, _expiry, info);
 
+            //var container = Constant.QuickListContainerFormats.PACKED;
+
             while (length > 0)
             {
                 length--;
+
+                // LIST_QUICKLIST_2
+                //if (encType == Constant.DataType.LIST_QUICKLIST_2)
+                //{
+                //    container = br.ReadLength();
+
+                //    if (container != Constant.QuickListContainerFormats.PACKED 
+                //        && container != Constant.QuickListContainerFormats.PLAIN)
+                //    {
+                //        throw new RDBParserException("Quicklist integrity check failed.");
+                //    }
+                //}
 
                 var rawString = br.ReadStr();
                 totalSize += rawString.Length;

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
@@ -7,28 +7,18 @@
 		<RepositoryUrl>https://github.com/catcherwong/rdb-tools</RepositoryUrl>
 		<Description>rdb-cli is a command line tool for redis rdb files.</Description>
 		<PackageTags>csharp,rdb,parser,redis,cli</PackageTags>
-		<VersionPrefix>0.2.0</VersionPrefix>
+		<VersionPrefix>0.1.0</VersionPrefix>
 		<VersionSuffix></VersionSuffix>
 		<Authors>catcherwong</Authors>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-
+		<LangVersion>preview</LangVersion>
 		<AssemblyName>rdb-cli</AssemblyName>
 		<PackageId>$(AssemblyName)</PackageId>
 		<ToolCommandName>$(AssemblyName)</ToolCommandName>
 		<PackAsTool>true</PackAsTool>
 		<InvariantGlobalization>true</InvariantGlobalization>
 	</PropertyGroup>
-
-	<ItemGroup>
-	  <None Remove="Tpl\tpl.html" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <EmbeddedResource Include="Tpl\tpl.html">
-	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-	  </EmbeddedResource>
-	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="System.CommandLine" Version="2.0.0-beta3.22114.1" />

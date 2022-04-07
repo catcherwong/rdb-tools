@@ -117,5 +117,11 @@
             public const uint DOUBLE = 4;
             public const uint STRING = 5;
         }
+
+        public static class QuickListContainerFormats
+        {
+            public const ulong PLAIN = 1;
+            public const ulong PACKED = 2;
+        }
     }
 }

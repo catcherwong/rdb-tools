@@ -148,7 +148,7 @@
             pagination: true,
             pageSize: 10,
             pageNumber: 1,
-        })
+        });
 
         $('#topBigKeysTable').bootstrapTable({
             data: cliData.largestRecords,
@@ -189,7 +189,7 @@
             pagination: true,
             pageSize: 10,
             pageNumber: 1,
-        })
+        });
 
         function buildTypeNumChart() {
             const typeChartLabels = cliData.typeRecords.map(item => item.Type);
@@ -202,7 +202,7 @@
                 'Distribution of Keys',
                 formatNumber,
                 'typeNum');
-        }
+        };
 
         function buildTypeByteChart() {
             const typeChartLabels = cliData.typeRecords.map(item => item.Type);
@@ -215,7 +215,7 @@
                 'Memory Usage of Keys',
                 formatBytes,
                 'typeByte');
-        }
+        };
 
         function buildExpiryNumChart() {
             const expiryLabels = cliData.expiryInfo.map(item => item.Expiry);
@@ -228,7 +228,7 @@
                 'Distribution of Key Expiration Time (Quantity)',
                 formatNumber,
                 'expiryNum');
-        }
+        };
 
         function buildExpiryByteChart() {
             const expiryLabels = cliData.expiryInfo.map(item => item.Expiry);
@@ -241,7 +241,7 @@
                 'Distribution of Key Expiration Time (Memory)',
                 formatBytes,
                 'expiryByte');
-        }
+        };
 
         function buildBarChart(labels, dsData, dsLabel, title, formaterFunc, eleId) {
             const data = {
@@ -282,7 +282,7 @@
 
             const ctx = document.getElementById(eleId);
             new Chart(ctx, config);
-        }
+        };
 
         function formatNumber(num) {
             const k = 1000;
@@ -301,7 +301,7 @@
             else {
                 return (num / b).toFixed(1) + 'B'
             }
-        }
+        };
 
         function formatBytes(bytes) {
             const kb = 1024;
@@ -320,7 +320,7 @@
             else {
                 return (bytes / gb).toFixed(1) + 'GB'
             }
-        }
+        };
 
         function formatExpiry(time) {
             if (time == 0) {
@@ -335,7 +335,7 @@
                 let second = date.getSeconds();
                 return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + second;
             }
-        }
+        };
     </script>
 </body>
 </html>

@@ -120,11 +120,7 @@ namespace RDBCli.Commands
             else if (type.Equals("html"))
             {
                 var str = JsonSerializer.Serialize(dict, _jsonOptions);
-                var tplStream = this.GetType().Assembly.GetManifestResourceStream("RDBCli.Tpl.tpl.html");
-                var tpl = string.Empty;
-
-                using var reader = new StreamReader(tplStream, System.Text.Encoding.UTF8);
-                tpl = reader.ReadToEnd();
+                var tpl = CommonHelper.TplHtmlString;
                 tpl = tpl.Replace("{{CLIDATA}}", str);
 
                 bytes = System.Text.Encoding.UTF8.GetBytes(tpl);
