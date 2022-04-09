@@ -16,12 +16,12 @@ namespace RDBParser
 
             while (listPacks > 0)
             {
-                listPacks--;
-
                 // the master ID
                 var entityId = br.ReadStr();
                 var data = br.ReadStr();
                 _callback.StreamListPack(_key, entityId, data);
+
+                listPacks--;
             }
 
             // total number of items inside the stream
@@ -68,21 +68,22 @@ namespace RDBParser
                 }
 
                 // the global PEL for this consumer group
-                var pending = br.ReadLength();
+                var pelSize = br.ReadLength();
                 var groupPendingEntries = new List<StreamPendingEntity>();
-                while (pending > 0)
+                while (pelSize > 0)
                 {
+                    // nack
                     var eId = br.ReadBytes(16);
-                    var delivery_time = br.ReadUInt64();
-                    var delivery_count = br.ReadLength();
+                    var deliveryTime = br.ReadUInt64();
+                    var deliveryCount = br.ReadLength();
                     groupPendingEntries.Add(new StreamPendingEntity
                     {
                         Id = eId,
-                        DeliveryTime = delivery_time,
-                        DeliveryCount = delivery_count,
+                        DeliveryTime = deliveryTime,
+                        DeliveryCount = deliveryCount,
                     });
 
-                    pending--;
+                    pelSize--;
                 }
 
                 // the consumers and their local PELs
@@ -94,17 +95,18 @@ namespace RDBParser
                     var seenTime = br.ReadUInt64();
 
                     // the PEL about entries owned by this specific consumer
-                    pending = br.ReadLength();
+                    pelSize = br.ReadLength();
                     var consumerPendingEntries = new List<StreamConsumerPendingEntity>();
-                    while (pending > 0)
+                    while (pelSize > 0)
                     {
+                        // streamID
                         var eId = br.ReadBytes(16);
                         consumerPendingEntries.Add(new StreamConsumerPendingEntity
                         {
                             Id = eId
                         });
 
-                        pending--;
+                        pelSize--;
                     }
 
                     consumersData.Add(new StreamConsumerEntity

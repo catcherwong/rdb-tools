@@ -111,7 +111,6 @@ namespace RDBParser
             else if (encType == Constant.DataType.STREAM_LISTPACKS
                 || encType == Constant.DataType.STREAM_LISTPACKS_2)
             {
-                // TODO: STREAM_LISTPACKS_2
                 ReadStream(br, encType);
             }
             else if (encType == Constant.DataType.HASH_LISTPACK)
