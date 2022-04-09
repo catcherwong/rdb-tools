@@ -15,6 +15,7 @@ namespace RDBParserTests
         private Dictionary<int, Dictionary<byte[], Dictionary<byte[], byte[]>>> _hashs = new Dictionary<int, Dictionary<byte[], Dictionary<byte[], byte[]>>>();
         private Dictionary<int, Dictionary<byte[], List<byte[]>>> _sets = new Dictionary<int, Dictionary<byte[], List<byte[]>>>();
         private Dictionary<int, Dictionary<byte[], Dictionary<byte[], double>>> _sortedSets = new Dictionary<int, Dictionary<byte[], Dictionary<byte[], double>>>();
+        private Dictionary<int, Dictionary<byte[], List<StreamEntity>>> _streamGroup = new Dictionary<int, Dictionary<byte[], List<StreamEntity>>>();
 
         public TestReaderCallback(Xunit.Abstractions.ITestOutputHelper output)
         {
@@ -41,7 +42,10 @@ namespace RDBParserTests
 
         public Dictionary<int, Dictionary<byte[], Dictionary<byte[], double>>> GetSortedSets()
            => _sortedSets;
-        
+
+        public Dictionary<int, Dictionary<byte[], List<StreamEntity>>> GetStreamEntities()
+            => _streamGroup;
+
         public void AuxField(byte[] key, byte[] value)
         {
             System.Diagnostics.Trace.WriteLine(System.Text.Encoding.UTF8.GetString(key));
@@ -112,17 +116,14 @@ namespace RDBParserTests
                 throw new System.Exception($"Lengths mismatch on hash {key}, expected length = {_lengths[_database][key]}, actual = {_sortedSets[_database][key].Count}");
         }
 
-        public void EndStream(byte[] key, ulong items, string last_entry_id, List<StreamGroup> cgroups)
+        public void EndStream(byte[] key, StreamEntity entity)
         {
-            if (!_hashs[_database].ContainsKey(key))
+            if (!_streamGroup[_database].ContainsKey(key))
                 throw new System.Exception($"start_stream not called for key = {key}");
 
-            if (!_lengths.ContainsKey(_database))
-            {
-                _lengths[_database] = new Dictionary<byte[], long>();
-            }
+            _lengths[_database][key] = (long)entity.Length;
 
-            _lengths[_database][key] = (long)items;
+            _streamGroup[_database][key].Add(entity);
         }
 
         public void HandleModuleData(byte[] key, ulong opCode, byte[] data)
@@ -174,6 +175,7 @@ namespace RDBParserTests
             _hashs[_database] = new Dictionary<byte[], Dictionary<byte[], byte[]>>(ByteArrayComparer.Default);
             _sets[_database] = new Dictionary<byte[], List<byte[]>>(ByteArrayComparer.Default);
             _sortedSets[_database] = new Dictionary<byte[], Dictionary<byte[], double>>(ByteArrayComparer.Default);
+            _streamGroup[_database] = new Dictionary<byte[], List<StreamEntity>>(ByteArrayComparer.Default);
         }
 
         public void StartHash(byte[] key, long length, long expiry, Info info)
@@ -267,10 +269,10 @@ namespace RDBParserTests
 
         public void StartStream(byte[] key, long listpacks_count, long expiry, Info info)
         {
-            if (_hashs[_database].ContainsKey(key))
+            if (_streamGroup[_database].ContainsKey(key))
                 throw new System.Exception($"start_stream called with key {key} that already exists");
             else
-                _hashs[_database][key] = new Dictionary<byte[], byte[]>();
+                _streamGroup[_database][key] = new List<StreamEntity>();
 
             if (expiry > 0)
                 _expiries[_database][key] = expiry;
@@ -278,13 +280,13 @@ namespace RDBParserTests
 
         public void StreamListPack(byte[] key, byte[] entry_id, byte[] data)
         {
-            if (!_hashs[_database].ContainsKey(key))
-                throw new System.Exception("start_hash not called for key =");
+            if (!_streamGroup[_database].ContainsKey(key))
+                throw new System.Exception("start_stream not called for key = {key}");
 
             _output.WriteLine(Encoding.UTF8.GetString(key));
-            _output.WriteLine(Encoding.UTF8.GetString(entry_id));
+            _output.WriteLine(RedisRdbObjectHelper.GetStreamId(entry_id));
             _output.WriteLine(Encoding.UTF8.GetString(data));
-            _hashs[_database][key][entry_id] = data;
+            //_hashs[_database][key][entry_id] = data;
         }
 
         public void ZAdd(byte[] key, double score, byte[] member)

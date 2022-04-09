@@ -73,5 +73,18 @@ namespace RDBParser
 
             throw new RDBParserException("Unkown integer!!");
         }
+
+        public static string GetStreamId(byte[] bytes)
+        {
+            var span = bytes.AsSpan();
+
+            var msSpan = span.Slice(0, 8);
+            var ms = System.Buffers.Binary.BinaryPrimitives.ReadInt64BigEndian(msSpan);
+
+            var seqSpan = span.Slice(8, 8);
+            var seq = System.Buffers.Binary.BinaryPrimitives.ReadInt64BigEndian(seqSpan);
+
+            return $"{ms}-{seq}";
+        }
     }
 }

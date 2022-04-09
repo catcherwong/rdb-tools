@@ -51,9 +51,9 @@ namespace RDBParser
             Console.WriteLine($"End SortedSet, Key={GetString(key)}");
         }
 
-        public void EndStream(byte[] key, ulong items, string last_entry_id, List<StreamGroup> cgroups)
+        public void EndStream(byte[] key, StreamEntity entity)
         {
-            Console.WriteLine($"End Stream, Key={GetString(key)}, items={items}, lastEntityId={last_entry_id}");
+            Console.WriteLine($"End Stream, Key={GetString(key)}");
         }
 
         public void HandleModuleData(byte[] key, ulong opCode, byte[] data)
