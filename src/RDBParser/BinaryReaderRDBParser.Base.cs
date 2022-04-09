@@ -111,8 +111,7 @@ namespace RDBParser
             else if (encType == Constant.DataType.STREAM_LISTPACKS
                 || encType == Constant.DataType.STREAM_LISTPACKS_2)
             {
-                // TODO: STREAM_LISTPACKS_2
-                ReadStream(br);
+                ReadStream(br, encType);
             }
             else if (encType == Constant.DataType.HASH_LISTPACK)
             {
@@ -196,9 +195,10 @@ namespace RDBParser
             {
                 SkipModule(br);
             }
-            else if (encType == Constant.DataType.STREAM_LISTPACKS)
+            else if (encType == Constant.DataType.STREAM_LISTPACKS
+                || encType == Constant.DataType.STREAM_LISTPACKS_2)
             {
-                SkipStream(br);
+                SkipStream(br, encType);
             }
             else
             {

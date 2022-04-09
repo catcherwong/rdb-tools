@@ -1,6 +1,6 @@
 ﻿namespace RDBParser
 {
-    public class StreamConsumerPendingEntry
+    public class StreamConsumerPendingEntity
     { 
         public byte[] Id { get; set; }
     }

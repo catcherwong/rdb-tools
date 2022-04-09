@@ -30,7 +30,6 @@ namespace RDBParser
         /// <param name="database"></param>
         void StartDatabase(int database);
 
-
         /// <summary>
         /// Called to indicate start of a module key
         /// </summary>
@@ -174,27 +173,25 @@ namespace RDBParser
         /// After that, the `end_stream` method will be called.
         /// </summary>
         /// <param name="key">the redis key</param>
-        /// <param name="listpacks_count">the number of listpacks in this stream.</param>
+        /// <param name="listpacksCount">the number of listpacks in this stream.</param>
         /// <param name="expiry">a `datetime` object. None means the object does not expire</param>
         /// <param name="info">a dictionary containing additional information about this object</param>
-        void StartStream(byte[] key, long listpacks_count, long expiry, Info info);
+        void StartStream(byte[] key, long listpacksCount, long expiry, Info info);
 
         /// <summary>
         /// Callback to insert a listpack into a stream
         /// </summary>
         /// <param name="key">the redis key for this stream</param>
-        /// <param name="entry_id">binary (bigendian)</param>
+        /// <param name="entryId">binary (bigendian)</param>
         /// <param name="data">the bytes of the listpack</param>
-        void StreamListPack(byte[] key, byte[] entry_id, byte[] data);
+        void StreamListPack(byte[] key, byte[] entryId, byte[] data);
 
         /// <summary>
         /// Called when there is no more data in the stream
         /// </summary>
         /// <param name="key">redis key for the stream</param>
-        /// <param name="items">total number of items in the stream</param>
-        /// <param name="last_entry_id">in "<millisecondsTime>-<sequenceNumber>" format</param>
-        /// <param name="cgroups">an array of consumer group metadata</param>
-        void EndStream(byte[] key, ulong items, string last_entry_id, List<StreamGroup> cgroups);
+        /// <param name="entity">the stream entity</param>        
+        void EndStream(byte[] key, StreamEntity entity);
 
         /// <summary>
         /// Called when the current database ends

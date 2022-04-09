@@ -40,7 +40,7 @@ namespace RDBParser
         {
         }
 
-        public void EndStream(byte[] key, ulong items, string last_entry_id, List<StreamGroup> cgroups)
+        public void EndStream(byte[] key, StreamEntity entity)
         {
         }
 

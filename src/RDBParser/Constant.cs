@@ -5,7 +5,7 @@
         public static class RdbVersion
         { 
             public const int Min = 1;
-            public const int Max = 9;
+            public const int Max = 10;
         }
 
         public static class MagicCount

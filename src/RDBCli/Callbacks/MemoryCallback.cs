@@ -126,11 +126,11 @@ namespace RDBCli.Callbacks
             _currentRecord = null;
         }
 
-        public void EndStream(byte[] key, ulong items, string last_entry_id, List<StreamGroup> cgroups)
+        public void EndStream(byte[] key, StreamEntity entity)
         {
             _currentRecord.Bytes += SizeofStreamRadixTree(_listpacksCount);
 
-            foreach (var cg in cgroups)
+            foreach (var cg in entity.CGroups)
             {
                 var pendingLength = (ulong)cg.Pending.Count;
                 _currentRecord.Bytes += SizeofStreamRadixTree(pendingLength);
