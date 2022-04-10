@@ -86,5 +86,76 @@ namespace RDBParser
 
             return $"{ms}-{seq}";
         }
+
+        public static byte[] LpConvertInt64ToBytes(long v)
+        {
+            if (v >= 0 && v <= 127)
+            {
+                byte[] bytes = new byte[1];
+                bytes[0] = (byte)v;
+                return bytes;
+            }
+            else if (v >= -4096 && v <= 4096)
+            {
+                if (v < 0) v = ((long)1 << 13) + v;
+
+                byte[] bytes = new byte[2];
+                bytes[0] = (byte)((v >> 8) | 0xC0);
+                bytes[1] = (byte)(v & 0xFF);
+                return bytes;
+            }
+            else if (v >= -32768 && v <= 32768)
+            {
+                if (v < 0) v = ((long)1 << 16) + v;
+
+                byte[] bytes = new byte[3];
+                bytes[0] = 0xF1;
+                bytes[1] = (byte)(v & 0xFF);
+                bytes[2] = (byte)(v >> 8);
+                return bytes;
+            }
+            else if (v >= -8388608 && v <= 8388607)
+            {
+                if (v < 0) v = ((long)1 << 24) + v;
+
+                byte[] bytes = new byte[4];
+                bytes[0] = 0xF1;
+                bytes[1] = (byte)(v & 0xFF);
+                bytes[2] = (byte)((v >> 8) & 0xff);
+                bytes[3] = (byte)(v >> 16);
+                return bytes;
+            }
+            else if (v >= -2147483648 && v <= 2147483647)
+            {
+                if (v < 0) v = ((long)1 << 32) + v;
+
+                byte[] bytes = new byte[5];
+                bytes[0] = 0xF3;
+                bytes[1] = (byte)(v & 0xFF);
+                bytes[2] = (byte)((v >> 8) & 0xff);
+                bytes[3] = (byte)((v >> 16) & 0xff);
+                bytes[4] = (byte)(v >> 24);
+                return bytes;
+            }
+            else
+            {
+                byte[] bytes = new byte[9];
+                bytes[0] = 0xF4;
+                bytes[1] = (byte)(v & 0xFF);
+                bytes[2] = (byte)((v >> 8) & 0xff);
+                bytes[3] = (byte)((v >> 16) & 0xff);
+                bytes[4] = (byte)((v >> 24) & 0xff);
+                bytes[5] = (byte)((v >> 32) & 0xff);
+                bytes[6] = (byte)((v >> 40) & 0xff);
+                bytes[7] = (byte)((v >> 48) & 0xff);
+                bytes[8] = (byte)(v >> 56);
+                return bytes;
+            }
+        }
+
+        public static long LpConvertBytesToInt64(byte[] bytes, ulong slen)
+        {
+            return 0;
+        }
     }
 }

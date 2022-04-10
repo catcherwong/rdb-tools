@@ -123,5 +123,17 @@
             public const ulong PLAIN = 1;
             public const ulong PACKED = 2;
         }
+
+        public static class ObjEncoding
+        {
+            public const string STRING = "string";
+            public const string HT = "hashtable";
+            public const string ZIPMAP = "zipmap";
+            public const string ZIPLIST = "ziplist";
+            public const string INTSET = "intset";
+            public const string SKIPLIST = "skiplist";
+            public const string QUICKLIST = "quicklist";
+            public const string LISTPACK = "listpack";
+        }
     }
 }
