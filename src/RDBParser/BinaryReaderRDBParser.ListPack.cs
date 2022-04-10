@@ -107,7 +107,7 @@ namespace RDBParser
             }
             else
             {
-                throw new System.Exception("");
+                throw new RDBParserException("");
             }
         }
 
@@ -147,7 +147,50 @@ namespace RDBParser
 
             _callback.EndHash(_key);
         }
-      
+
+        private void ReadZSetFromListPack(BinaryReader br)
+        {
+            // <total_bytes><size><entry><entry>..<entry><end>
+            var rawString = br.ReadStr();
+            using MemoryStream stream = new MemoryStream(rawString);
+            using var rd = new BinaryReader(stream);
+
+            // <total_bytes>
+            var bytes = lpGetTotalBytes(rd);
+            // <size>
+            var numEle = lpGetNumElements(rd);
+            if (numEle % 2 != 0) throw new RDBParserException($"Expected even number of elements, but found {numEle} for key {_key}");
+
+            var numEntries = (ushort)(numEle / 2);
+
+            Info info = new Info();
+            info.Idle = _idle;
+            info.Freq = _freq;
+            info.Encoding = "listpack";
+            info.SizeOfValue = rawString.Length;
+            _callback.StartSortedSet(_key, numEntries, _expiry, info);
+
+            for (int i = 0; i < numEntries; i++)
+            {
+                var member = ReadListPackEntry(rd);
+                var score = ReadListPackEntry(rd);
+
+                double realScore = 0d;
+                var str = System.Text.Encoding.UTF8.GetString(score.data);
+                if (!double.TryParse(str, out realScore))
+                {
+                    realScore = RedisRdbObjectHelper.LpConvertBytesToInt64(score.data);
+                }
+
+                _callback.ZAdd(_key, realScore, member.data);
+            }
+
+            var lpEnd = rd.ReadByte();
+            if (lpEnd != 0xFF) throw new RDBParserException($"Invalid list pack end - {lpEnd} for key {_key}");
+
+            _callback.EndSortedSet(_key);
+        }
+
         private uint lpGetTotalBytes(BinaryReader br)
         {
             return (uint)br.ReadByte() << 0 |

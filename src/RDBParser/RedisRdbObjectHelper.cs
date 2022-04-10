@@ -153,9 +153,92 @@ namespace RDBParser
             }
         }
 
-        public static long LpConvertBytesToInt64(byte[] bytes, ulong slen)
+        public static long LpConvertBytesToInt64(byte[] bytes)
         {
-            return 0;
+            long val;
+            ulong uval = 0;
+            ulong negstart = 0;
+            ulong negmax = 0;
+
+            var b = bytes[0];
+            if ((b & 0x80) == 0)
+            {
+                negstart = ulong.MaxValue;
+                negmax = 0;
+                uval = (ulong)b & 0x7f;
+            }
+            else if ((b & 0xC0) == 0x80)
+            {
+            }
+            else if ((b & 0xE0) == 0xC0)
+            {
+                uval = (ulong)(((b & 0x1f) << 8) | bytes[1]);
+                negstart = (ulong)1 << 12;
+                negmax = 8191;
+            }
+            else if ((b & 0xFF) == 0xF1)
+            {
+                uval = (ulong)bytes[1] |
+                  (ulong)bytes[2] << 8;
+                negstart = (ulong)1 << 15;
+                negmax = UInt16.MaxValue;
+            }
+            else if ((b & 0xFF) == 0xF2)
+            {
+                uval = (ulong)bytes[1] |
+                 (ulong)bytes[2] << 8 |
+                 (ulong)bytes[3] << 16;
+                negstart = (ulong)1 << 23;
+                negmax = UInt32.MaxValue >> 8;
+            }
+            else if ((b & 0xFF) == 0xF3)
+            {
+                uval = (ulong)bytes[1] |
+                (ulong)bytes[2] << 8 |
+                (ulong)bytes[3] << 16 |
+                (ulong)bytes[4] << 24;
+                negstart = (ulong)1 << 31;
+                negmax = UInt32.MaxValue;
+            }
+            else if ((b & 0xFF) == 0xF4)
+            {
+                uval = (ulong)bytes[1] |
+                (ulong)bytes[2] << 8 |
+                (ulong)bytes[3] << 16 |
+                (ulong)bytes[4] << 24 |
+                (ulong)bytes[5] << 32 |
+                (ulong)bytes[6] << 40 |
+                (ulong)bytes[7] << 48 |
+                (ulong)bytes[8] << 56;
+                negstart = (ulong)1 << 63;
+                negmax = UInt64.MaxValue;
+            }
+            else if ((b & 0xF0) == 0xE0)
+            {
+            }
+            else if ((b & 0xFF) == 0xF0)
+            {
+            }
+            else
+            {
+                uval = (ulong)12345678900000000 + b;
+                negstart = UInt64.MaxValue;
+                negmax = 0;
+            }
+
+
+            if (uval >= negstart)
+            {
+                uval = negmax - uval;
+                val = (long)uval;
+                val = -val - 1;
+            }
+            else
+            {
+                val = (long)uval;
+            }
+
+            return val;
         }
     }
 }

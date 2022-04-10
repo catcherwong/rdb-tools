@@ -264,24 +264,6 @@ namespace RDBParserTests
         }
 
         [Fact]
-        public void TestSortedSetAsZipList()
-        {
-            var path = TestHelper.GetRDBPath("sorted_set_as_ziplist.rdb");
-
-            var callback = new TestReaderCallback(_output);
-            var parser = new BinaryReaderRDBParser(callback);
-            parser.Parse(path);
-
-            var sortedSets = callback.GetSortedSets();
-            var lengths = callback.GetLengths();
-
-            Assert.Equal(3, lengths[0][Encoding.UTF8.GetBytes("sorted_set_as_ziplist")]);
-            Assert.True(TestHelper.FloatEqueal((float)sortedSets[0][Encoding.UTF8.GetBytes("sorted_set_as_ziplist")][Encoding.UTF8.GetBytes("8b6ba6718a786daefa69438148361901")], 1));
-            Assert.True(TestHelper.FloatEqueal((float)sortedSets[0][Encoding.UTF8.GetBytes("sorted_set_as_ziplist")][Encoding.UTF8.GetBytes("cb7a24bb7528f934b841b34c3a73e0c7")], 2.37f));
-            Assert.True(TestHelper.FloatEqueal((float)sortedSets[0][Encoding.UTF8.GetBytes("sorted_set_as_ziplist")][Encoding.UTF8.GetBytes("523af537946b79c4f8369ed39ba78605")], 3.423f));
-        }
-
-        [Fact]
         public void TestRdbVersion5WithChecksum()
         {
             var path = TestHelper.GetRDBPath("rdb_version_5_with_checksum.rdb");
