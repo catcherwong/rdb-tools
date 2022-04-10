@@ -119,7 +119,7 @@ namespace RDBParser
             }
             else if (encType == Constant.DataType.ZSET_LISTPACK)
             {
-                // TODO: ZSET_LISTPACK
+                ReadZSetFromListPack(br);
             }
             else
             {
@@ -201,6 +201,10 @@ namespace RDBParser
                 SkipStream(br, encType);
             }
             else if (encType == Constant.DataType.HASH_LISTPACK)
+            {
+                skip = 1;
+            }
+            else if (encType == Constant.DataType.ZSET_LISTPACK)
             {
                 skip = 1;
             }
