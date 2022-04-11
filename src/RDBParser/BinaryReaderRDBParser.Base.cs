@@ -10,13 +10,13 @@ namespace RDBParser
             {
                 var value = br.ReadStr();
 
-                info.Encoding = "string";
+                info.Encoding = Constant.ObjEncoding.STRING;
                 _callback.Set(key, value, expiry, info);
             }
             else if (encType == Constant.DataType.LIST)
             {
                 var length = br.ReadLength();
-                info.Encoding = "linkedlist";
+                info.Encoding = Constant.ObjEncoding.LINKEDLIST;
                 _callback.StartList(key, expiry, info);
                 while (length > 0)
                 {
@@ -29,7 +29,7 @@ namespace RDBParser
             else if (encType == Constant.DataType.SET)
             {
                 var cardinality = br.ReadLength();
-                info.Encoding = "hashtable";
+                info.Encoding = Constant.ObjEncoding.HT;
                 _callback.StartSet(key, (long)cardinality, expiry, info);
                 while (cardinality > 0)
                 {
@@ -42,7 +42,7 @@ namespace RDBParser
             else if (encType == Constant.DataType.ZSET || encType == Constant.DataType.ZSET_2)
             {
                 var cardinality = br.ReadLength();
-                info.Encoding = "skiplist";
+                info.Encoding = Constant.ObjEncoding.SKIPLIST;
                 _callback.StartSortedSet(key, (long)cardinality, expiry, info);
                 while (cardinality > 0)
                 {
@@ -61,7 +61,7 @@ namespace RDBParser
             {
                 var length = br.ReadLength();
 
-                info.Encoding = "hashtable";
+                info.Encoding = Constant.ObjEncoding.HT;
                 _callback.StartHash(key, (long)length, expiry, info);
 
                 while (length > 0)
@@ -232,7 +232,7 @@ namespace RDBParser
             Info info = new Info();
             info.Idle = _idle;
             info.Freq = _freq;
-            info.Encoding = "quicklist";
+            info.Encoding = Constant.ObjEncoding.QUICKLIST;
             info.Zips = length;
             _callback.StartList(_key, _expiry, info);
 
@@ -260,12 +260,13 @@ namespace RDBParser
 
                     if (encType == Constant.DataType.LIST_QUICKLIST_2)
                     {
+                        // https://github.com/redis/redis/blob/7.0-rc3/src/listpack.c#L1284
                         // <total_bytes>
                         var bytes = lpGetTotalBytes(rd);
                         // <size>
                         var numEle = lpGetNumElements(rd);
 
-                        info.Encoding = "listpack";
+                        info.Encoding = Constant.ObjEncoding.LISTPACK;
 
                         for (int i = 0; i < numEle; i++)
                         {

@@ -6,6 +6,7 @@ namespace RDBParser
     {
         private (byte[] encoding, byte[] data, long len) ReadListPackEntry(BinaryReader rd)
         {
+            // https://github.com/redis/redis/blob/7.0-rc3/src/listpack.c#L574
             ulong count;
 
             var b = rd.ReadByte();
@@ -113,6 +114,8 @@ namespace RDBParser
 
         private void ReadHashFromListPack(BinaryReader br)
         {
+            // https://github.com/redis/redis/blob/7.0-rc3/src/rdb.c#L1712
+            // https://github.com/redis/redis/blob/7.0-rc3/src/listpack.c#L1284
             // <total_bytes><size><entry><entry>..<entry><end>
             var rawString = br.ReadStr();
             using MemoryStream stream = new MemoryStream(rawString);
@@ -129,10 +132,10 @@ namespace RDBParser
             Info info = new Info();
             info.Idle = _idle;
             info.Freq = _freq;
-            info.Encoding = "listpack";
+            info.Encoding = Constant.ObjEncoding.LISTPACK;
             info.SizeOfValue = rawString.Length;
             _callback.StartHash(_key, numEntries, _expiry, info);
-
+            
             // <entry>
             for (int i = 0; i < numEntries; i++)
             {
@@ -150,6 +153,8 @@ namespace RDBParser
 
         private void ReadZSetFromListPack(BinaryReader br)
         {
+            // https://github.com/redis/redis/blob/7.0-rc3/src/rdb.c#L1712
+            // https://github.com/redis/redis/blob/7.0-rc3/src/listpack.c#L1284
             // <total_bytes><size><entry><entry>..<entry><end>
             var rawString = br.ReadStr();
             using MemoryStream stream = new MemoryStream(rawString);
@@ -166,7 +171,7 @@ namespace RDBParser
             Info info = new Info();
             info.Idle = _idle;
             info.Freq = _freq;
-            info.Encoding = "listpack";
+            info.Encoding = Constant.ObjEncoding.LISTPACK;
             info.SizeOfValue = rawString.Length;
             _callback.StartSortedSet(_key, numEntries, _expiry, info);
 

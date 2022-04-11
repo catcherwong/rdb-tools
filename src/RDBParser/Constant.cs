@@ -134,6 +134,7 @@
             public const string SKIPLIST = "skiplist";
             public const string QUICKLIST = "quicklist";
             public const string LISTPACK = "listpack";
+            public const string LINKEDLIST = "linkedlist";
         }
     }
 }

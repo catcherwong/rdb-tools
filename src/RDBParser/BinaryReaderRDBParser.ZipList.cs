@@ -17,7 +17,7 @@ namespace RDBParser
             Info info = new Info();
             info.Idle = _idle;
             info.Freq = _freq;
-            info.Encoding = "ziplist";
+            info.Encoding = Constant.ObjEncoding.ZIPLIST;
             info.SizeOfValue = raw.Length;
             _callback.StartList(_key, _expiry, info);
 
@@ -106,7 +106,7 @@ namespace RDBParser
             Info info = new Info();
             info.Idle = _idle;
             info.Freq = _freq;
-            info.Encoding = "ziplist";
+            info.Encoding = Constant.ObjEncoding.ZIPLIST;
             info.SizeOfValue = raw.Length;
             _callback.StartHash(_key, numEntries, _expiry, info);
 
@@ -140,7 +140,7 @@ namespace RDBParser
             Info info = new Info();
             info.Idle = _idle;
             info.Freq = _freq;
-            info.Encoding = "ziplist";
+            info.Encoding = Constant.ObjEncoding.ZIPLIST;
             info.SizeOfValue = raw.Length;
             _callback.StartSortedSet(_key, numEntries, _expiry, info);
 

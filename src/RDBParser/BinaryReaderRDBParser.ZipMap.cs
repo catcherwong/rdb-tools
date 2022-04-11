@@ -15,7 +15,7 @@ namespace RDBParser
             Info info = new Info();
             info.Idle = _idle;
             info.Freq = _freq;
-            info.Encoding = "zipmap";
+            info.Encoding = Constant.ObjEncoding.ZIPMAP;
             info.SizeOfValue = rawString.Length;
             _callback.StartHash(_key, numEntries, _expiry, info);
 

@@ -103,6 +103,7 @@ namespace RDBParser
 
                         if (opType == Constant.OpCode.FUNCTION)
                         {
+                            // https://github.com/redis/redis/blob/7.0-rc3/src/rdb.c#L2804-L2841
                             var name = br.ReadStr();
                             var engineName = br.ReadStr();
                             var hasDesc = br.ReadLength();
@@ -119,6 +120,7 @@ namespace RDBParser
 
                         if (opType == Constant.OpCode.FUNCTION2)
                         {
+                            // https://github.com/redis/redis/blob/7.0-rc3/src/rdb.c#L2849
                             var finalPayload = br.ReadStr();
                             var (engine, libName) = RedisRdbObjectHelper.ExtractLibMetaData(finalPayload);
 

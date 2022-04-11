@@ -7,6 +7,7 @@ namespace RDBParser
     {
         private void ReadStream(BinaryReader br, int encType)
         {
+            // https://github.com/redis/redis/blob/7.0-rc3/src/rdb.c#L2329-L2613
             var listPacks = br.ReadLength();
             
             Info info = new Info();

@@ -76,6 +76,7 @@ namespace RDBParser
 
         public static string GetStreamId(byte[] bytes)
         {
+            // https://github.com/redis/redis/blob/7.0-rc3/src/stream.h#L11
             var span = bytes.AsSpan();
 
             var msSpan = span.Slice(0, 8);
@@ -89,6 +90,7 @@ namespace RDBParser
 
         public static byte[] LpConvertInt64ToBytes(long v)
         {
+            // https://github.com/redis/redis/blob/7.0-rc3/src/listpack.c#L267
             if (v >= 0 && v <= 127)
             {
                 byte[] bytes = new byte[1];
@@ -155,6 +157,7 @@ namespace RDBParser
 
         public static long LpConvertBytesToInt64(byte[] bytes)
         {
+            // https://github.com/redis/redis/blob/7.0-rc3/src/listpack.c#L574
             long val;
             ulong uval = 0;
             ulong negstart = 0;
