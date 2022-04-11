@@ -97,7 +97,6 @@ namespace RDBParser
             else if (encType == Constant.DataType.LIST_QUICKLIST
                 || encType == Constant.DataType.LIST_QUICKLIST_2)
             {
-                // TODO: LIST_QUICKLIST_2
                 ReadListFromQuickList(br, encType);
             }
             else if (encType == Constant.DataType.MODULE)
@@ -182,10 +181,17 @@ namespace RDBParser
             {
                 skip = 1;
             }
-            else if (encType == Constant.DataType.LIST_QUICKLIST)
+            else if (encType == Constant.DataType.LIST_QUICKLIST
+                || encType == Constant.DataType.LIST_QUICKLIST_2)
             {
                 var length = br.ReadLength();
+
                 skip = (int)length;
+
+                if (encType == Constant.DataType.LIST_QUICKLIST_2)
+                {
+                    while (length > 0) br.ReadLength();
+                }
             }
             else if (encType == Constant.DataType.MODULE)
             {
@@ -230,23 +236,20 @@ namespace RDBParser
             info.Zips = length;
             _callback.StartList(_key, _expiry, info);
 
-            //var container = Constant.QuickListContainerFormats.PACKED;
-
             while (length > 0)
             {
                 length--;
 
-                // LIST_QUICKLIST_2
-                //if (encType == Constant.DataType.LIST_QUICKLIST_2)
-                //{
-                //    container = br.ReadLength();
+                if (encType == Constant.DataType.LIST_QUICKLIST_2)
+                {
+                    var container = br.ReadLength();
 
-                //    if (container != Constant.QuickListContainerFormats.PACKED 
-                //        && container != Constant.QuickListContainerFormats.PLAIN)
-                //    {
-                //        throw new RDBParserException("Quicklist integrity check failed.");
-                //    }
-                //}
+                    if (container != Constant.QuickListContainerFormats.PACKED
+                        && container != Constant.QuickListContainerFormats.PLAIN)
+                    {
+                        throw new RDBParserException("Quicklist integrity check failed.");
+                    }
+                }
 
                 var rawString = br.ReadStr();
                 totalSize += rawString.Length;
@@ -254,22 +257,47 @@ namespace RDBParser
                 using (MemoryStream stream = new MemoryStream(rawString))
                 {
                     var rd = new BinaryReader(stream);
-                    var zlbytes = rd.ReadBytes(4);
-                    var tailOffset = rd.ReadBytes(4);
-                    var numEntries = rd.ReadUInt16();
 
-                    for (int i = 0; i < numEntries; i++)
+                    if (encType == Constant.DataType.LIST_QUICKLIST_2)
                     {
-                        _callback.RPush(_key, ReadZipListEntry(rd));
+                        // <total_bytes>
+                        var bytes = lpGetTotalBytes(rd);
+                        // <size>
+                        var numEle = lpGetNumElements(rd);
+
+                        info.Encoding = "listpack";
+
+                        for (int i = 0; i < numEle; i++)
+                        {
+                            // <entry>
+                            var entry = ReadListPackEntry(rd);
+                            _callback.RPush(_key, entry.data);
+                        }
+
+                        var lpEnd = rd.ReadByte();
+                        if (lpEnd != 0xFF) throw new RDBParserException($"Invalid list pack end - {lpEnd} for key {_key}");
                     }
-
-                    var zlistEnd = rd.ReadByte();
-                    if (zlistEnd != 255)
+                    else
                     {
-                        throw new RDBParserException("Invalid zip list end");
+                        var zlbytes = rd.ReadBytes(4);
+                        var tailOffset = rd.ReadBytes(4);
+                        var numEntries = rd.ReadUInt16();
+
+                        for (int i = 0; i < numEntries; i++)
+                        {
+                            _callback.RPush(_key, ReadZipListEntry(rd));
+                        }
+
+                        var zlistEnd = rd.ReadByte();
+                        if (zlistEnd != 255)
+                        {
+                            throw new RDBParserException("Invalid zip list end");
+                        }
                     }
                 }
             }
+
+            info.SizeOfValue = totalSize;
 
             _callback.EndList(_key, info);
         }
