@@ -240,5 +240,28 @@ namespace RDBParser
 
             return val;
         }
+
+        private static ReadOnlySpan<byte> NameEqual => new byte[] { 110, 97, 109, 101, 61 };
+        private static ReadOnlySpan<byte> TrimEndEle => new byte[] { 32 };
+
+        public static (byte[] engine, byte[] library) ExtractLibMetaData(byte[] bytes)
+        {
+            // #!<engine name> name=<library name> \n
+            // #!lua name=mylib\nredis.register_function('knockknock', function() return 'Who\\'s there?' end)            
+            var span = bytes.AsSpan();
+            
+            if (span[0] != '#' || span[1] != '!') throw new Exception("Missing library metadata");
+
+            var shebangEnd = span.IndexOf((byte)'\n');
+            if (shebangEnd < 0) throw new Exception("Invalid library metadata");
+
+            var nameIndex = span.IndexOf(NameEqual);
+            if (nameIndex < 0) throw new Exception("Invalid library metadata");
+
+            var engine = span.Slice(2, nameIndex - 2).TrimEnd(TrimEndEle);
+            var lib = span.Slice(nameIndex + 5, shebangEnd - nameIndex - 5).TrimEnd(TrimEndEle);
+
+            return (engine.ToArray(), lib.ToArray());
+        }
     }
 }

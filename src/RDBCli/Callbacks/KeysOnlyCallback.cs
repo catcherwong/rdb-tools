@@ -53,6 +53,10 @@ namespace RDBCli.Callbacks
         {
         }
 
+        public void FuntionLoad(byte[] engine, byte[] libName)
+        {
+        }
+
         public void HandleModuleData(byte[] key, ulong opCode, byte[] data)
         {
         }
