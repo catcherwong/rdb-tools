@@ -16,6 +16,7 @@ namespace RDBParserTests
         private Dictionary<int, Dictionary<byte[], List<byte[]>>> _sets = new Dictionary<int, Dictionary<byte[], List<byte[]>>>();
         private Dictionary<int, Dictionary<byte[], Dictionary<byte[], double>>> _sortedSets = new Dictionary<int, Dictionary<byte[], Dictionary<byte[], double>>>();
         private Dictionary<int, Dictionary<byte[], List<StreamEntity>>> _streamGroup = new Dictionary<int, Dictionary<byte[], List<StreamEntity>>>();
+        private Dictionary<byte[], List<byte[]>> _functions = new Dictionary<byte[], List<byte[]>>(ByteArrayComparer.Default);
 
         public TestReaderCallback(Xunit.Abstractions.ITestOutputHelper output)
         {
@@ -45,6 +46,9 @@ namespace RDBParserTests
 
         public Dictionary<int, Dictionary<byte[], List<StreamEntity>>> GetStreamEntities()
             => _streamGroup;
+
+        public Dictionary<byte[], List<byte[]>> GetFunctions()
+          => _functions;
 
         public void AuxField(byte[] key, byte[] value)
         {
@@ -295,6 +299,16 @@ namespace RDBParserTests
                 throw new System.Exception("start_sorted_set not called for key =");
 
             _sortedSets[_database][key][member] = score;
+        }
+
+        public void FuntionLoad(byte[] engine, byte[] libName)
+        {
+            if (!_functions.ContainsKey(engine))
+            {
+                _functions[engine] = new List<byte[]>();
+            }
+
+            _functions[engine].Add(libName);
         }
     }
 }

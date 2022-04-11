@@ -101,9 +101,29 @@ namespace RDBParser
                             continue;
                         }
 
-                        if (opType == Constant.OpCode.FUNCTION || opType == Constant.OpCode.FUNCTION2)
-                        { 
-                            // TODO function
+                        if (opType == Constant.OpCode.FUNCTION)
+                        {
+                            var name = br.ReadStr();
+                            var engineName = br.ReadStr();
+                            var hasDesc = br.ReadLength();
+                            if (hasDesc>0)
+                            {
+                                var desc = br.ReadStr();
+                            }
+
+                            var blob = br.ReadStr();
+
+                            _callback.FuntionLoad(engineName, name);
+                            continue;
+                        }
+
+                        if (opType == Constant.OpCode.FUNCTION2)
+                        {
+                            var finalPayload = br.ReadStr();
+                            var (engine, libName) = RedisRdbObjectHelper.ExtractLibMetaData(finalPayload);
+
+                            _callback.FuntionLoad(engine, libName);
+                            continue;
                         }
 
                         if (opType == Constant.OpCode.EOF)

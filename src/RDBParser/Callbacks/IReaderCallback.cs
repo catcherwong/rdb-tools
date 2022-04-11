@@ -11,6 +11,13 @@ namespace RDBParser
         void StartRDB(int version);
 
         /// <summary>
+        /// Callback to load function
+        /// </summary>
+        /// <param name="engine">engine</param>
+        /// <param name="libName">library name</param>
+        void FuntionLoad(byte[] engine, byte[] libName);
+
+        /// <summary>
         /// Called in the beginning of the RDB with various meta data fields such as:
         /// redis-ver, redis-bits, ctime, used-mem
         /// exists since redis 3.2 (RDB v7)
