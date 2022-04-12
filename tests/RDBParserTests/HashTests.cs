@@ -1,11 +1,19 @@
 using RDBParser;
 using System.Text;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace RDBParserTests
 {
-    public partial class ParserTests
+    public class HashTests
     {
+        private ITestOutputHelper _output;
+
+        public HashTests(ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+
         [Fact]
         public void TestZipMapThatsCompressesEasily()
         {

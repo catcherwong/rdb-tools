@@ -1,11 +1,19 @@
 using RDBParser;
 using System.Text;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace RDBParserTests
 {
-    public partial class ParserTests
+    public class FunctionTests
     {
+        private ITestOutputHelper _output;
+
+        public FunctionTests(ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+
         [Fact]
         public void TestFunctionWithRedis70RC3()
         {

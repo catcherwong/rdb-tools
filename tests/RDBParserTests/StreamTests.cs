@@ -2,11 +2,19 @@ using RDBParser;
 using System.Linq;
 using System.Text;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace RDBParserTests
 {
-    public partial class ParserTests
-    {        
+    public class StreamTests
+    {
+        private ITestOutputHelper _output;
+
+        public StreamTests(ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+
         [Fact]
         public void TestStreamsWithRedis50()
         {

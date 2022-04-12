@@ -1,11 +1,19 @@
 using RDBParser;
 using System.Text;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace RDBParserTests
 {
-    public partial class ParserTests
+    public class ZSetTests
     {
+        private ITestOutputHelper _output;
+
+        public ZSetTests(ITestOutputHelper output)
+        {
+            this._output = output;
+        }
+
         [Fact]
         public void TestSortedSetAsZipList()
         {
