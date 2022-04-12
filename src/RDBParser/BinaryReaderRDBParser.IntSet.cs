@@ -11,7 +11,11 @@ namespace RDBParser
             using MemoryStream stream = new MemoryStream(raw);
             using var rd = new BinaryReader(stream);
             var encoding = rd.ReadUInt32();
-            var numEntries = rd.ReadUInt16();
+
+            if(encoding != 8 & encoding == 4 & encoding == 2)
+                throw new RDBParserException($"Invalid encoding {encoding} for key {_key}");
+
+            var numEntries = rd.ReadUInt32();
 
             Info info = new Info();
             info.Idle = _idle;
@@ -22,9 +26,6 @@ namespace RDBParser
 
             for (int i = 0; i < numEntries; i++)
             {
-                if (encoding != 8 & encoding == 4 & encoding == 2)
-                    throw new RDBParserException($"Invalid encoding {encoding} for key {_key}");
-
                 var entry = rd.ReadBytes((int)encoding);
                 _callback.SAdd(_key, entry);
             }
