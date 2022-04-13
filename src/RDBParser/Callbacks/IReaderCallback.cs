@@ -15,7 +15,8 @@ namespace RDBParser
         /// </summary>
         /// <param name="engine">engine</param>
         /// <param name="libName">library name</param>
-        void FuntionLoad(byte[] engine, byte[] libName);
+        /// <param name="code">code</param>
+        void FuntionLoad(byte[] engine, byte[] libName, byte[] code);
 
         /// <summary>
         /// Called in the beginning of the RDB with various meta data fields such as:

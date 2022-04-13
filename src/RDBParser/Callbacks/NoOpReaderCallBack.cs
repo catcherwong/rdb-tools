@@ -44,7 +44,7 @@ namespace RDBParser
         {
         }
 
-        public void FuntionLoad(byte[] engine, byte[] libName)
+        public void FuntionLoad(byte[] engine, byte[] libName, byte[] code)
         {
         }
 

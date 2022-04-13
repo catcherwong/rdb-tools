@@ -84,20 +84,26 @@ typedef struct dictEntry {
 
         private ulong HashtableOverhead(ulong size)
         {
-            // https://github.com/redis/redis/blob/6.2.6/src/dict.h#L80
-            // https://github.com/redis/redis/blob/6.2.6/src/dict.h#L73
-            // NOTE: Before 6.x, mainly combine dict and dictht        
-            // dict = 2 pointers + 2 dictht + 1 long + 1 int
-            // dictht = 1 pointer + 3 unsigned longs            
-            // 4 pointers + 7 long + 1 int
-            // Additionally, see **table in dictht
-            // The length of the table is the next power of 2
-            // When the hashtable is rehashing, another instance of **table is created
-            // Due to the possibility of rehashing during loading, we calculate the worse 
-            // case in which both tables are allocated, and so multiply
-            // the size of **table by 1.5
-            // TODO: After 7.x, some difference here.
-            return 4 * _pointerSize + 7 * _longSize + 4 + NextPower(size) * _pointerSize * 3 / 2;
+            if (_rdbDataInfo.RdbVer < 10)
+            {
+                // https://github.com/redis/redis/blob/6.2.6/src/dict.h#L80
+                // https://github.com/redis/redis/blob/6.2.6/src/dict.h#L73
+                // NOTE: Before 6.x, mainly combine dict and dictht        
+                // dict = 2 pointers + 2 dictht + 1 long + 1 int
+                // dictht = 1 pointer + 3 unsigned longs            
+                // 4 pointers + 7 long + 1 int
+                // Additionally, see **table in dictht
+                // The length of the table is the next power of 2
+                // When the hashtable is rehashing, another instance of **table is created
+                // Due to the possibility of rehashing during loading, we calculate the worse 
+                // case in which both tables are allocated, and so multiply
+                // the size of **table by 1.5
+                return 4 * _pointerSize + 7 * _longSize + 4 + NextPower(size) * _pointerSize * 3 / 2;
+            }
+            else
+            {
+                return 3 * _pointerSize + 3 * _longSize + NextPower(size) * _pointerSize;
+            }
         }
 
         private ulong NextPower(ulong size)
@@ -268,6 +274,15 @@ typedef struct dictEntry {
             // https://github.com/redis/redis/blob/6.2.6/src/stream.h#L82
             // 1 pointer + 1 long + 1 mstime_t (1 long)
             return length * (_pointerSize + 8 + 8);
+        }
+
+        private ulong FunctionOverhead(byte[] engine, byte[] lib, byte[] code)
+        {
+            // TODO?
+            return 2 * _pointerSize + 8 + SizeOfString(lib) 
+                 + 2 * _pointerSize + SizeOfString(lib) + SizeOfString(code)
+                 + HashtableOverhead((ulong)(lib.Length + engine.Length + code.Length))
+                 + SizeOfString(engine) + 2 * _pointerSize;
         }
     }
 }

@@ -191,78 +191,7 @@ namespace RDBParserTests
             Assert.Contains(Encoding.UTF8.GetBytes("JYY4GIFI0ETHKP4VAJF5333082J4R1UPNPLE329YT0EYPGHSJQ"), sets[0][Encoding.UTF8.GetBytes("force_linkedlist")]);
             Assert.Contains(Encoding.UTF8.GetBytes("TKBXHJOX9Q99ICF4V78XTCA2Y1UYW6ERL35JCIL1O0KSGXS58S"), sets[0][Encoding.UTF8.GetBytes("force_linkedlist")]);
         }
-
-        [Fact]
-        public void TestIntSet16()
-        {
-            var path = TestHelper.GetRDBPath("intset_16.rdb");
-
-            var callback = new TestReaderCallback(_output);
-            var parser = new BinaryReaderRDBParser(callback);
-            parser.Parse(path);
-
-            var sets = callback.GetSets();
-            var lengths = callback.GetLengths();
-
-            Assert.Equal(3, lengths[0][Encoding.UTF8.GetBytes("intset_16")]);
-
-            // TODO
-        }
-
-        [Fact]
-        public void TestIntSet32()
-        {
-            var path = TestHelper.GetRDBPath("intset_32.rdb");
-
-            var callback = new TestReaderCallback(_output);
-            var parser = new BinaryReaderRDBParser(callback);
-            parser.Parse(path);
-
-            var sets = callback.GetSets();
-            var lengths = callback.GetLengths();
-
-            Assert.Equal(3, lengths[0][Encoding.UTF8.GetBytes("intset_32")]);
-
-            // TODO
-        }
-
-        [Fact]
-        public void TestIntSet64()
-        {
-            var path = TestHelper.GetRDBPath("intset_64.rdb");
-
-            var callback = new TestReaderCallback(_output);
-            var parser = new BinaryReaderRDBParser(callback);
-            parser.Parse(path);
-
-            var sets = callback.GetSets();
-            var lengths = callback.GetLengths();
-
-            Assert.Equal(3, lengths[0][Encoding.UTF8.GetBytes("intset_64")]);
-
-            // TODO
-        }
-
-        [Fact]
-        public void TestRegularSet()
-        {
-            var path = TestHelper.GetRDBPath("regular_set.rdb");
-
-            var callback = new TestReaderCallback(_output);
-            var parser = new BinaryReaderRDBParser(callback);
-            parser.Parse(path);
-
-            var sets = callback.GetSets();
-            var lengths = callback.GetLengths();
-
-            Assert.Equal(6, lengths[0][Encoding.UTF8.GetBytes("regular_set")]);
-
-            foreach (var item in new List<string> { "alpha", "beta", "gamma", "delta", "phi", "kappa" })
-            {
-                Assert.Contains(Encoding.UTF8.GetBytes(item), sets[0][Encoding.UTF8.GetBytes("regular_set")]);
-            }
-        }
-
+        
         [Fact]
         public void TestRdbVersion5WithChecksum()
         {

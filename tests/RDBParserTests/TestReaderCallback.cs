@@ -301,7 +301,7 @@ namespace RDBParserTests
             _sortedSets[_database][key][member] = score;
         }
 
-        public void FuntionLoad(byte[] engine, byte[] libName)
+        public void FuntionLoad(byte[] engine, byte[] libName, byte[] code)
         {
             if (!_functions.ContainsKey(engine))
             {
