@@ -85,13 +85,13 @@ namespace RDBParserTests
 
             var databases = callback.GetDatabases();
 
-            Assert.Equal(Encoding.UTF8.GetBytes("Positive 8 bit integer"), databases[0][RedisRdbObjectHelper.ConvertInt32ToBytes(125)]);
-            Assert.Equal(Encoding.UTF8.GetBytes("Positive 16 bit integer"), databases[0][RedisRdbObjectHelper.ConvertInt32ToBytes(0xABAB)]);
-            Assert.Equal(Encoding.UTF8.GetBytes("Positive 32 bit integer"), databases[0][RedisRdbObjectHelper.ConvertInt32ToBytes(0x0AEDD325)]);
+            Assert.Equal(Encoding.UTF8.GetBytes("Positive 8 bit integer"), databases[0][RedisRdbObjectHelper.ConvertIntegerToBytes(125)]);
+            Assert.Equal(Encoding.UTF8.GetBytes("Positive 16 bit integer"), databases[0][RedisRdbObjectHelper.ConvertIntegerToBytes(0xABAB)]);
+            Assert.Equal(Encoding.UTF8.GetBytes("Positive 32 bit integer"), databases[0][RedisRdbObjectHelper.ConvertIntegerToBytes(0x0AEDD325)]);
 
-            Assert.Equal(Encoding.UTF8.GetBytes("Negative 8 bit integer"), databases[0][RedisRdbObjectHelper.ConvertInt32ToBytes(-123)]);
-            Assert.Equal(Encoding.UTF8.GetBytes("Negative 16 bit integer"), databases[0][RedisRdbObjectHelper.ConvertInt32ToBytes(-0x7325)]);
-            Assert.Equal(Encoding.UTF8.GetBytes("Negative 32 bit integer"), databases[0][RedisRdbObjectHelper.ConvertInt32ToBytes(-0x0AEDD325)]);
+            Assert.Equal(Encoding.UTF8.GetBytes("Negative 8 bit integer"), databases[0][RedisRdbObjectHelper.ConvertIntegerToBytes(-123)]);
+            Assert.Equal(Encoding.UTF8.GetBytes("Negative 16 bit integer"), databases[0][RedisRdbObjectHelper.ConvertIntegerToBytes(-0x7325)]);
+            Assert.Equal(Encoding.UTF8.GetBytes("Negative 32 bit integer"), databases[0][RedisRdbObjectHelper.ConvertIntegerToBytes(-0x0AEDD325)]);
         }
 
         [Fact]
@@ -164,15 +164,17 @@ namespace RDBParserTests
 
             var list = new List<long>
             {
-                0,1,2,3,4,5,6,7,8,9,10,11,12,-2,13,25,-61,63,16380,-1600,65535,-65523,4194304,9223372036854775807
+                0,1,2,3,4,5,6,7,8,9,10,11,12,-2,13,25,-61,63,16380,-16000,65535,-65523,4194304, 9223372036854775807
             };
 
+            Assert.Equal(24, lengths[0][Encoding.UTF8.GetBytes("ziplist_with_integers")]);
 
-            Assert.Equal(list.Count, lengths[0][Encoding.UTF8.GetBytes("ziplist_with_integers")]);
+            var readList = sets[0][Encoding.UTF8.GetBytes("ziplist_with_integers")];
 
-            // TODO
-            Assert.Contains(new byte[] { 0 }, sets[0][Encoding.UTF8.GetBytes("ziplist_with_integers")]);
-            Assert.Contains(new byte[] { 1 }, sets[0][Encoding.UTF8.GetBytes("ziplist_with_integers")]);
+            foreach (var item in readList)
+            {
+                Assert.Contains(RedisRdbObjectHelper.ConvertBytesToInteger(item), list);
+            }
         }
 
         [Fact]

@@ -28,9 +28,14 @@ namespace RDBParserTests
 
             Assert.Equal(3, lengths[0][Encoding.UTF8.GetBytes("intset_16")]);
 
-            Assert.Contains(RedisRdbObjectHelper.ConvertInt32ToBytes(0x7ffc), sets[0][Encoding.UTF8.GetBytes("intset_16")]);
-            Assert.Contains(RedisRdbObjectHelper.ConvertInt32ToBytes(0x7ffd), sets[0][Encoding.UTF8.GetBytes("intset_16")]);
-            Assert.Contains(RedisRdbObjectHelper.ConvertInt32ToBytes(0x7ffe), sets[0][Encoding.UTF8.GetBytes("intset_16")]);
+            var list = new List<long> { 0x7ffc, 0x7ffd, 0x7ffe };
+
+            var readList = sets[0][Encoding.UTF8.GetBytes("intset_16")];
+
+            foreach (var item in readList)
+            {
+                Assert.Contains(RedisRdbObjectHelper.ConvertBytesToInteger(item), list);
+            }
         }
 
         [Fact]
@@ -46,10 +51,15 @@ namespace RDBParserTests
             var lengths = callback.GetLengths();
 
             Assert.Equal(3, lengths[0][Encoding.UTF8.GetBytes("intset_32")]);
-            
-            Assert.Contains(RedisRdbObjectHelper.ConvertInt32ToBytes(0x7ffefffc), sets[0][Encoding.UTF8.GetBytes("intset_32")]);
-            Assert.Contains(RedisRdbObjectHelper.ConvertInt32ToBytes(0x7ffefffd), sets[0][Encoding.UTF8.GetBytes("intset_32")]);
-            Assert.Contains(RedisRdbObjectHelper.ConvertInt32ToBytes(0x7ffefffe), sets[0][Encoding.UTF8.GetBytes("intset_32")]);
+
+            var list = new List<long> { 0x7ffefffc, 0x7ffefffd, 0x7ffefffe };
+
+            var readList = sets[0][Encoding.UTF8.GetBytes("intset_32")];
+
+            foreach (var item in readList)
+            {
+                Assert.Contains(RedisRdbObjectHelper.ConvertBytesToInteger(item), list);
+            }
         }
 
         [Fact]
@@ -66,9 +76,14 @@ namespace RDBParserTests
 
             Assert.Equal(3, lengths[0][Encoding.UTF8.GetBytes("intset_64")]);
 
-            Assert.Contains(System.BitConverter.GetBytes(0x7ffefffefffefffc), sets[0][Encoding.UTF8.GetBytes("intset_64")]);
-            Assert.Contains(System.BitConverter.GetBytes(0x7ffefffefffefffd), sets[0][Encoding.UTF8.GetBytes("intset_64")]);
-            Assert.Contains(System.BitConverter.GetBytes(0x7ffefffefffefffe), sets[0][Encoding.UTF8.GetBytes("intset_64")]);
+            var list = new List<long> { 0x7ffefffefffefffc, 0x7ffefffefffefffd, 0x7ffefffefffefffe };
+
+            var readList = sets[0][Encoding.UTF8.GetBytes("intset_64")];
+
+            foreach (var item in readList)
+            {
+                Assert.Contains(RedisRdbObjectHelper.ConvertBytesToInteger(item), list);
+            }
         }
 
         [Fact]
