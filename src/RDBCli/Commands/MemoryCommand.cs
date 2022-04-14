@@ -20,7 +20,7 @@ namespace RDBCli.Commands
         private static Argument<string> _fileArg = CommonCLIArguments.FileArgument();
 
         public MemoryCommand()
-            : base("memory", "Get memory info from rdb files")
+            : base("memory", "Analysis memory info from rdb files")
         {
             this.AddOption(_outputOption);
             this.AddOption(_outputTypeOption);
@@ -175,7 +175,6 @@ namespace RDBCli.Commands
         public List<PrefixRecord> largestKeyPrefix { get; set; }
         public List<ExpiryRecord> expiryInfo { get; set; }
 
-
         internal static MemoryAnslysisResult BuildBasicFromRdbDataInfo(RdbDataInfo rdbDataInfo)
         {
             var result = new MemoryAnslysisResult
@@ -272,7 +271,7 @@ namespace RDBCli.Commands
             Option<List<int>> option =
                 new Option<List<int>>(
                     aliases: new string[] { "--db" },
-                    description: "The redis databases.");
+                    description: "The filter of redis databases.");
 
             return option;
         }
@@ -282,7 +281,7 @@ namespace RDBCli.Commands
             Option<List<string>> option =
                 new Option<List<string>>(
                     aliases: new string[] { "--type" },
-                    description: "The redis types.")
+                    description: "The filter of redis types.")
                 .FromAmong("string", "list", "set", "sortedset", "hash", "module", "stream");
 
             return option;

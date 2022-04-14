@@ -4,14 +4,19 @@
 
 This repository is inspired by [redis-rdb-tools](https://github.com/sripathikrishnan/redis-rdb-tools) and [rdr](https://github.com/xueqiu/rdr).
 
-## Description
-
-This repository consists of two parts:
+It consists of two parts:
 
 - A parser library, that you can customize by yourself.
 - An anslysis cli tool, that your can ans some basic usages for command line.
 
-## Usage of `rdb-cli`
+## rdb-cli
+
+### Install
+
+1. Download the package from the [latest stable release](https://github.com/catcherwong/rdb-tools/releases).
+2. `dotnet tool install --global rdb-cli`
+
+### Usage
 
 Show help information:
 
@@ -37,7 +42,7 @@ The usage of `memory` is as follow:
 ```
 [~] ./rdb-cli memory -h
 Description:
-  Get memory info from rdb files
+  Analysis memory info from rdb files
 
 Usage:
   rdb-cli memory <file> [options]
@@ -46,11 +51,13 @@ Arguments:
   <file>  The path of rdb file.
 
 Options:
-  -o, --output <output>               The output path of parsing result.
-  -ot, --output-type <html|json>      The output type of parsing result. [default: json]
-  -tp, --top-prefixes <top-prefixes>  The number of top key prefixes. [default: 50]
-  -tb, --top-bigkeys <top-bigkeys>    The number of top big keys. [default: 50]
-  -?, -h, --help                      Show help and usage information
+  -o, --output <output>                                  The output path of parsing result.
+  -ot, --output-type <html|json>                         The output type of parsing result. [default: json]
+  -tp, --top-prefixes <top-prefixes>                     The number of top key prefixes. [default: 50]
+  -tb, --top-bigkeys <top-bigkeys>                       The number of top big keys. [default: 50]
+  --db <db>                                              The filter of redis databases.
+  --type <hash|list|module|set|sortedset|stream|string>  The filter of redis types.
+  -?, -h, --help                                         Show help and usage information
 ```
 
 ```
@@ -107,3 +114,35 @@ Sample json result is as follow:
     ]
 }
 ````
+
+## RDBParse
+
+### Install
+
+`dotnet add package RDBParse`
+
+### Usage
+
+1. Implement your own `IReaderCallback`
+2. Create a new instance of `BinaryReaderRDBParser`
+3. Call **Parse** method of `BinaryReaderRDBParser` instance
+
+
+Following this below code for example.
+
+```cs
+public class MyReaderCallBack : IReaderCallback
+{
+}
+```
+
+```cs
+var path = "/yourpath/your.rdb"
+var cb = new MyReaderCallBack();
+var parser = new RDBParser.BinaryReaderRDBParser(cb);
+parser.Parse(path);
+```
+
+## To contribute
+
+Contributions are welcome!
