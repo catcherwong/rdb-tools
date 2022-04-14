@@ -5,43 +5,30 @@ using System.CommandLine.Invocation;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 using clicb = RDBCli.Callbacks;
 
 namespace RDBCli.Commands
 {
     internal class MemoryCommand : Command
     {
-        public static Argument<string> Arg = new Argument<string>("file", "The path of rdb file.");
-        public static Option<string> OutputOption = new Option<string>(new string[] { "--output", "-o" }, "The output path of parsing result.").LegalFilePathsOnly();
-        public static Option<string> OutputTypeOption = new Option<string>(new string[] { "--output-type", "-ot" }, () => "json", "The output type of parsing result.").FromAmong("json", "html");
-        public static Option<int> TopPrefixCountOption = new Option<int>(new string[] { "--top-prefixes", "-tp" }, () => 50, "The number of top key prefixes.");
-        public static Option<int> TopBigKeyCountOption = new Option<int>(new string[] { "--top-bigkeys", "-tb" }, () => 50, "The number of top big keys.");
-        public static Option<List<int>> DBsOption = new Option<List<int>>(new string[] { "--db" }, "The redis databases.");
-        public static Option<List<string>> TypesOption = new Option<List<string>>(new string[] { "--type" }, "The redis types.");
+        private static Option<string> _outputOption = CommonCLIOptions.OutputOption();
+        private static Option<string> _outputTypeOption = CommonCLIOptions.OutputTypeOption();
+        private static Option<int> _topPrefixCountOption = CommonCLIOptions.TopPrefixCountOption();
+        private static Option<int> _topBigKeyCountOption = CommonCLIOptions.TopBigKeyCountOption();
+        private static Option<List<int>> _databasesOption = CommonCLIOptions.DBsOption();
+        private static Option<List<string>> _typesOption = CommonCLIOptions.TypesOption();
+        private static Argument<string> _fileArg = CommonCLIArguments.FileArgument();
 
         public MemoryCommand()
             : base("memory", "Get memory info from rdb files")
         {
-            TopPrefixCountOption.AddValidator(x =>
-            {
-                var c = x.GetValueOrDefault<int>();
-                if (c > 200) x.ErrorMessage = "The number can not greater than 200!!";
-            });
-
-            TopBigKeyCountOption.AddValidator(x =>
-            {
-                var c = x.GetValueOrDefault<int>();
-                if (c > 200) x.ErrorMessage = "The number can not greater than 200!!";
-            });
-
-            this.AddOption(OutputOption);
-            this.AddOption(OutputTypeOption);
-            this.AddOption(TopPrefixCountOption);
-            this.AddOption(TopBigKeyCountOption);
-            this.AddOption(DBsOption);
-            this.AddOption(TypesOption);
-            this.AddArgument(Arg);
+            this.AddOption(_outputOption);
+            this.AddOption(_outputTypeOption);
+            this.AddOption(_topPrefixCountOption);
+            this.AddOption(_topBigKeyCountOption);
+            this.AddOption(_databasesOption);
+            this.AddOption(_typesOption);
+            this.AddArgument(_fileArg);
 
             this.SetHandler((InvocationContext context) =>
             {
@@ -81,18 +68,11 @@ namespace RDBCli.Commands
             var typeRecords = counter.GetTypeRecords();
             var expiryInfo = counter.GetExpiryInfo();
 
-            var dict = new Dictionary<string, object>();
-
-            dict.Add("usedMem", rdbDataInfo.UsedMem > 0 ? rdbDataInfo.UsedMem : rdbDataInfo.TotalMem);
-            dict.Add("cTime", rdbDataInfo.CTime);
-            dict.Add("count", rdbDataInfo.Count);
-            dict.Add("rdbVer", rdbDataInfo.RdbVer);
-            dict.Add("redisVer", string.IsNullOrWhiteSpace(rdbDataInfo.RedisVer) ? CommonHelper.GetFuzzyRedisVersion(rdbDataInfo.RdbVer) : rdbDataInfo.RedisVer);
-            dict.Add("redisBits", rdbDataInfo.RedisBits);
-            dict.Add("typeRecords", typeRecords);
-            dict.Add("largestRecords", largestRecords);
-            dict.Add("largestKeyPrefix", largestKeyPrefix);
-            dict.Add("expiryInfo", expiryInfo);
+            var dict = MemoryAnslysisResult.BuildBasicFromRdbDataInfo(rdbDataInfo);
+            dict.typeRecords = typeRecords;
+            dict.largestKeyPrefix = largestKeyPrefix;
+            dict.largestRecords = largestRecords;
+            dict.expiryInfo = expiryInfo;
 
             var path = WriteFile(dict, options.Output, options.OutputType);
 
@@ -101,7 +81,7 @@ namespace RDBCli.Commands
             console.WriteLine($"result path: {path}\n");
         }
 
-        private string WriteFile(Dictionary<string, object> dict, string output, string type)
+        private string WriteFile(MemoryAnslysisResult dict, string output, string type)
         {
             var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"res.{type}");
 
@@ -113,13 +93,15 @@ namespace RDBCli.Commands
 
             byte[] bytes = null;
 
+            var context = new MemoryAnslysisResultJsonContext(_jsonOptions);
+
             if (type.Equals("json"))
             {
-                bytes = JsonSerializer.SerializeToUtf8Bytes(dict, _jsonOptions);
+                bytes = JsonSerializer.SerializeToUtf8Bytes(dict, typeof(MemoryAnslysisResult), context);
             }
             else if (type.Equals("html"))
             {
-                var str = JsonSerializer.Serialize(dict, _jsonOptions);
+                var str = JsonSerializer.Serialize(dict, typeof(MemoryAnslysisResult), context);
                 var tpl = CommonHelper.TplHtmlString;
                 tpl = tpl.Replace("{{CLIDATA}}", str);
 
@@ -153,20 +135,20 @@ namespace RDBCli.Commands
 
             public static CommandOptions FromContext(InvocationContext context)
             {
-                var files = context.ParseResult.GetValueForArgument<string>(Arg);
-                var output = context.ParseResult.GetValueForOption<string>(OutputOption);
-                var outputType = context.ParseResult.GetValueForOption<string>(OutputTypeOption);
-                var pc = context.ParseResult.GetValueForOption<int>(TopPrefixCountOption);
-                var bc = context.ParseResult.GetValueForOption<int>(TopBigKeyCountOption);
-                var databases = context.ParseResult.GetValueForOption<List<int>>(DBsOption);
-                var types = context.ParseResult.GetValueForOption<List<string>>(TypesOption);
+                var files = context.ParseResult.GetValueForArgument<string>(_fileArg);
+                var output = context.ParseResult.GetValueForOption<string>(_outputOption);
+                var outputType = context.ParseResult.GetValueForOption<string>(_outputTypeOption);
+                var pc = context.ParseResult.GetValueForOption<int>(_topPrefixCountOption);
+                var bc = context.ParseResult.GetValueForOption<int>(_topBigKeyCountOption);
+                var databases = context.ParseResult.GetValueForOption<List<int>>(_databasesOption);
+                var types = context.ParseResult.GetValueForOption<List<string>>(_typesOption);
 
                 var parseFilter = new RDBParser.ParserFilter()
                 {
                     Databases = databases,
                     Types = types
                 };
-                
+
                 return new CommandOptions
                 {
                     Files = files,
@@ -177,6 +159,133 @@ namespace RDBCli.Commands
                     ParserFilter = parseFilter
                 };
             }
+        }
+    }
+
+    public class MemoryAnslysisResult
+    {
+        public long usedMem { get; set; }
+        public long cTime { get; set; }
+        public int count { get; set; }
+        public int rdbVer { get; set; }
+        public string redisVer { get; set; }
+        public long redisBits { get; set; }
+        public List<TypeRecord> typeRecords { get; set; }
+        public List<Record> largestRecords { get; set; }
+        public List<PrefixRecord> largestKeyPrefix { get; set; }
+        public List<ExpiryRecord> expiryInfo { get; set; }
+
+
+        internal static MemoryAnslysisResult BuildBasicFromRdbDataInfo(RdbDataInfo rdbDataInfo)
+        {
+            var result = new MemoryAnslysisResult
+            {
+                usedMem = rdbDataInfo.UsedMem > 0 ? rdbDataInfo.UsedMem : (long)rdbDataInfo.TotalMem,
+                cTime = rdbDataInfo.CTime,
+                count = rdbDataInfo.Count,
+                rdbVer = rdbDataInfo.RdbVer,
+                redisVer = string.IsNullOrWhiteSpace(rdbDataInfo.RedisVer) ? CommonHelper.GetFuzzyRedisVersion(rdbDataInfo.RdbVer) : rdbDataInfo.RedisVer,
+                redisBits = rdbDataInfo.RedisBits
+            };
+
+            return result;
+        }
+    }
+
+    [System.Text.Json.Serialization.JsonSerializable(typeof(MemoryAnslysisResult))]
+    internal partial class MemoryAnslysisResultJsonContext : System.Text.Json.Serialization.JsonSerializerContext
+    {
+    }
+
+    internal static class CommonCLIArguments
+    {
+        public static Argument<string> FileArgument()
+        {
+            Argument<string> arg = 
+                new Argument<string>("file", "The path of rdb file.");
+
+            return arg;
+        }
+    }
+
+    internal static class CommonCLIOptions
+    {
+        public static Option<string> OutputOption()
+        {
+            Option<string> option =
+                new Option<string>(
+                    aliases: new string[] { "--output", "-o" },
+                    description: "The output path of parsing result.")
+                .LegalFilePathsOnly();
+
+            return option;
+        }
+
+        public static Option<string> OutputTypeOption()
+        {
+            Option<string> option =
+                new Option<string>(
+                    aliases: new string[] { "--output-type", "-ot" },
+                    getDefaultValue: () => "json",
+                    description: "The output type of parsing result.")
+                .FromAmong("json", "html");
+
+            return option;
+        }
+
+        public static Option<int> TopPrefixCountOption()
+        {
+            Option<int> option =
+                new Option<int>(
+                    aliases: new string[] { "--top-prefixes", "-tp" }, 
+                    getDefaultValue: () => 50, 
+                    description: "The number of top key prefixes.");
+
+            option.AddValidator(x =>
+            {
+                var c = x.GetValueOrDefault<int>();
+                if (c > 200) x.ErrorMessage = "The number can not greater than 200!!";
+            });
+
+            return option;
+        }
+
+        public static Option<int> TopBigKeyCountOption()
+        {
+            Option<int> option =
+                new Option<int>(
+                    aliases: new string[] { "--top-bigkeys", "-tb" },
+                    getDefaultValue: () => 50,
+                    description: "The number of top big keys.");
+        
+            option.AddValidator(x =>
+            {
+                var c = x.GetValueOrDefault<int>();
+                if (c > 200) x.ErrorMessage = "The number can not greater than 200!!";
+            });
+
+            return option;
+        }
+
+        public static Option<List<int>> DBsOption()
+        {
+            Option<List<int>> option =
+                new Option<List<int>>(
+                    aliases: new string[] { "--db" },
+                    description: "The redis databases.");
+
+            return option;
+        }
+
+        public static Option<List<string>> TypesOption()
+        {
+            Option<List<string>> option =
+                new Option<List<string>>(
+                    aliases: new string[] { "--type" },
+                    description: "The redis types.")
+                .FromAmong("string", "list", "set", "sortedset", "hash", "module", "stream");
+
+            return option;
         }
     }
 }
