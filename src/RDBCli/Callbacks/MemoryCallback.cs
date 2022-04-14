@@ -430,8 +430,9 @@ namespace RDBCli.Callbacks
             }
         }
 
-        public void FuntionLoad(byte[] engine, byte[] libName)
+        public void FuntionLoad(byte[] engine, byte[] libName, byte[] code)
         {
+            _rdbDataInfo.TotalMem += FunctionOverhead(engine, libName, code);
         }
     }
 }

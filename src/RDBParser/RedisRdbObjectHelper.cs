@@ -247,7 +247,7 @@ namespace RDBParser
         private static ReadOnlySpan<byte> NameEqual => new byte[] { 110, 97, 109, 101, 61 };
         private static ReadOnlySpan<byte> TrimEndEle => new byte[] { 32 };
 
-        public static (byte[] engine, byte[] library) ExtractLibMetaData(byte[] bytes)
+        public static (byte[] engine, byte[] library, byte[] code) ExtractLibMetaData(byte[] bytes)
         {
             // #!<engine name> name=<library name> \n
             // #!lua name=mylib\nredis.register_function('knockknock', function() return 'Who\\'s there?' end)            
@@ -264,7 +264,9 @@ namespace RDBParser
             var engine = span.Slice(2, nameIndex - 2).TrimEnd(TrimEndEle);
             var lib = span.Slice(nameIndex + 5, shebangEnd - nameIndex - 5).TrimEnd(TrimEndEle);
 
-            return (engine.ToArray(), lib.ToArray());
+            var code = span.Slice(shebangEnd).Trim(TrimEndEle);
+
+            return (engine.ToArray(), lib.ToArray(), code.ToArray());
         }
     }
 }

@@ -56,7 +56,7 @@ namespace RDBParser
             Console.WriteLine($"End Stream, Key={GetString(key)}");
         }
 
-        public void FuntionLoad(byte[] engine, byte[] libName)
+        public void FuntionLoad(byte[] engine, byte[] libName, byte[] code)
         {
             Console.WriteLine($"FuntionLoad, engine={GetString(engine)}, libName={GetString(libName)}");
         }

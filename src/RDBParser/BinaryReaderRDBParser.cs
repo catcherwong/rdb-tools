@@ -114,7 +114,7 @@ namespace RDBParser
 
                             var blob = br.ReadStr();
 
-                            _callback.FuntionLoad(engineName, name);
+                            _callback.FuntionLoad(engineName, name, blob);
                             continue;
                         }
 
@@ -122,9 +122,9 @@ namespace RDBParser
                         {
                             // https://github.com/redis/redis/blob/7.0-rc3/src/rdb.c#L2849
                             var finalPayload = br.ReadStr();
-                            var (engine, libName) = RedisRdbObjectHelper.ExtractLibMetaData(finalPayload);
+                            var (engine, libName, code) = RedisRdbObjectHelper.ExtractLibMetaData(finalPayload);
 
-                            _callback.FuntionLoad(engine, libName);
+                            _callback.FuntionLoad(engine, libName, code);
                             continue;
                         }
 
