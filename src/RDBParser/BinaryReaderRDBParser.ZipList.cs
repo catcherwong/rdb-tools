@@ -50,7 +50,7 @@ namespace RDBParser
             }
             else if (entryHeader >> 6 == 1)
             {
-                length = (entryHeader & 0x3F) << 8 | br.ReadByte();
+                length = ((entryHeader & 0x3F) << 8) | br.ReadByte();
                 value = br.ReadBytes(length);
             }
             else if (entryHeader >> 6 == 2)
@@ -72,10 +72,10 @@ namespace RDBParser
             }
             else if (entryHeader == 240)
             {
-                var bytes = new byte[4];
+                var bytes = new byte[3];
+                bytes[0] = br.ReadByte();
                 bytes[1] = br.ReadByte();
                 bytes[2] = br.ReadByte();
-                bytes[3] = br.ReadByte();
                 return bytes;
             }
             else if (entryHeader == 254)
