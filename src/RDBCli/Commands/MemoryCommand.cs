@@ -174,6 +174,7 @@ namespace RDBCli.Commands
         public List<Record> largestRecords { get; set; }
         public List<PrefixRecord> largestKeyPrefix { get; set; }
         public List<ExpiryRecord> expiryInfo { get; set; }
+        public List<FunctionsRecord> functions { get; set; }
 
         internal static MemoryAnslysisResult BuildBasicFromRdbDataInfo(RdbDataInfo rdbDataInfo)
         {
@@ -184,7 +185,8 @@ namespace RDBCli.Commands
                 count = rdbDataInfo.Count,
                 rdbVer = rdbDataInfo.RdbVer,
                 redisVer = string.IsNullOrWhiteSpace(rdbDataInfo.RedisVer) ? CommonHelper.GetFuzzyRedisVersion(rdbDataInfo.RdbVer) : rdbDataInfo.RedisVer,
-                redisBits = rdbDataInfo.RedisBits
+                redisBits = rdbDataInfo.RedisBits,
+                functions = rdbDataInfo.Functions,
             };
 
             return result;
