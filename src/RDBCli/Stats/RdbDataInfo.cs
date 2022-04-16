@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace RDBCli
 {
@@ -45,5 +46,10 @@ namespace RDBCli
         /// The redis bits from aux
         /// </summary>
         public long RedisBits { get; set; }
+        
+        /// <summary>
+        /// The information about the functions and libraries
+        /// </summary>
+        public List<FunctionsRecord> Functions { get; set; } = new List<FunctionsRecord>();
     }
 }

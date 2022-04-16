@@ -52,7 +52,7 @@ namespace RDBCli
                         if (x.Elements < y.Elements) return -1;
                         else if (x.Prefix.Length < y.Prefix.Length)
                             return -1;
-                        else if(x.Prefix.Length == y.Prefix.Length)
+                        else if (x.Prefix.Length == y.Prefix.Length)
                             return string.Compare(x.Prefix, y.Prefix);
                     }
                 }
@@ -78,7 +78,7 @@ namespace RDBCli
         /// The redis type's total count
         /// </summary>
         public ulong Num { get; set; }
-       
+
         public override string ToString()
         {
             return $"{Type}-{Bytes}-{Num}";
@@ -106,5 +106,12 @@ namespace RDBCli
         {
             return $"{Expiry}-{Bytes}-{Num}";
         }
+    }
+
+    public class FunctionsRecord
+    {
+        public string Engine { get; set; }
+
+        public string LibraryName { get; set; }
     }
 }

@@ -85,6 +85,9 @@
                     <li class="nav-item">
                         <a class="nav-link" data-bs-toggle="tab" href="#topBigKeys">Top Big Keys</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#functions">Functions</a>
+                    </li>
                 </ul>
                 <div class="tab-content">
                     <div id="topBigKeys" class="container tab-pane fade">
@@ -95,6 +98,11 @@
                     <div id="topPrefix" class="container tab-pane active">
                         <br>
                         <table id="topPrefixTable">
+                        </table>
+                    </div>
+                    <div id="functions" class="container tab-pane fade">
+                        <br>
+                        <table id="functionTable">
                         </table>
                     </div>
                 </div>
@@ -185,6 +193,20 @@
             }, {
                 field: 'LenOfLargestElem',
                 title: 'Length of Largest Element'
+            }],
+            pagination: true,
+            pageSize: 10,
+            pageNumber: 1,
+        });
+
+        $('#functionTable').bootstrapTable({
+            data: cliData.functions,
+            columns: [{
+                field: 'Engine',
+                title: 'Engine'
+            }, {
+                field: 'LibraryName',
+                title: 'Library Name'
             }],
             pagination: true,
             pageSize: 10,
@@ -324,7 +346,7 @@
 
         function formatExpiry(time) {
             if (time == 0) {
-                return "Permanent";
+                return 'Permanent';
             } else {
                 let date = new Date(time);
                 let year = date.getFullYear();
@@ -333,7 +355,7 @@
                 let hour = date.getHours();
                 let min = date.getMinutes();
                 let second = date.getSeconds();
-                return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + second;
+                return year + '-' + month + '-' + day + ' ' + hour + ':' + min + ':' + second;
             }
         };
     </script>
