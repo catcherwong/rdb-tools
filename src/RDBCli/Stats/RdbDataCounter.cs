@@ -37,9 +37,9 @@ namespace RDBCli
                 {
                     try
                     {
-                        if (_records.TryTake(out var item, 500))
+                        if (_records.TryTake(out var item, 10))
                         {
-                            this.CountLargestEntries(item, 500);
+                            this.CountLargestEntries(item, 10);
                             this.CounteByType(item);
                             this.CountByKeyPrefix(item);
                             this.CountExpiry(item);
@@ -101,12 +101,15 @@ namespace RDBCli
 
             if (item.Expiry > 0)
             {
-                // TODO: which time is better here, rdb file's ctime or current time ?
                 var sub = DateTimeOffset.FromUnixTimeMilliseconds(item.Expiry).Subtract(DateTimeOffset.UtcNow);
 
                 // 0~1h, 1~3h, 3~12h, 12~24h, 24~72h, 72~168h, 168h~
                 var hour = sub.TotalHours;
-                if (hour < 1)
+                if(hour <= 0)
+                {
+                    key = "Already Expired";
+                }
+                else if (hour > 0 && hour < 1)
                 {
                     key = "0~1h";
                 }
