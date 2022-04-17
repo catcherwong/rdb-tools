@@ -111,6 +111,23 @@ Sample json result is as follow:
             "Bytes": 986801692,
             "Num": 4345021
         }
+    ],
+     "functions": [
+        {
+            "Engine": "lua",
+            "LibraryName": "mylib"
+        }
+    ],
+    "largestStreams": [
+        {
+            "Key": "key",
+            "Length": 5,
+            "LastId": "1650158935767-0",
+            "FirstId": "1650158906951-0",
+            "MaxDeletedEntryId": "0-0",
+            "EntriesAdded": 5,
+            "CGroups": 0
+        }
     ]
 }
 ````
