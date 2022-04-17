@@ -10,7 +10,7 @@ namespace RDBCli
         /// Producer/Consumer mode to handle the parser callback
         /// Otherwise, client's memory may increase quickly
         /// </summary>
-        public BlockingCollection<Record> Records { get; set; } = new BlockingCollection<Record>(1024);
+        public BlockingCollection<AnalysisRecord> Records { get; set; } = new BlockingCollection<AnalysisRecord>(1024);
 
         /// <summary>
         /// Used memory, unit is byte(B)

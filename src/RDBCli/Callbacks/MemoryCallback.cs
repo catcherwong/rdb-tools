@@ -64,7 +64,7 @@ namespace RDBCli.Callbacks
         public void EndHash(byte[] key)
         {
             _rdbDataInfo.TotalMem += _currentRecord.Bytes;
-            _rdbDataInfo.Records.Add(_currentRecord);
+            _rdbDataInfo.Records.Add(new AnalysisRecord(_currentRecord));
             _rdbDataInfo.Count++;
             _currentRecord = null;
         }
@@ -90,7 +90,7 @@ namespace RDBCli.Callbacks
             }
 
             _rdbDataInfo.TotalMem += _currentRecord.Bytes;
-            _rdbDataInfo.Records.Add(_currentRecord);
+            _rdbDataInfo.Records.Add(new AnalysisRecord(_currentRecord));
             _rdbDataInfo.Count++;
             _currentRecord = null;
         }
@@ -100,7 +100,7 @@ namespace RDBCli.Callbacks
             _currentRecord.Bytes += (ulong)bufferSize;
 
             _rdbDataInfo.TotalMem += _currentRecord.Bytes;
-            _rdbDataInfo.Records.Add(_currentRecord);
+            _rdbDataInfo.Records.Add(new AnalysisRecord(_currentRecord));
             _rdbDataInfo.Count++;
             _currentRecord = null;
         }
@@ -113,7 +113,7 @@ namespace RDBCli.Callbacks
         public void EndSet(byte[] key)
         {
             _rdbDataInfo.TotalMem += _currentRecord.Bytes;
-            _rdbDataInfo.Records.Add(_currentRecord);
+            _rdbDataInfo.Records.Add(new AnalysisRecord(_currentRecord));
             _rdbDataInfo.Count++;
             _currentRecord = null;
         }
@@ -121,13 +121,14 @@ namespace RDBCli.Callbacks
         public void EndSortedSet(byte[] key)
         {
             _rdbDataInfo.TotalMem += _currentRecord.Bytes;
-            _rdbDataInfo.Records.Add(_currentRecord);
+            _rdbDataInfo.Records.Add(new AnalysisRecord(_currentRecord));
             _rdbDataInfo.Count++;
             _currentRecord = null;
         }
 
         public void EndStream(byte[] key, StreamEntity entity)
         {
+            _currentRecord.NumOfElem = entity.Length;
             _currentRecord.Bytes += SizeofStreamRadixTree(_listpacksCount);
 
             foreach (var cg in entity.CGroups)
@@ -146,7 +147,7 @@ namespace RDBCli.Callbacks
             }
 
             _rdbDataInfo.TotalMem += _currentRecord.Bytes;
-            _rdbDataInfo.Records.Add(_currentRecord);
+            _rdbDataInfo.Records.Add(new AnalysisRecord(_currentRecord, StreamsRecord.MapFromStreamsEntity(entity, key)));
             _rdbDataInfo.Count++;
             _currentRecord = null;
         }
@@ -257,7 +258,7 @@ namespace RDBCli.Callbacks
             };
 
             _rdbDataInfo.TotalMem += record.Bytes;
-            _rdbDataInfo.Records.Add(record);
+            _rdbDataInfo.Records.Add(new AnalysisRecord(record));
             _rdbDataInfo.Count++;
         }
 
@@ -401,7 +402,7 @@ namespace RDBCli.Callbacks
         {
             if ((ulong)data.Length > _currentRecord.LenOfLargestElem)
             {
-                _currentRecord.FieldOfLargestElem = System.Text.Encoding.UTF8.GetString(data);
+                // _currentRecord.FieldOfLargestElem = System.Text.Encoding.UTF8.GetString(data);
                 _currentRecord.LenOfLargestElem = (ulong)data.Length;
             }
 
