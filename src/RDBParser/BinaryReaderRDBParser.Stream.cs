@@ -13,6 +13,7 @@ namespace RDBParser
             Info info = new Info();
             info.Idle = _idle;
             info.Freq = _freq;
+            info.Encoding = Constant.ObjEncoding.LISTPACK;
             _callback.StartStream(_key, (long)listPacks, _expiry, info);
 
             while (listPacks > 0)

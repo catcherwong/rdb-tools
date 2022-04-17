@@ -85,7 +85,10 @@
                     <li class="nav-item">
                         <a class="nav-link" data-bs-toggle="tab" href="#topBigKeys">Top Big Keys</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" id="tbStreams">
+                        <a class="nav-link" data-bs-toggle="tab" href="#streams">Top Streams</a>
+                    </li>
+                    <li class="nav-item" id="tbFunctions">
                         <a class="nav-link" data-bs-toggle="tab" href="#functions">Functions</a>
                     </li>
                 </ul>
@@ -103,6 +106,11 @@
                     <div id="functions" class="container tab-pane fade">
                         <br>
                         <table id="functionTable">
+                        </table>
+                    </div>
+                    <div id="streams" class="container tab-pane fade">
+                        <br>
+                        <table id="streamsTable">
                         </table>
                     </div>
                 </div>
@@ -172,6 +180,7 @@
             }, {
                 field: 'Bytes',
                 title: 'Memory Usage',
+                sortable: true,
                 formatter: function (val, row, index) {
                     return formatBytes(val);
                 }
@@ -187,12 +196,14 @@
             }, {
                 field: 'NumOfElem',
                 title: 'Elements',
+                sortable: true,
                 formatter: function (val, row, index) {
                     return formatNumber(val);
                 }
             }, {
                 field: 'LenOfLargestElem',
-                title: 'Length of Largest Element'
+                title: 'Length of Largest Element',
+                sortable: true,
             }],
             pagination: true,
             pageSize: 10,
@@ -207,6 +218,38 @@
             }, {
                 field: 'LibraryName',
                 title: 'Library Name'
+            }],
+            pagination: true,
+            pageSize: 10,
+            pageNumber: 1,
+        });
+
+        $('#streamsTable').bootstrapTable({
+            data: cliData.largestStreams,
+            columns: [{
+                field: 'Key',
+                title: 'Key'
+            }, {
+                field: 'Length',
+                title: 'Length',
+                sortable: true,
+            }, {
+                field: 'LastId',
+                title: 'LastId'
+            }, {
+                field: 'FirstId',
+                title: 'FirstId'
+            }, {
+                field: 'MaxDeletedEntryId',
+                title: 'Max Deleted EntryId'
+            }, {
+                field: 'EntriesAdded',
+                title: 'Entries Added',
+                sortable: true,
+            }, {
+                field: 'CGroups',
+                title: 'Consumer Groups',
+                sortable: true,
             }],
             pagination: true,
             pageSize: 10,

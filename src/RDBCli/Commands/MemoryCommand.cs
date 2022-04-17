@@ -67,12 +67,14 @@ namespace RDBCli.Commands
             var largestKeyPrefix = counter.GetLargestKeyPrefixes(options.TopPrefixCount);
             var typeRecords = counter.GetTypeRecords();
             var expiryInfo = counter.GetExpiryInfo();
+            var streamRecords = counter.GetStreamRecords(); 
 
             var dict = MemoryAnslysisResult.BuildBasicFromRdbDataInfo(rdbDataInfo);
             dict.typeRecords = typeRecords;
             dict.largestKeyPrefix = largestKeyPrefix;
             dict.largestRecords = largestRecords;
             dict.expiryInfo = expiryInfo;
+            dict.largestStreams = streamRecords;
 
             var path = WriteFile(dict, options.Output, options.OutputType);
 
@@ -175,6 +177,7 @@ namespace RDBCli.Commands
         public List<PrefixRecord> largestKeyPrefix { get; set; }
         public List<ExpiryRecord> expiryInfo { get; set; }
         public List<FunctionsRecord> functions { get; set; }
+        public List<StreamsRecord> largestStreams { get; set; }
 
         internal static MemoryAnslysisResult BuildBasicFromRdbDataInfo(RdbDataInfo rdbDataInfo)
         {

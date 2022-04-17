@@ -12,16 +12,18 @@ namespace RDBCli
 
         private PriorityQueue<Record, ulong> _largestRecords;
         private PriorityQueue<PrefixRecord, PrefixRecord> _largestKeyPrefixes;
+        private PriorityQueue<StreamsRecord, ulong> _largestStreams;
         private Dictionary<TypeKey, TypeKeyValue> _keyPrefix;
         private Dictionary<string, CommonStatValue> _typeDict;
         private Dictionary<string, CommonStatValue> _expiryDict;
 
-        private readonly BlockingCollection<Record> _records;
+        private readonly BlockingCollection<AnalysisRecord> _records;
 
-        public RdbDataCounter(BlockingCollection<Record> records)
+        public RdbDataCounter(BlockingCollection<AnalysisRecord> records)
         {
             this._records = records;
             this._largestRecords = new PriorityQueue<Record, ulong>();
+            this._largestStreams = new PriorityQueue<StreamsRecord, ulong>();
             this._largestKeyPrefixes = new PriorityQueue<PrefixRecord, PrefixRecord>(PrefixRecord.Comparer);
             this._keyPrefix = new Dictionary<TypeKey, TypeKeyValue>(TypeKey.Comparer);
             this._typeDict = new Dictionary<string, CommonStatValue>();
@@ -33,16 +35,17 @@ namespace RDBCli
             System.Threading.CancellationTokenSource cts = new System.Threading.CancellationTokenSource();
             var task = Task.Factory.StartNew(() => 
             {
-                while (!_records.IsAddingCompleted)
+                while (!_records.IsCompleted)
                 {
                     try
                     {
                         if (_records.TryTake(out var item, 10))
                         {
-                            this.CountLargestEntries(item, 10);
-                            this.CounteByType(item);
-                            this.CountByKeyPrefix(item);
-                            this.CountExpiry(item);
+                            this.CountLargestEntries(item.Record, 500);
+                            this.CounteByType(item.Record);
+                            this.CountByKeyPrefix(item.Record);
+                            this.CountExpiry(item.Record);
+                            this.CountStreams(item.StreamsRecord, 500);
                         }
                         else
                         {
@@ -61,7 +64,7 @@ namespace RDBCli
 
             return task;
         }
-       
+
         public List<PrefixRecord> GetLargestKeyPrefixes(int num = 100)
         {
             return _largestKeyPrefixes.UnorderedItems
@@ -93,6 +96,15 @@ namespace RDBCli
                .Select(x => new ExpiryRecord { Expiry = x.Key, Num = x.Value.Num, Bytes = x.Value.Bytes })
                .OrderBy(x => x.Expiry)
                .ToList();
+        }
+
+        public List<StreamsRecord> GetStreamRecords(int num = 100)
+        {
+            return _largestStreams.UnorderedItems
+                .OrderByDescending(x=>x.Priority)
+                .Select(x => x.Element)
+                .Take(num)
+                .ToList();
         }
 
         private void CountExpiry(Record item)
@@ -168,7 +180,19 @@ namespace RDBCli
                 {
                     _ = _largestKeyPrefixes.Dequeue();
                 }
-            }        
+            }
+        }
+
+        private void CountStreams(StreamsRecord streamsRecord, int num)
+        {
+            if(streamsRecord == null) return;
+
+            _largestStreams.Enqueue(streamsRecord, streamsRecord.Length);
+
+            if (_largestStreams.Count > num)
+            {
+                _ = _largestStreams.Dequeue();
+            }
         }
 
         private void CountByKeyPrefix(Record record)
