@@ -147,9 +147,9 @@ namespace RDBParser
             else if (encType == Constant.DataType.ZSET || encType == Constant.DataType.ZSET_2)
             {
                 var length = br.ReadLength();
-                skip = (int)length;
                 while (length > 0)
                 {
+                    length--;
                     br.SkipStr();
                     double score = encType == Constant.DataType.ZSET_2
                         ? br.ReadDouble()
@@ -190,7 +190,11 @@ namespace RDBParser
 
                 if (encType == Constant.DataType.LIST_QUICKLIST_2)
                 {
-                    while (length > 0) br.ReadLength();
+                    while (length > 0)
+                    {
+                        br.ReadLength();
+                        length--;
+                    }
                 }
             }
             else if (encType == Constant.DataType.MODULE)
