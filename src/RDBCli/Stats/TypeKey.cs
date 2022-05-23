@@ -21,6 +21,12 @@ namespace RDBCli
             return $"{Type}-{Key}";
         }
 
+        public static TypeKey FromString(string str)
+        {
+            var tk = str.Split('-');
+            return new TypeKey { Type = tk[0], Key = tk[1] };
+        }
+
         public static TypeKeyEqualityComparer Comparer = new TypeKeyEqualityComparer();
 
         public class TypeKeyEqualityComparer : IEqualityComparer<TypeKey>

@@ -13,7 +13,7 @@ namespace RDBCli
         private PriorityQueue<Record, ulong> _largestRecords;
         private PriorityQueue<PrefixRecord, PrefixRecord> _largestKeyPrefixes;
         private PriorityQueue<StreamsRecord, ulong> _largestStreams;
-        private Dictionary<TypeKey, TypeKeyValue> _keyPrefix;
+        private Dictionary<string, TypeKeyValue> _keyPrefix;
         private Dictionary<string, CommonStatValue> _typeDict;
         private Dictionary<string, CommonStatValue> _expiryDict;
 
@@ -25,7 +25,7 @@ namespace RDBCli
             this._largestRecords = new PriorityQueue<Record, ulong>();
             this._largestStreams = new PriorityQueue<StreamsRecord, ulong>();
             this._largestKeyPrefixes = new PriorityQueue<PrefixRecord, PrefixRecord>(PrefixRecord.Comparer);
-            this._keyPrefix = new Dictionary<TypeKey, TypeKeyValue>(TypeKey.Comparer);
+            this._keyPrefix = new Dictionary<string, TypeKeyValue>();
             this._typeDict = new Dictionary<string, CommonStatValue>();
             this._expiryDict = new Dictionary<string, CommonStatValue>();
         }
@@ -39,7 +39,7 @@ namespace RDBCli
                 {
                     try
                     {
-                        if (_records.TryTake(out var item, 10))
+                        if (_records.TryTake(out var item))
                         {
                             this.CountLargestEntries(item.Record, 500);
                             this.CounteByType(item.Record);
@@ -166,10 +166,11 @@ namespace RDBCli
         {
             foreach (var item in _keyPrefix)
             {
+                var tk = TypeKey.FromString(item.Key);
                 var ent = new PrefixRecord
                 {
-                    Type = item.Key.Type,
-                    Prefix = item.Key.Key,
+                    Type = tk.Type,
+                    Prefix = tk.Key,
                     Bytes = item.Value.Bytes,
                     Num = item.Value.Num,
                     Elements = item.Value.Elements,
@@ -207,15 +208,15 @@ namespace RDBCli
 
                 tKey.Key = item;
 
-                if (this._keyPrefix.ContainsKey(tKey))
+                if (this._keyPrefix.ContainsKey(tKey.ToString()))
                 {
-                    this._keyPrefix[tKey].Num++;
-                    this._keyPrefix[tKey].Bytes += record.Bytes;
-                    this._keyPrefix[tKey].Elements += record.NumOfElem;
+                    this._keyPrefix[tKey.ToString()].Num++;
+                    this._keyPrefix[tKey.ToString()].Bytes += record.Bytes;
+                    this._keyPrefix[tKey.ToString()].Elements += record.NumOfElem;
                 }
                 else
                 {
-                    this._keyPrefix[tKey] = new TypeKeyValue
+                    this._keyPrefix[tKey.ToString()] = new TypeKeyValue
                     {
                         Num = 1,
                         Bytes = record.Bytes,
