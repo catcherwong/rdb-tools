@@ -21,7 +21,9 @@ jobs:
                       "linux-arm64",
                       "osx-x64",
                       "win-x86",
-                      "win-arm"
+                      "win-arm",
+                      "win-x64",
+                      "win-arm64"
                   ]
       steps:
         - name: Checkout
@@ -81,7 +83,7 @@ jobs:
               mkdir ../release
               rm -fo ../publish/$($env:RID)/*.pdb
               ls ../publish/
-              Compress-Archive -Path ../publish/$($env:RID)/* -DestinationPath ../release/rdb-cli.$($env:VERSION).$($env:RID).zip
+              Compress-Archive -Path ../publish/$($env:RID)/* -DestinationPath ../release/rdb-cli.$($env:VERSION).$($env:RID).aot.zip
         - name: Upload artifacts
           uses: actions/upload-artifact@v2
           with:
