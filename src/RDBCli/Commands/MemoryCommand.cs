@@ -109,6 +109,18 @@ namespace RDBCli.Commands
 
                 bytes = System.Text.Encoding.UTF8.GetBytes(tpl);
             }
+            else if (type.Equals("csv"))
+            {
+                // csv only output largestRecords or multi csv files with full MemoryAnslysisResult?
+                var builder = new System.Text.StringBuilder();
+                builder.AppendLine("database,type,key,size_in_bytes,encoding,num_elements,len_largest_element");
+                foreach (var item in dict.largestRecords)
+                {
+                    builder.AppendLine($"{item.Database},{item.Type},{item.Key},{item.Bytes},{item.Encoding},{item.NumOfElem},{item.LenOfLargestElem}");
+                }
+
+                bytes = System.Text.Encoding.UTF8.GetBytes(builder.ToString());
+            }
             else
             {
                 bytes = new byte[1];
@@ -232,7 +244,7 @@ namespace RDBCli.Commands
                     aliases: new string[] { "--output-type", "-ot" },
                     getDefaultValue: () => "json",
                     description: "The output type of parsing result.")
-                .FromAmong("json", "html");
+                .FromAmong("json", "html", "csv");
 
             return option;
         }
