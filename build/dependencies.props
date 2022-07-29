@@ -1,0 +1,17 @@
+<Project>
+	<PropertyGroup>
+		<!-- RDBCli -->
+		<SystemCommandLinePackageVersion>2.0.0-beta4.22272.1</SystemCommandLinePackageVersion>
+		<MicrosoftDotNetILCompilerPackageVersion>7.0.0-*</MicrosoftDotNetILCompilerPackageVersion>
+
+		<!-- RDBParser -->
+		<MicrosoftSourceLinkGitHubPackageVersion>1.1.*</MicrosoftSourceLinkGitHubPackageVersion>
+
+		<!-- TEST -->
+		<MicrosoftNETTestSdkPackageVersion>17.1.0</MicrosoftNETTestSdkPackageVersion>
+		<XunitPackageVersion>2.4.1</XunitPackageVersion>
+		<XunitRunnerVisualstudioPackageVersion>2.4.3</XunitRunnerVisualstudioPackageVersion>
+		<CoverletCollectorPackageVersion>3.1.2</CoverletCollectorPackageVersion>
+
+	</PropertyGroup>
+</Project>
