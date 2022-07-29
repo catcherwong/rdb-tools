@@ -2,15 +2,9 @@
 
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
-		<PackageProjectUrl>https://github.com/catcherwong/rdb-tools</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/catcherwong/rdb-tools</RepositoryUrl>
 		<Description>RDBParser is a library for parsing redis rdb files.</Description>
 		<PackageTags>csharp,rdb,parser,redis</PackageTags>
-		<VersionPrefix>0.3.0</VersionPrefix>
-		<VersionSuffix></VersionSuffix>
-		<Authors>catcherwong</Authors>
-		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+		<VersionPrefix>$(RDBParserVersion)</VersionPrefix>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		
 		<!--Add support for sourcelink-->
@@ -21,7 +15,7 @@
 
 	<ItemGroup >
 		<!--Add support for sourcelink-->
-		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.*" PrivateAssets="All" />
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="$(MicrosoftSourceLinkGitHubPackageVersion)" PrivateAssets="All" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -3,15 +3,9 @@
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net6.0</TargetFramework>
-		<PackageProjectUrl>https://github.com/catcherwong/rdb-tools</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/catcherwong/rdb-tools</RepositoryUrl>
 		<Description>rdb-cli is a command line tool for redis rdb files.</Description>
 		<PackageTags>csharp,rdb,parser,redis,cli</PackageTags>
-		<VersionPrefix>0.5.0</VersionPrefix>
-		<VersionSuffix></VersionSuffix>
-		<Authors>catcherwong</Authors>
-		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+		<VersionPrefix>$(RDBCliVersion)</VersionPrefix>
 		<LangVersion>preview</LangVersion>
 		<AssemblyName>rdb-cli</AssemblyName>
 		<PackageId>$(AssemblyName)</PackageId>
@@ -22,11 +16,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="System.CommandLine" Version="2.0.0-beta3.22114.1" />
+		<PackageReference Include="System.CommandLine" Version="$(SystemCommandLinePackageVersion)" />
 	</ItemGroup>
 
 	<ItemGroup Condition="$(UseAot)">
-		<PackageReference Include="Microsoft.DotNet.ILCompiler;runtime.win-x64.Microsoft.DotNet.ILCompiler" Version="7.0.0-*"/>
+		<PackageReference Include="Microsoft.DotNet.ILCompiler;runtime.win-x64.Microsoft.DotNet.ILCompiler" Version="$(MicrosoftDotNetILCompilerPackageVersion)" />
 	</ItemGroup>
 
 	<ItemGroup>
