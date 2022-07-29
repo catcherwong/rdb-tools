@@ -1,4 +1,6 @@
-﻿namespace RDBCli
+﻿using System;
+
+namespace RDBCli
 {
     internal static class CommonHelper
     {
@@ -46,6 +48,57 @@
             }
            
             return ver;
+        }
+
+        internal static string GetExpireString(long exp)
+        {
+            var res = exp.ToString();
+
+            if (exp > 0)
+            {
+                var sub = DateTimeOffset.FromUnixTimeMilliseconds(exp).Subtract(DateTimeOffset.UtcNow);
+
+                // 0~1h, 1~3h, 3~12h, 12~24h, 24~72h, 72~168h, 168h~
+                var hour = sub.TotalHours;
+                if (hour <= 0)
+                {
+                    res = "Already Expired";
+                }
+                else if (hour > 0 && hour < 1)
+                {
+                    res = "0~1h";
+                }
+                else if (hour >= 1 && hour < 3)
+                {
+                    res = "1~3h";
+                }
+                else if (hour >= 3 && hour < 12)
+                {
+                    res = "3~12h";
+                }
+                else if (hour >= 12 && hour < 24)
+                {
+                    res = "12~24h";
+                }
+                else if (hour >= 24 && hour < 72)
+                {
+                    res = "1~3d";
+                }
+                else if (hour >= 72 && hour < 168)
+                {
+                    res = "3~7d";
+                }
+                else if (hour >= 168)
+                {
+                    res = ">7d";
+                }
+            }
+            else if (exp == 0)
+            {
+                res = "Permanent";
+            }
+
+            return res;
         }
     }
 }

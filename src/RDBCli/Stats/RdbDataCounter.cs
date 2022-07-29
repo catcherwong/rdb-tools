@@ -109,55 +109,7 @@ namespace RDBCli
 
         private void CountExpiry(Record item)
         {
-            var key = string.Empty;
-
-            if (item.Expiry > 0)
-            {
-                var sub = DateTimeOffset.FromUnixTimeMilliseconds(item.Expiry).Subtract(DateTimeOffset.UtcNow);
-
-                // 0~1h, 1~3h, 3~12h, 12~24h, 24~72h, 72~168h, 168h~
-                var hour = sub.TotalHours;
-                if(hour <= 0)
-                {
-                    key = "Already Expired";
-                }
-                else if (hour > 0 && hour < 1)
-                {
-                    key = "0~1h";
-                }
-                else if (hour >= 1 && hour < 3)
-                {
-                    key = "1~3h";
-                }
-                else if (hour >= 3 && hour < 12)
-                {
-                    key = "3~12h";
-                }
-                else if (hour >= 12 && hour < 24)
-                {
-                    key = "12~24h";
-                }
-                else if (hour >= 24 && hour < 72)
-                {
-                    key = "1~3d";
-                }
-                else if (hour >= 72 && hour < 168)
-                {
-                    key = "3~7d";
-                }
-                else if (hour >= 168)
-                {
-                    key = ">7d";
-                }
-            }
-            else if (item.Expiry == 0)
-            {
-                key = "Permanent";
-            }
-            else
-            {
-                key = item.Expiry.ToString();
-            }
+            var key = CommonHelper.GetExpireString(item.Expiry);
 
             InitOrAddStat(this._expiryDict, key, item.Bytes);
         }
