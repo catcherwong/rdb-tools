@@ -16,6 +16,7 @@ namespace RDBCli
                 new Commands.PrintAllKeysCommand(),
                 new Commands.MemoryCommand(),
                 new Commands.TestCommand(),
+                new Commands.CsvCommand(),
 
             };
 
