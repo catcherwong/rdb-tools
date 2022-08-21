@@ -2,7 +2,7 @@
 	<PropertyGroup>
 
 		<RDBParserVersion>0.3.0</RDBParserVersion>
-		<RDBCliVersion>0.6.0</RDBCliVersion>
+		<RDBCliVersion>0.6.1</RDBCliVersion>
 
 	</PropertyGroup>
 </Project>

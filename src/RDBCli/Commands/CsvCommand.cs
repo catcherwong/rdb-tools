@@ -41,7 +41,7 @@ namespace RDBCli.Commands
             var rdbDataInfo = cb.GetRdbDataInfo();
 
             var counter = new RdbCsvData(rdbDataInfo.Records);
-            var task =  counter.Output(options.Output);
+            var task = counter.Output(options.Output);
 
             console.WriteLine($"");
             console.WriteLine($"Prepare to parse [{options.Files}]");
@@ -104,8 +104,17 @@ namespace RDBCli.Commands
             var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"dump.csv");
             if (!string.IsNullOrWhiteSpace(output))
             {
-                if (!Directory.Exists(output)) Directory.CreateDirectory(output);
-                path = Path.Combine(output, $"dump.csv");
+                if(output.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                {
+                    var dir = Path.GetDirectoryName(output);
+                    if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);    
+                    path = output;
+                }
+                else
+                {
+                    if (!Directory.Exists(output)) Directory.CreateDirectory(output);    
+                    path = Path.Combine(output, $"dump.csv");
+                }
             }
 
             System.Threading.CancellationTokenSource cts = new System.Threading.CancellationTokenSource();
