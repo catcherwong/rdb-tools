@@ -262,5 +262,24 @@ namespace RDBParserTests
             var res = databases[0][Encoding.UTF8.GetBytes("foo")];
             Assert.Equal(Encoding.UTF8.GetBytes("ReJSON-RL"), res);
         }
+
+        [Fact]
+        public void TestFilter()
+        {
+            var path = TestHelper.GetRDBPath("multiple_databases.rdb");
+
+            var filter = new ParserFilter()
+            {
+                KeyPrefixes = new List<string> { "key_in_z" }
+            };
+            var callback = new TestReaderCallback(_output);
+            var parser = new BinaryReaderRDBParser(callback, filter);
+            parser.Parse(path);
+
+            var databases = callback.GetDatabases();
+
+            Assert.Single(databases[0]);
+            Assert.Empty(databases[2]);
+        }
     }
 }

@@ -142,7 +142,7 @@ namespace RDBParser
                         {
                             _key = br.ReadStr();
 
-                            if (MatchFilter(dataType: opType))
+                            if (MatchFilter(dataType: opType, key: _key))
                             {
                                 info.Idle = _idle;
                                 info.Freq = _freq;
@@ -169,7 +169,7 @@ namespace RDBParser
         public Task ParseAsync(string path)
             => Task.Run(() => Parse(path));
 
-        private bool MatchFilter(int database = -1, int dataType = -1)
+        private bool MatchFilter(int database = -1, int dataType = -1, byte[] key = null)
         {
             if (_filter == null) return true;
 
@@ -189,6 +189,22 @@ namespace RDBParser
                 && !_filter.Types.Contains(GetLogicalType(dataType)))
             {
                 return false;
+            }
+
+            if(key != null
+               && _filter.KeyPrefixes != null
+               && _filter.KeyPrefixes.Any())
+            {
+                var keyStr = System.Text.Encoding.UTF8.GetString(key);
+                
+                bool flag = false;
+
+                foreach(var item in _filter.KeyPrefixes)
+                {
+                    flag = flag || keyStr.StartsWith(item, System.StringComparison.OrdinalIgnoreCase);
+                }
+
+                return flag;
             }
 
             return true;

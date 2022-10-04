@@ -13,5 +13,10 @@ namespace RDBParser
         /// The types that you need
         /// </summary>
         public List<string> Types { get; set; }
+
+        /// <summary>
+        /// The key prefixes that you need
+        /// </summary>
+        public List<string> KeyPrefixes { get; set; }
     }
 }
