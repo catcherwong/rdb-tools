@@ -16,6 +16,7 @@ namespace RDBCli.Commands
         private static Option<string> _outputOption = CommonCLIOptions.OutputOption();
         private static Option<List<int>> _databasesOption = CommonCLIOptions.DBsOption();
         private static Option<List<string>> _typesOption = CommonCLIOptions.TypesOption();
+        private static Option<List<string>> _keyPrefixesOption = CommonCLIOptions.KeyPrefixesOption();
         private static Argument<string> _fileArg = CommonCLIArguments.FileArgument();
 
         public CsvCommand()
@@ -24,6 +25,7 @@ namespace RDBCli.Commands
             this.AddOption(_outputOption);
             this.AddOption(_databasesOption);
             this.AddOption(_typesOption);
+            this.AddOption(_keyPrefixesOption);
             this.AddArgument(_fileArg);
 
             this.SetHandler((InvocationContext context) =>
@@ -73,11 +75,13 @@ namespace RDBCli.Commands
                 var output = context.ParseResult.GetValueForOption<string>(_outputOption);
                 var databases = context.ParseResult.GetValueForOption<List<int>>(_databasesOption);
                 var types = context.ParseResult.GetValueForOption<List<string>>(_typesOption);
+                var keyPrefixes = context.ParseResult.GetValueForOption<List<string>>(_keyPrefixesOption);
 
                 var parseFilter = new RDBParser.ParserFilter()
                 {
                     Databases = databases,
-                    Types = types
+                    Types = types,
+                    KeyPrefixes = keyPrefixes,
                 };
 
                 return new CommandOptions
@@ -122,6 +126,8 @@ namespace RDBCli.Commands
             {
                 using (FileStream fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None))
                 {
+                    // overwrite
+                    fs.SetLength(0);
                     var header = Encoding.UTF8.GetBytes("database,type,key,size_in_bytes,encoding,num_elements,len_largest_element,expiry\n");
                     fs.Write(header);
 
