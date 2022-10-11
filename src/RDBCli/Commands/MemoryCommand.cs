@@ -17,6 +17,7 @@ namespace RDBCli.Commands
         private static Option<int> _topBigKeyCountOption = CommonCLIOptions.TopBigKeyCountOption();
         private static Option<List<int>> _databasesOption = CommonCLIOptions.DBsOption();
         private static Option<List<string>> _typesOption = CommonCLIOptions.TypesOption();
+        private static Option<List<string>> _keyPrefixesOption = CommonCLIOptions.KeyPrefixesOption();
         private static Argument<string> _fileArg = CommonCLIArguments.FileArgument();
 
         public MemoryCommand()
@@ -28,6 +29,7 @@ namespace RDBCli.Commands
             this.AddOption(_topBigKeyCountOption);
             this.AddOption(_databasesOption);
             this.AddOption(_typesOption);
+            this.AddOption(_keyPrefixesOption);
             this.AddArgument(_fileArg);
 
             this.SetHandler((InvocationContext context) =>
@@ -156,11 +158,13 @@ namespace RDBCli.Commands
                 var bc = context.ParseResult.GetValueForOption<int>(_topBigKeyCountOption);
                 var databases = context.ParseResult.GetValueForOption<List<int>>(_databasesOption);
                 var types = context.ParseResult.GetValueForOption<List<string>>(_typesOption);
+                var keyPrefixes = context.ParseResult.GetValueForOption<List<string>>(_keyPrefixesOption);
 
                 var parseFilter = new RDBParser.ParserFilter()
                 {
                     Databases = databases,
-                    Types = types
+                    Types = types,
+                    KeyPrefixes = keyPrefixes,
                 };
 
                 return new CommandOptions
@@ -300,6 +304,16 @@ namespace RDBCli.Commands
                     aliases: new string[] { "--type" },
                     description: "The filter of redis types.")
                 .FromAmong("string", "list", "set", "sortedset", "hash", "module", "stream");
+
+            return option;
+        }
+
+        public static Option<List<string>> KeyPrefixesOption()
+        {
+            Option<List<string>> option =
+                new Option<List<string>>(
+                    aliases: new string[] { "--key-prefix" },
+                    description: "The filter of redis key prefix.");
 
             return option;
         }
