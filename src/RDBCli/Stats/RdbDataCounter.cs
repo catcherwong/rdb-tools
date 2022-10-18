@@ -8,7 +8,7 @@ namespace RDBCli
 {
     internal class RdbDataCounter
     {
-        private static readonly char[] Separators = new char[] { ':', ';', ',', '_', '-' };
+        private static readonly char[] Separators = new char[] { ':', ';', ',', '_', '-', '.' };
 
         private PriorityQueue<Record, ulong> _largestRecords;
         private PriorityQueue<PrefixRecord, PrefixRecord> _largestKeyPrefixes;
@@ -188,13 +188,27 @@ namespace RDBCli
 
             if (sepIdx < 0) res.Add(s);
 
-            if (sepIdx > -1)
+            while (sepIdx > -1)
             {
                 var str = new string(span[..(sepIdx + 1)]);
-                res.Add(str.TrimEnd(Separators));
+
+                if (res.Any())
+                {
+                    str = string.Concat(res[^1], str);
+                }
+
+                res.Add(str);
+
+                span = span[(sepIdx + 1)..];
+                sepIdx = span.IndexOfAny(Separators);
             }
 
-            return res;
+            for (int i = 0; i < res.Count; i++)
+            {
+                res[i] = res[i].TrimEnd(Separators);
+            }
+
+            return res.Distinct().ToList();
         }
 
         private void CountLargestEntries(Record record, int num)
