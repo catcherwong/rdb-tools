@@ -8,7 +8,7 @@ namespace RDBCli
 {
     internal class RdbDataCounter
     {
-        private static readonly char[] Separators = new char[] { ':', ';', ',', '_', '-' };
+        private char[] _separators = new char[] { ':', ';', ',', '_', '-', '.' };
 
         private PriorityQueue<Record, ulong> _largestRecords;
         private PriorityQueue<PrefixRecord, PrefixRecord> _largestKeyPrefixes;
@@ -19,7 +19,7 @@ namespace RDBCli
 
         private readonly BlockingCollection<AnalysisRecord> _records;
 
-        public RdbDataCounter(BlockingCollection<AnalysisRecord> records)
+        public RdbDataCounter(BlockingCollection<AnalysisRecord> records, string separators = "")
         {
             this._records = records;
             this._largestRecords = new PriorityQueue<Record, ulong>();
@@ -28,6 +28,11 @@ namespace RDBCli
             this._keyPrefix = new Dictionary<string, TypeKeyValue>();
             this._typeDict = new Dictionary<string, CommonStatValue>();
             this._expiryDict = new Dictionary<string, CommonStatValue>();
+
+            if (!string.IsNullOrWhiteSpace(separators))
+            {
+                _separators = separators.ToCharArray();
+            }
         }
 
         public Task Count()
@@ -184,17 +189,31 @@ namespace RDBCli
 
             var span = s.AsSpan();
 
-            var sepIdx = span.IndexOfAny(Separators);
+            var sepIdx = span.IndexOfAny(_separators);
 
             if (sepIdx < 0) res.Add(s);
 
-            if (sepIdx > -1)
+            while (sepIdx > -1)
             {
                 var str = new string(span[..(sepIdx + 1)]);
-                res.Add(str.TrimEnd(Separators));
+
+                if (res.Any())
+                {
+                    str = string.Concat(res[^1], str);
+                }
+
+                res.Add(str);
+
+                span = span[(sepIdx + 1)..];
+                sepIdx = span.IndexOfAny(_separators);
             }
 
-            return res;
+            for (int i = 0; i < res.Count; i++)
+            {
+                res[i] = res[i].TrimEnd(_separators);
+            }
+
+            return res.Distinct().ToList();
         }
 
         private void CountLargestEntries(Record record, int num)

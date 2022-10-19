@@ -18,6 +18,7 @@ namespace RDBCli.Commands
         private static Option<List<int>> _databasesOption = CommonCLIOptions.DBsOption();
         private static Option<List<string>> _typesOption = CommonCLIOptions.TypesOption();
         private static Option<List<string>> _keyPrefixesOption = CommonCLIOptions.KeyPrefixesOption();
+        private static Option<string> _separatorsOption = CommonCLIOptions.SeparatorsOption();
         private static Argument<string> _fileArg = CommonCLIArguments.FileArgument();
 
         public MemoryCommand()
@@ -30,6 +31,7 @@ namespace RDBCli.Commands
             this.AddOption(_databasesOption);
             this.AddOption(_typesOption);
             this.AddOption(_keyPrefixesOption);
+            this.AddOption(_separatorsOption);
             this.AddArgument(_fileArg);
 
             this.SetHandler((InvocationContext context) =>
@@ -46,7 +48,7 @@ namespace RDBCli.Commands
             var cb = new clicb.MemoryCallback();
             var rdbDataInfo = cb.GetRdbDataInfo();
 
-            var counter = new RdbDataCounter(rdbDataInfo.Records);
+            var counter = new RdbDataCounter(rdbDataInfo.Records, options.Separators);
             var task = counter.Count();
 
             console.WriteLine($"");
@@ -148,6 +150,7 @@ namespace RDBCli.Commands
             public int TopPrefixCount { get; set; }
             public int TopBigKeyCount { get; set; }
             public RDBParser.ParserFilter ParserFilter { get; set; }
+            public string Separators { get; set; }
 
             public static CommandOptions FromContext(InvocationContext context)
             {
@@ -159,6 +162,7 @@ namespace RDBCli.Commands
                 var databases = context.ParseResult.GetValueForOption<List<int>>(_databasesOption);
                 var types = context.ParseResult.GetValueForOption<List<string>>(_typesOption);
                 var keyPrefixes = context.ParseResult.GetValueForOption<List<string>>(_keyPrefixesOption);
+                var sep = context.ParseResult.GetValueForOption<string>(_separatorsOption);
 
                 var parseFilter = new RDBParser.ParserFilter()
                 {
@@ -174,7 +178,8 @@ namespace RDBCli.Commands
                     OutputType = outputType,
                     TopBigKeyCount = bc,
                     TopPrefixCount = pc,
-                    ParserFilter = parseFilter
+                    ParserFilter = parseFilter,
+                    Separators = sep
                 };
             }
         }
@@ -314,6 +319,16 @@ namespace RDBCli.Commands
                 new Option<List<string>>(
                     aliases: new string[] { "--key-prefix" },
                     description: "The filter of redis key prefix.");
+
+            return option;
+        }
+
+        public static Option<string> SeparatorsOption()
+        {
+            Option<string> option =
+                new Option<string>(
+                    aliases: new string[] { "--separators" },
+                    description: "The separators of redis key prefix.");
 
             return option;
         }
