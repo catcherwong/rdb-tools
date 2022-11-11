@@ -23,7 +23,7 @@ namespace RDBCli
 
         public static TypeKey FromString(string str)
         {
-            var tk = str.Split('-');
+            var tk = str.Split('-', 2);
             return new TypeKey { Type = tk[0], Key = tk[1] };
         }
 
