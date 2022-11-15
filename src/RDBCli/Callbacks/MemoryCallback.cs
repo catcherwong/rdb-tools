@@ -26,10 +26,10 @@ namespace RDBCli.Callbacks
             if (keyStr.Equals("used-mem"))
             {
                 var mem = System.Text.Encoding.UTF8.GetString(value);
-                if (long.TryParse(mem, out var usedMem))
-                {
-                    _rdbDataInfo.UsedMem = usedMem;
-                }
+
+                _rdbDataInfo.UsedMem = long.TryParse(mem, out var usedMem)
+                    ? usedMem
+                    : RedisRdbObjectHelper.ConvertBytesToInteger(value);
             }
             else if (keyStr.Equals("redis-ver"))
             {
@@ -37,19 +37,11 @@ namespace RDBCli.Callbacks
             }
             else if (keyStr.Equals("redis-bits"))
             {
-                var bits = System.Text.Encoding.UTF8.GetString(value);
-                if (long.TryParse(bits, out var redisBits))
-                {
-                    _rdbDataInfo.RedisBits = redisBits;
-                }
+                _rdbDataInfo.RedisBits = RedisRdbObjectHelper.ConvertBytesToInteger(value);
             }
             else if (keyStr.Equals("ctime"))
             {
-                var time = System.Text.Encoding.UTF8.GetString(value);
-                if (long.TryParse(time, out var ctime))
-                {
-                    _rdbDataInfo.CTime = ctime;
-                }
+                _rdbDataInfo.CTime = RedisRdbObjectHelper.ConvertBytesToInteger(value);
             }
         }
 
