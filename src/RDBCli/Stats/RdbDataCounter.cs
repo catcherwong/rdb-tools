@@ -18,8 +18,9 @@ namespace RDBCli
         private Dictionary<string, CommonStatValue> _expiryDict;
 
         private readonly BlockingCollection<AnalysisRecord> _records;
+        private readonly int _sepCount;
 
-        public RdbDataCounter(BlockingCollection<AnalysisRecord> records, string separators = "")
+        public RdbDataCounter(BlockingCollection<AnalysisRecord> records, string separators = "", int sepCount = -1)
         {
             this._records = records;
             this._largestRecords = new PriorityQueue<Record, ulong>();
@@ -33,6 +34,8 @@ namespace RDBCli
             {
                 _separators = separators.ToCharArray();
             }
+
+            _sepCount = sepCount > 0 ? sepCount : 1;
         }
 
         public Task Count()
@@ -213,7 +216,7 @@ namespace RDBCli
                 res[i] = res[i].TrimEnd(_separators);
             }
 
-            return res.Distinct().ToList();
+            return res.Distinct().Take(_sepCount).ToList();
         }
 
         private void CountLargestEntries(Record record, int num)
