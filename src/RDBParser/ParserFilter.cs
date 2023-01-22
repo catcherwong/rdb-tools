@@ -18,5 +18,10 @@ namespace RDBParser
         /// The key prefixes that you need
         /// </summary>
         public List<string> KeyPrefixes { get; set; }
+
+        /// <summary>
+        /// Whether the key's expiry is permanent or not
+        /// </summary>
+        public bool? IsPermanent { get; set; }
     }
 }
