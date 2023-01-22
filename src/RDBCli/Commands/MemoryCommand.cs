@@ -20,6 +20,7 @@ namespace RDBCli.Commands
         private static Option<List<string>> _keyPrefixesOption = CommonCLIOptions.KeyPrefixesOption();
         private static Option<string> _separatorsOption = CommonCLIOptions.SeparatorsOption();
         private static Option<int> _sepPrefixCountOption = CommonCLIOptions.SepPrefixCountOption();
+        private static Option<bool?> _isPermanentOption = CommonCLIOptions.IsPermanentOption();
         private static Argument<string> _fileArg = CommonCLIArguments.FileArgument();
 
         public MemoryCommand()
@@ -34,6 +35,7 @@ namespace RDBCli.Commands
             this.AddOption(_keyPrefixesOption);
             this.AddOption(_separatorsOption);
             this.AddOption(_sepPrefixCountOption);
+            this.AddOption(_isPermanentOption);
             this.AddArgument(_fileArg);
 
             this.SetHandler((InvocationContext context) =>
@@ -167,12 +169,14 @@ namespace RDBCli.Commands
                 var keyPrefixes = context.ParseResult.GetValueForOption<List<string>>(_keyPrefixesOption);
                 var sep = context.ParseResult.GetValueForOption<string>(_separatorsOption);
                 var sepPrefixCount = context.ParseResult.GetValueForOption<int>(_sepPrefixCountOption);
+                var isPermanent = context.ParseResult.GetValueForOption<bool?>(_isPermanentOption);
 
                 var parseFilter = new RDBParser.ParserFilter()
                 {
                     Databases = databases,
                     Types = types,
                     KeyPrefixes = keyPrefixes,
+                    IsPermanent = isPermanent
                 };
 
                 return new CommandOptions
@@ -344,6 +348,16 @@ namespace RDBCli.Commands
                 new Option<int>(
                     aliases: new string[] { "--sep-count" },
                     description: "The count of separating a key to prefix.");
+
+            return option;
+        }
+
+        public static Option<bool?> IsPermanentOption()
+        {
+            Option<bool?> option =
+                new Option<bool?>(
+                    aliases: new string[] { "--permanent" },
+                    description: "Whether the key is permanent.");
 
             return option;
         }

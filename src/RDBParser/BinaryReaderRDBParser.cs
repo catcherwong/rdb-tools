@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -205,6 +206,18 @@ namespace RDBParser
                 }
 
                 return flag;
+            }
+
+            if(_filter.IsPermanent.HasValue)
+            {
+                if (_filter.IsPermanent.Value)
+                {
+                    return _expiry == 0;
+                }
+                else
+                {
+                    return _expiry != 0;
+                }
             }
 
             return true;

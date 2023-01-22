@@ -264,7 +264,7 @@ namespace RDBParserTests
         }
 
         [Fact]
-        public void TestFilter()
+        public void TestFilterWithKeyPrefixes()
         {
             var path = TestHelper.GetRDBPath("multiple_databases.rdb");
 
@@ -280,6 +280,23 @@ namespace RDBParserTests
 
             Assert.Single(databases[0]);
             Assert.Empty(databases[2]);
+        }
+
+        [Fact]
+        public void TestFilterWithIsPermanent()
+        {
+            var path = TestHelper.GetRDBPath("keys_with_expiry.rdb");
+
+            var filter = new ParserFilter()
+            {
+                IsPermanent = true
+            };
+            var callback = new TestReaderCallback(_output);
+            var parser = new BinaryReaderRDBParser(callback, filter);
+            parser.Parse(path);
+
+            var expiries = callback.GetExpiries();
+            Assert.Empty(expiries[0]);
         }
     }
 }
