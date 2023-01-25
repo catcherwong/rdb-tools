@@ -221,6 +221,8 @@ namespace RDBCli
 
         private void CountLargestEntries(Record record, int num)
         {
+            record.Key = CommonHelper.GetShortKey(record.Key);
+
             _largestRecords.Enqueue(record, record.Bytes);
 
             if (_largestRecords.Count > num)

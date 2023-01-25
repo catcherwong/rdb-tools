@@ -100,5 +100,24 @@ namespace RDBCli
 
             return res;
         }
+    
+        internal const char SplitChar = ':';
+        internal static string GetShortKey(string key)
+        {
+            var len = key.Length;
+
+            if(len > 1024)
+            {
+                var span = key.AsSpan();
+
+                var b = span.Slice(0, 10).ToString();
+                var e = span.Slice(len - 6 , 5).ToString();
+
+                var n = $"{b}...({len - 15} more bytes)...{e}";
+                return n;
+            }
+
+            return key;
+        }
     }
 }
