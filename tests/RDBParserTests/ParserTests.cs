@@ -85,13 +85,18 @@ namespace RDBParserTests
 
             var databases = callback.GetDatabases();
 
-            Assert.Equal(Encoding.UTF8.GetBytes("Positive 8 bit integer"), databases[0][RedisRdbObjectHelper.ConvertIntegerToBytes(125)]);
-            Assert.Equal(Encoding.UTF8.GetBytes("Positive 16 bit integer"), databases[0][RedisRdbObjectHelper.ConvertIntegerToBytes(0xABAB)]);
-            Assert.Equal(Encoding.UTF8.GetBytes("Positive 32 bit integer"), databases[0][RedisRdbObjectHelper.ConvertIntegerToBytes(0x0AEDD325)]);
+            Assert.Equal(Encoding.UTF8.GetBytes("Positive 8 bit integer"), databases[0][Encoding.UTF8.GetBytes("125")]);
+            // 0xABAB 43947
+            Assert.Equal(Encoding.UTF8.GetBytes("Positive 16 bit integer"), databases[0][Encoding.UTF8.GetBytes("43947")]);
+            // 183358245 0x0AEDD325
+            Assert.Equal(Encoding.UTF8.GetBytes("Positive 32 bit integer"), databases[0][Encoding.UTF8.GetBytes("183358245")]);
 
-            Assert.Equal(Encoding.UTF8.GetBytes("Negative 8 bit integer"), databases[0][RedisRdbObjectHelper.ConvertIntegerToBytes(-123)]);
-            Assert.Equal(Encoding.UTF8.GetBytes("Negative 16 bit integer"), databases[0][RedisRdbObjectHelper.ConvertIntegerToBytes(-0x7325)]);
-            Assert.Equal(Encoding.UTF8.GetBytes("Negative 32 bit integer"), databases[0][RedisRdbObjectHelper.ConvertIntegerToBytes(-0x0AEDD325)]);
+            // -123
+            Assert.Equal(Encoding.UTF8.GetBytes("Negative 8 bit integer"), databases[0][Encoding.UTF8.GetBytes("-123")]);
+            //-29477 -0x7325
+            Assert.Equal(Encoding.UTF8.GetBytes("Negative 16 bit integer"), databases[0][Encoding.UTF8.GetBytes("-29477")]);
+            //-183358245 -0x0AEDD325
+            Assert.Equal(Encoding.UTF8.GetBytes("Negative 32 bit integer"), databases[0][Encoding.UTF8.GetBytes("-183358245")]);
         }
 
         [Fact]
@@ -173,7 +178,7 @@ namespace RDBParserTests
 
             foreach (var item in readList)
             {
-                Assert.Contains(RedisRdbObjectHelper.ConvertBytesToInteger(item), list);
+                Assert.Contains(long.Parse(Encoding.UTF8.GetString(item)), list);
             }
         }
 

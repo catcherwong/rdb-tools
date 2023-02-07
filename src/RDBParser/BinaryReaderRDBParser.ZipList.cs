@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Text;
 
 namespace RDBParser
 {
@@ -60,31 +62,42 @@ namespace RDBParser
             }
             else if (entryHeader >> 4 == 12)
             {
-                value = br.ReadBytes(2);
+                // short
+                var tmp = br.ReadBytes(2);
+                value = Encoding.UTF8.GetBytes(BitConverter.ToInt16(tmp).ToString());
             }
             else if (entryHeader >> 4 == 13)
             {
-                value = br.ReadBytes(4);
+                // int
+                var tmp = br.ReadBytes(4);
+                value = Encoding.UTF8.GetBytes(BitConverter.ToInt32(tmp).ToString());
             }
             else if (entryHeader >> 4 == 14)
             {
-                value = br.ReadBytes(8);
+                // long
+                var tmp = br.ReadBytes(8);
+                value = Encoding.UTF8.GetBytes(BitConverter.ToInt64(tmp).ToString());
             }
             else if (entryHeader == 240)
             {
-                var bytes = new byte[3];
-                bytes[0] = br.ReadByte();
-                bytes[1] = br.ReadByte();
-                bytes[2] = br.ReadByte();
-                return bytes;
+                // 24 bit int
+                var tmp = new byte[4];
+                tmp[0] = 0;
+                tmp[1] = br.ReadByte();
+                tmp[2] = br.ReadByte();
+                tmp[3] = br.ReadByte();
+
+                return Encoding.UTF8.GetBytes((BitConverter.ToInt32(tmp) >> 8).ToString());
             }
             else if (entryHeader == 254)
             {
-                value = br.ReadBytes(1);
+                var tmp = br.ReadBytes(1);
+                value = Encoding.UTF8.GetBytes(((sbyte)tmp[0]).ToString());
             }
             else if (entryHeader >= 241 && entryHeader <= 253)
             {
-                value = new byte[1] { (byte)(entryHeader - 241) };
+                var tmp = new byte[1] { (byte)(entryHeader - 241) };
+                value = Encoding.UTF8.GetBytes(((sbyte)tmp[0]).ToString());
             }
 
             return value;

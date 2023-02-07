@@ -80,6 +80,37 @@ namespace RDBParserTests
         }
 
         [Fact]
+        public void TestHashAsZipList2()
+        {
+            // hset mykey 202302071440 0
+            // hset mykey 123a 128
+            // hset mykey 1234566777 -128
+            // hset mykey 1234566 pppppppppppppppppppppppppppppp
+            // bgsave
+            // note:
+            // 202302071440     8bytes long
+            // 0                1bytes sbyte
+            // 128              2bytes short
+            // 1234566777       4bytes int
+            // -128             1bytes sbyte
+            // 1234566          3bytes 24bit int
+            var path = TestHelper.GetRDBPath("hash_as_ziplist2.rdb");
+
+            var callback = new TestReaderCallback(_output);
+            var parser = new BinaryReaderRDBParser(callback);
+            parser.Parse(path);
+
+            var hashs = callback.GetHashs();
+
+            var key = Encoding.UTF8.GetBytes("mykey");
+
+            Assert.Equal(Encoding.UTF8.GetBytes("0"), hashs[0][key][Encoding.UTF8.GetBytes("202302071440")]);
+            Assert.Equal(Encoding.UTF8.GetBytes("128"), hashs[0][key][Encoding.UTF8.GetBytes("123a")]);
+            Assert.Equal(Encoding.UTF8.GetBytes("-128"), hashs[0][key][Encoding.UTF8.GetBytes("1234566777")]);
+            Assert.Equal(Encoding.UTF8.GetBytes("pppppppppppppppppppppppppppppp"), hashs[0][key][Encoding.UTF8.GetBytes("1234566")]);
+        }
+
+        [Fact]
         public void TestDictionary()
         {
             var path = TestHelper.GetRDBPath("dictionary.rdb");
@@ -100,7 +131,7 @@ namespace RDBParserTests
         public void TestHashWithRedis70RC3()
         {
             // hset myhash f1 v1
-            // hset myhash f2 v2            
+            // hset myhash f2 v2
             // bgsave
             var path = TestHelper.GetRDBPath("redis_70rc3_with_hash_listpack.rdb");
 
