@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace RDBParser
 {
@@ -67,15 +69,18 @@ namespace RDBParser
 
             if (length == Constant.EncType.INT8)
             {
-                return br.ReadBytes(Constant.MagicCount.One);
+                var tmp = br.ReadBytes(Constant.MagicCount.One);
+                return Encoding.UTF8.GetBytes(((sbyte)tmp[0]).ToString());
             }
             else if (length == Constant.EncType.INT16)
             {
-                return br.ReadBytes(Constant.MagicCount.Two);
+                var tmp = br.ReadBytes(Constant.MagicCount.Two);
+                return Encoding.UTF8.GetBytes(BitConverter.ToInt16(tmp).ToString());
             }
             else if (length == Constant.EncType.INT32)
             {
-                return br.ReadBytes(Constant.MagicCount.Four);
+                var tmp = br.ReadBytes(Constant.MagicCount.Four);
+                return Encoding.UTF8.GetBytes(BitConverter.ToInt32(tmp).ToString());
             }
             else if (length == Constant.EncType.LZF)
             {
