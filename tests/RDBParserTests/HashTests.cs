@@ -126,14 +126,24 @@ namespace RDBParserTests
             Assert.Equal(Encoding.UTF8.GetBytes("T63SOS8DQJF0Q0VJEZ0D1IQFCYTIPSBOUIAI9SB0OV57MQR1FI"), hashs[0][Encoding.UTF8.GetBytes("force_dictionary")][Encoding.UTF8.GetBytes("ZMU5WEJDG7KU89AOG5LJT6K7HMNB3DEI43M6EYTJ83VRJ6XNXQ")]);
             Assert.Equal(Encoding.UTF8.GetBytes("6VULTCV52FXJ8MGVSFTZVAGK2JXZMGQ5F8OVJI0X6GEDDR27RZ"), hashs[0][Encoding.UTF8.GetBytes("force_dictionary")][Encoding.UTF8.GetBytes("UHS5ESW4HLK8XOGTM39IK1SJEUGVV9WOPK6JYA5QBZSJU84491")]);
         }
-
+        
         [Fact]
-        public void TestHashWithRedis70RC3()
+        public void TestHashWithRedis70ListPack()
         {
-            // hset myhash f1 v1
-            // hset myhash f2 v2
+            // hset mykey 202302071440 0
+            // hset mykey 123a 128
+            // hset mykey 1234566777 -128
+            // hset mykey 1234566 pppppppppppppppppppppppppppppp
+            // hset mykey abc 2.60
             // bgsave
-            var path = TestHelper.GetRDBPath("redis_70rc3_with_hash_listpack.rdb");
+            // note:
+            // 202302071440     8bytes long
+            // 0                1bytes sbyte
+            // 128              2bytes short
+            // 1234566777       4bytes int
+            // -128             1bytes sbyte
+            // 1234566          3bytes 24bit int
+            var path = TestHelper.GetRDBPath("redis_70_with_hash_listpack.rdb");
 
             var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);
@@ -142,35 +152,14 @@ namespace RDBParserTests
             var lengths = callback.GetLengths();
             var hashs = callback.GetHashs();
 
-            Assert.Equal(2, lengths[0][Encoding.UTF8.GetBytes("myhash")]);
+            Assert.Equal(5, lengths[0][Encoding.UTF8.GetBytes("mykey")]);
+            var key = Encoding.UTF8.GetBytes("mykey");
 
-            Assert.Equal(Encoding.UTF8.GetBytes("v1"), hashs[0][Encoding.UTF8.GetBytes("myhash")][Encoding.UTF8.GetBytes("f1")]);
-            Assert.Equal(Encoding.UTF8.GetBytes("v2"), hashs[0][Encoding.UTF8.GetBytes("myhash")][Encoding.UTF8.GetBytes("f2")]);
-        }
-
-        [Fact]
-        public void TestHashWithRedis70RC3AndIneeger()
-        {
-            // hset myhash f1 100
-            // hset myhash f2 -100
-            // hset myhash f3 -9090909
-            // hset myhash f4 9090909
-            // bgsave
-            var path = TestHelper.GetRDBPath("redis_70rc3_with_hash_listpack_and_integer.rdb");
-
-            var callback = new TestReaderCallback(_output);
-            var parser = new BinaryReaderRDBParser(callback);
-            parser.Parse(path);
-
-            var lengths = callback.GetLengths();
-            var hashs = callback.GetHashs();
-
-            Assert.Equal(4, lengths[0][Encoding.UTF8.GetBytes("myhash")]);
-
-            Assert.Equal(RedisRdbObjectHelper.LpConvertInt64ToBytes(100), hashs[0][Encoding.UTF8.GetBytes("myhash")][Encoding.UTF8.GetBytes("f1")]);
-            Assert.Equal(RedisRdbObjectHelper.LpConvertInt64ToBytes(-100), hashs[0][Encoding.UTF8.GetBytes("myhash")][Encoding.UTF8.GetBytes("f2")]);
-            Assert.Equal(RedisRdbObjectHelper.LpConvertInt64ToBytes(-9090909), hashs[0][Encoding.UTF8.GetBytes("myhash")][Encoding.UTF8.GetBytes("f3")]);
-            Assert.Equal(RedisRdbObjectHelper.LpConvertInt64ToBytes(9090909), hashs[0][Encoding.UTF8.GetBytes("myhash")][Encoding.UTF8.GetBytes("f4")]);
+            Assert.Equal(Encoding.UTF8.GetBytes("0"), hashs[0][key][Encoding.UTF8.GetBytes("202302071440")]);
+            Assert.Equal(Encoding.UTF8.GetBytes("128"), hashs[0][key][Encoding.UTF8.GetBytes("123a")]);
+            Assert.Equal(Encoding.UTF8.GetBytes("-128"), hashs[0][key][Encoding.UTF8.GetBytes("1234566777")]);
+            Assert.Equal(Encoding.UTF8.GetBytes("pppppppppppppppppppppppppppppp"), hashs[0][key][Encoding.UTF8.GetBytes("1234566")]);
+            Assert.Equal(Encoding.UTF8.GetBytes("2.60"), hashs[0][key][Encoding.UTF8.GetBytes("abc")]);
         }
     }
 }

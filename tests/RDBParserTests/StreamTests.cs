@@ -106,7 +106,7 @@ namespace RDBParserTests
         }
 
         [Fact]
-        public void TestStreamsWithRedis70RC3AndGroup()
+        public void TestStreamsWithRedis70AndGroup()
         {
             // xadd mystream 1526919030474-55 message 1
             // xadd mystream 1526919030474-56 message 2
@@ -116,7 +116,7 @@ namespace RDBParserTests
             // XACK mystream sg "1526919030474-55"
             // XREADGROUP group sg c1 count 1 streams mystream >
             // bgsave
-            var path = TestHelper.GetRDBPath("redis_70rc3_with_streams_and_group.rdb");
+            var path = TestHelper.GetRDBPath("redis_70_with_streams_and_group.rdb");
 
             var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);

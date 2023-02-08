@@ -34,7 +34,7 @@ namespace RDBParserTests
 
             foreach (var item in readList)
             {
-                Assert.Contains(RedisRdbObjectHelper.ConvertBytesToInteger(item), list);
+                Assert.Contains(long.Parse(Encoding.UTF8.GetString(item)), list);
             }
         }
 
@@ -58,7 +58,7 @@ namespace RDBParserTests
 
             foreach (var item in readList)
             {
-                Assert.Contains(RedisRdbObjectHelper.ConvertBytesToInteger(item), list);
+                Assert.Contains(long.Parse(Encoding.UTF8.GetString(item)), list);
             }
         }
 
@@ -82,7 +82,7 @@ namespace RDBParserTests
 
             foreach (var item in readList)
             {
-                Assert.Contains(RedisRdbObjectHelper.ConvertBytesToInteger(item), list);
+                Assert.Contains(long.Parse(Encoding.UTF8.GetString(item)), list);
             }
         }
 

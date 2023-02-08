@@ -1,24 +1,48 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Text;
 
 namespace RDBParser
 {
     public partial class BinaryReaderRDBParser
     {
+        private const int LP_ENCODING_7BIT_UINT = 0;
+        private const int LP_ENCODING_7BIT_UINT_MASK = 0x80;
+        private const int LP_ENCODING_6BIT_STR = 0x80;
+        private const int LP_ENCODING_6BIT_STR_MASK = 0xC0;
+        private const int LP_ENCODING_13BIT_INT = 0xC0;
+        private const int LP_ENCODING_13BIT_INT_MASK = 0xE0;
+        private const int LP_ENCODING_12BIT_STR = 0xE0;
+        private const int LP_ENCODING_12BIT_STR_MASK = 0xF0;
+        private const int LP_ENCODING_16BIT_INT = 0xF1;
+        private const int LP_ENCODING_16BIT_INT_MASK = 0xFF;
+        private const int LP_ENCODING_24BIT_INT = 0xF2;
+        private const int LP_ENCODING_24BIT_INT_MASK = 0xFF;
+        private const int LP_ENCODING_32BIT_INT = 0xF3;
+        private const int LP_ENCODING_32BIT_INT_MASK = 0xFF;
+        private const int LP_ENCODING_64BIT_INT = 0xF4;
+        private const int LP_ENCODING_64BIT_INT_MASK = 0xFF;
+        private const int LP_ENCODING_32BIT_STR = 0xF0;
+        private const int LP_ENCODING_32BIT_STR_MASK = 0xFF;
+
         private (byte[] encoding, byte[] data, long len) ReadListPackEntry(BinaryReader rd)
         {
-            // https://github.com/redis/redis/blob/7.0-rc3/src/listpack.c#L574
+            // https://github.com/redis/redis/blob/7.0.8/src/listpack.c#L572
             ulong count;
 
             var b = rd.ReadByte();
-            if ((b & 0x80) == 0)
+            if ((b & LP_ENCODING_7BIT_UINT_MASK) == LP_ENCODING_7BIT_UINT)
             {
+                // LP_ENCODING_7BIT_UINT
                 var encoding = new byte[] { b };
                 var backlen = rd.ReadBytes(1);
 
-                return (encoding, encoding, lpDecodeBacklen(backlen));
+                var val = RedisRdbObjectHelper.LpConvertBytesToInt64(encoding);
+                return (encoding, Encoding.UTF8.GetBytes(val.ToString()), lpDecodeBacklen(backlen));
             }
-            else if ((b & 0xC0) == 0x80)
+            else if ((b & LP_ENCODING_6BIT_STR_MASK) == LP_ENCODING_6BIT_STR)
             {
+                // LP_ENCODING_6BIT_STR
                 count = ((ulong)b & 0x3f);
 
                 var encoding = new byte[] { b };
@@ -27,22 +51,30 @@ namespace RDBParser
 
                 return (encoding, data, lpDecodeBacklen(backlen));
             }
-            else if ((b & 0xE0) == 0xC0)
+            else if ((b & LP_ENCODING_13BIT_INT_MASK) == LP_ENCODING_13BIT_INT)
             {
-                var encoding = new byte[] { b, rd.ReadByte() };
+                // LP_ENCODING_13BIT_INT
+                var p1 = rd.ReadByte();
+                var encoding = new byte[] { b, p1 };
                 var backlen = rd.ReadBytes(1);
 
-                return (encoding, encoding, lpDecodeBacklen(backlen));
+                var val = RedisRdbObjectHelper.LpConvertBytesToInt64(encoding);
+                return (encoding, Encoding.UTF8.GetBytes(val.ToString()), lpDecodeBacklen(backlen));
             }
-            else if ((b & 0xFF) == 0xF1)
+            else if ((b & LP_ENCODING_16BIT_INT_MASK) == LP_ENCODING_16BIT_INT)
             {
-                var encoding = new byte[] { b, rd.ReadByte(), rd.ReadByte() };
+                // LP_ENCODING_16BIT_INT
+                var p1 = rd.ReadByte();
+                var p2 = rd.ReadByte();
+                var encoding = new byte[] { b, p1, p2 };
                 var backlen = rd.ReadBytes(1);
 
-                return (encoding, encoding, lpDecodeBacklen(backlen));
+                var val = RedisRdbObjectHelper.LpConvertBytesToInt64(encoding);
+                return (encoding, Encoding.UTF8.GetBytes(val.ToString()), lpDecodeBacklen(backlen));
             }
-            else if ((b & 0xFF) == 0xF2)
+            else if ((b & LP_ENCODING_24BIT_INT_MASK) == LP_ENCODING_24BIT_INT)
             {
+                // LP_ENCODING_24BIT_INT
                 var p1 = rd.ReadByte();
                 var p2 = rd.ReadByte();
                 var p3 = rd.ReadByte();
@@ -50,10 +82,12 @@ namespace RDBParser
                 var encoding = new byte[] { b, p1, p2, p3 };
                 var backlen = rd.ReadBytes(1);
 
-                return (encoding, encoding, lpDecodeBacklen(backlen));
+                var val = RedisRdbObjectHelper.LpConvertBytesToInt64(encoding);
+                return (encoding, Encoding.UTF8.GetBytes(val.ToString()), lpDecodeBacklen(backlen));
             }
-            else if ((b & 0xFF) == 0xF3)
+            else if ((b & LP_ENCODING_32BIT_INT_MASK) == LP_ENCODING_32BIT_INT)
             {
+                // LP_ENCODING_32BIT_INT
                 var p1 = rd.ReadByte();
                 var p2 = rd.ReadByte();
                 var p3 = rd.ReadByte();
@@ -62,10 +96,12 @@ namespace RDBParser
                 var encoding = new byte[] { b, p1, p2, p3, p4 };
                 var backlen = rd.ReadBytes(1);
 
-                return (encoding, encoding, lpDecodeBacklen(backlen));
+                var val = RedisRdbObjectHelper.LpConvertBytesToInt64(encoding);
+                return (encoding, Encoding.UTF8.GetBytes(val.ToString()), lpDecodeBacklen(backlen));
             }
-            else if ((b & 0xFF) == 0xF4)
+            else if ((b & LP_ENCODING_64BIT_INT_MASK) == LP_ENCODING_64BIT_INT)
             {
+                // LP_ENCODING_64BIT_INT
                 var p1 = rd.ReadByte();
                 var p2 = rd.ReadByte();
                 var p3 = rd.ReadByte();
@@ -78,10 +114,12 @@ namespace RDBParser
                 var encoding = new byte[] { b, p1, p2, p3, p4, p5, p6, p7, p8 };
                 var backlen = rd.ReadBytes(1);
 
-                return (encoding, encoding, lpDecodeBacklen(backlen));
+                var val = RedisRdbObjectHelper.LpConvertBytesToInt64(encoding);
+                return (encoding, Encoding.UTF8.GetBytes(val.ToString()), lpDecodeBacklen(backlen));
             }
-            else if ((b & 0xF0) == 0xE0)
+            else if ((b & LP_ENCODING_12BIT_STR_MASK) == LP_ENCODING_12BIT_STR)
             {
+                // LP_ENCODING_12BIT_STR
                 var encoding = new byte[] { b, rd.ReadByte() };
 
                 var p1 = encoding[1];
@@ -91,8 +129,9 @@ namespace RDBParser
 
                 return (encoding, data, lpDecodeBacklen(backlen));
             }
-            else if ((b & 0xFF) == 0xF0)
+            else if ((b & LP_ENCODING_32BIT_STR_MASK) == LP_ENCODING_32BIT_STR)
             {
+                // LP_ENCODING_32BIT_STR
                 var p1 = rd.ReadByte();
                 var p2 = rd.ReadByte();
                 var p3 = rd.ReadByte();
@@ -114,8 +153,8 @@ namespace RDBParser
 
         private void ReadHashFromListPack(BinaryReader br)
         {
-            // https://github.com/redis/redis/blob/7.0-rc3/src/rdb.c#L1712
-            // https://github.com/redis/redis/blob/7.0-rc3/src/listpack.c#L1284
+            // https://github.com/redis/redis/blob/7.0.8/src/rdb.c#L1703
+            // https://github.com/redis/redis/blob/7.0.8/src/listpack.c#L1282
             // <total_bytes><size><entry><entry>..<entry><end>
             var rawString = br.ReadStr();
             using MemoryStream stream = new MemoryStream(rawString);
@@ -153,8 +192,8 @@ namespace RDBParser
 
         private void ReadZSetFromListPack(BinaryReader br)
         {
-            // https://github.com/redis/redis/blob/7.0-rc3/src/rdb.c#L1712
-            // https://github.com/redis/redis/blob/7.0-rc3/src/listpack.c#L1284
+            // https://github.com/redis/redis/blob/7.0.8/src/rdb.c#L1703
+            // https://github.com/redis/redis/blob/7.0.8/src/listpack.c#L1282
             // <total_bytes><size><entry><entry>..<entry><end>
             var rawString = br.ReadStr();
             using MemoryStream stream = new MemoryStream(rawString);
