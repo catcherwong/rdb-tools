@@ -15,12 +15,12 @@ namespace RDBParserTests
         }
 
         [Fact]
-        public void TestFunctionWithRedis70RC3()
+        public void TestFunctionWithRedis70()
         {
             // FUNCTION LOAD "#!lua name=mylib\nredis.register_function('knockknock', function() return 'Who\\'s there?' end)"
             // FUNCTION LOAD "#!lua name=mylib2\nredis.register_function('knockknock2', function() return 'Who\\'s there?' end)"
             // bgsave
-            var path = TestHelper.GetRDBPath("redis_70rc3_with_function.rdb");
+            var path = TestHelper.GetRDBPath("redis_70_with_function.rdb");
 
             var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);

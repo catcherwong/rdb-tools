@@ -26,8 +26,23 @@ namespace RDBParser
 
             for (int i = 0; i < numEntries; i++)
             {
-                var entry = rd.ReadBytes((int)encoding);
-                _callback.SAdd(_key, entry);
+                string entry = string.Empty;
+                var tmp = rd.ReadBytes((int)encoding);
+
+                if (encoding == 8)
+                {
+                    entry = System.BitConverter.ToInt64(tmp).ToString();
+                }
+                else if (encoding == 4)
+                {
+                    entry = System.BitConverter.ToInt32(tmp).ToString();
+                }
+                else if (encoding == 2)
+                {
+                    entry = System.BitConverter.ToInt16(tmp).ToString();
+                }
+
+                _callback.SAdd(_key, System.Text.Encoding.UTF8.GetBytes(entry));
             }
 
             _callback.EndSet(_key);
