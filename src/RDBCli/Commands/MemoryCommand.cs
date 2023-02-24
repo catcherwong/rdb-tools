@@ -21,6 +21,7 @@ namespace RDBCli.Commands
         private static Option<string> _separatorsOption = CommonCLIOptions.SeparatorsOption();
         private static Option<int> _sepPrefixCountOption = CommonCLIOptions.SepPrefixCountOption();
         private static Option<bool?> _isPermanentOption = CommonCLIOptions.IsPermanentOption();
+        private static Option<bool?> _isIgnoreFieldOfLargestElemOption = CommonCLIOptions.IsIgnoreFieldOfLargestElemOption();
         private static Argument<string> _fileArg = CommonCLIArguments.FileArgument();
 
         public MemoryCommand()
@@ -36,6 +37,7 @@ namespace RDBCli.Commands
             this.AddOption(_separatorsOption);
             this.AddOption(_sepPrefixCountOption);
             this.AddOption(_isPermanentOption);
+            this.AddOption(_isIgnoreFieldOfLargestElemOption);
             this.AddArgument(_fileArg);
 
             this.SetHandler((InvocationContext context) =>
@@ -49,7 +51,7 @@ namespace RDBCli.Commands
         private void Do(InvocationContext context, CommandOptions options)
         {
             var console = context.Console;
-            var cb = new clicb.MemoryCallback();
+            var cb = new clicb.MemoryCallback(options.IsIgnoreFole ?? false);
             var rdbDataInfo = cb.GetRdbDataInfo();
 
             var counter = new RdbDataCounter(rdbDataInfo.Records, options.Separators, options.SepPrefixCount);
@@ -156,6 +158,8 @@ namespace RDBCli.Commands
             public RDBParser.ParserFilter ParserFilter { get; set; }
             public string Separators { get; set; }
             public int SepPrefixCount { get; set; }
+            public bool? IsIgnoreFole { get; set; }
+
 
             public static CommandOptions FromContext(InvocationContext context)
             {
@@ -170,6 +174,7 @@ namespace RDBCli.Commands
                 var sep = context.ParseResult.GetValueForOption<string>(_separatorsOption);
                 var sepPrefixCount = context.ParseResult.GetValueForOption<int>(_sepPrefixCountOption);
                 var isPermanent = context.ParseResult.GetValueForOption<bool?>(_isPermanentOption);
+                var isIgnoreFole = context.ParseResult.GetValueForOption<bool?>(_isIgnoreFieldOfLargestElemOption);
 
                 var parseFilter = new RDBParser.ParserFilter()
                 {
@@ -189,6 +194,7 @@ namespace RDBCli.Commands
                     ParserFilter = parseFilter,
                     Separators = sep,
                     SepPrefixCount = sepPrefixCount,
+                    IsIgnoreFole = isIgnoreFole,
                 };
             }
         }
@@ -358,6 +364,16 @@ namespace RDBCli.Commands
                 new Option<bool?>(
                     aliases: new string[] { "--permanent" },
                     description: "Whether the key is permanent.");
+
+            return option;
+        }
+
+        public static Option<bool?> IsIgnoreFieldOfLargestElemOption()
+        {
+            Option<bool?> option =
+                new Option<bool?>(
+                    aliases: new string[] { "--ignore-fole" },
+                    description: "Whether ignore the field of largest elem.");
 
             return option;
         }

@@ -14,11 +14,18 @@ namespace RDBCli.Callbacks
         // For Stream
         private ulong _listpacksCount;
 
+        private bool _isIgnorefole;
+
         private RdbDataInfo _rdbDataInfo = new RdbDataInfo();
 
         private Record _currentRecord = new Record();
 
         public RdbDataInfo GetRdbDataInfo() => _rdbDataInfo;
+
+        public MemoryCallback(bool isIgnorefole = false)
+        {
+            _isIgnorefole = isIgnorefole;
+        }
 
         public void AuxField(byte[] key, byte[] value)
         {
@@ -153,7 +160,11 @@ namespace RDBCli.Callbacks
             var lenOfElem = ElementLength(field) + ElementLength(value);
             if (lenOfElem > _currentRecord.LenOfLargestElem)
             {
-                _currentRecord.FieldOfLargestElem = System.Text.Encoding.UTF8.GetString(field);
+                if (!_isIgnorefole)
+                {
+                    _currentRecord.FieldOfLargestElem = System.Text.Encoding.UTF8.GetString(field);
+                }
+
                 _currentRecord.LenOfLargestElem = lenOfElem;
             }
 
@@ -206,7 +217,11 @@ namespace RDBCli.Callbacks
             var lenOfElem = ElementLength(value);
             if (lenOfElem > _currentRecord.LenOfLargestElem)
             {
-                _currentRecord.FieldOfLargestElem = System.Text.Encoding.UTF8.GetString(value);
+                if (!_isIgnorefole)
+                {
+                    _currentRecord.FieldOfLargestElem = System.Text.Encoding.UTF8.GetString(value);
+                }
+
                 _currentRecord.LenOfLargestElem = lenOfElem;
             }
         }
@@ -216,7 +231,11 @@ namespace RDBCli.Callbacks
             var lenOfElem = ElementLength(member);
             if (lenOfElem > _currentRecord.LenOfLargestElem)
             {
-                _currentRecord.FieldOfLargestElem = System.Text.Encoding.UTF8.GetString(member);
+                if (!_isIgnorefole)
+                {
+                    _currentRecord.FieldOfLargestElem = System.Text.Encoding.UTF8.GetString(member);
+                }
+
                 _currentRecord.LenOfLargestElem = lenOfElem;
             }
 
@@ -406,7 +425,11 @@ namespace RDBCli.Callbacks
             var lenOfElem = ElementLength(member);
             if (lenOfElem > _currentRecord.LenOfLargestElem)
             {
-                _currentRecord.FieldOfLargestElem = System.Text.Encoding.UTF8.GetString(member);
+                if (!_isIgnorefole)
+                {
+                    _currentRecord.FieldOfLargestElem = System.Text.Encoding.UTF8.GetString(member);
+                }
+
                 _currentRecord.LenOfLargestElem = lenOfElem;
             }
 
