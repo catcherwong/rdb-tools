@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
-using clicb = RDBCli.Callbacks;
+using CliCB = RDBCli.Callbacks;
 
 namespace RDBCli.Commands
 {
@@ -39,7 +39,7 @@ namespace RDBCli.Commands
         private void Do(InvocationContext context, string files, List<string> keyPrefixes, bool? isPermanent)
         {
             var console = context.Console;
-            var cb = new clicb.KeysOnlyCallback(console, keyPrefixes, isPermanent);
+            var cb = new CliCB.KeysOnlyCallback(console, keyPrefixes, isPermanent);
 
             console.WriteLine($"");
             console.WriteLine($"Find keys in [{files}] are as follow:");

@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net7.0</TargetFramework>
 		<Description>rdb-cli is a command line tool for redis rdb files.</Description>
 		<PackageTags>csharp,rdb,parser,redis,cli</PackageTags>
 		<VersionPrefix>$(RDBCliVersion)</VersionPrefix>

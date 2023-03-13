@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFrameworks>net6.0;net7.0</TargetFrameworks>
 		<Description>RDBParser is a library for parsing redis rdb files.</Description>
 		<PackageTags>csharp,rdb,parser,redis</PackageTags>
 		<VersionPrefix>$(RDBParserVersion)</VersionPrefix>
@@ -13,7 +13,7 @@
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 	</PropertyGroup>
 
-	<ItemGroup >
+	<ItemGroup>
 		<!--Add support for sourcelink-->
 		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="$(MicrosoftSourceLinkGitHubPackageVersion)" PrivateAssets="All" />
 	</ItemGroup>
