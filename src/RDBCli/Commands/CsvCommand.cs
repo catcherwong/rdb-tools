@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using clicb = RDBCli.Callbacks;
+using CliCB = RDBCli.Callbacks;
 
 namespace RDBCli.Commands
 {
@@ -39,7 +39,7 @@ namespace RDBCli.Commands
         private void Do(InvocationContext context, CommandOptions options)
         {
             var console = context.Console;
-            var cb = new clicb.MemoryCallback();
+            var cb = new CliCB.MemoryCallback();
             var rdbDataInfo = cb.GetRdbDataInfo();
 
             var counter = new RdbCsvData(rdbDataInfo.Records);

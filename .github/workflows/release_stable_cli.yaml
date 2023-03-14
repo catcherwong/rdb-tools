@@ -27,11 +27,13 @@ jobs:
                   ]
       steps:
         - name: Checkout
-          uses: actions/checkout@v1
-        - name: Set up .NET Core
-          uses: actions/setup-dotnet@v1
+          uses: actions/checkout@v3
+
+        - name: Setup .NET SDK 7.0.x
+          uses: actions/setup-dotnet@v3
           with:
-              dotnet-version: "6.0.x"
+            dotnet-version: 7.0.x
+
         - name: Publish .NET app
           env:
               RID: ${{ matrix.targets }}
@@ -47,7 +49,7 @@ jobs:
               ls /home/runner/work/clis/
               zip -j /home/runner/work/release/rdb-cli.$VERSION.$RID.zip /home/runner/work/clis/$RID/*
         - name: Upload artifacts
-          uses: actions/upload-artifact@v2
+          uses: actions/upload-artifact@v3
           with:
               name: rdb-cli
               path: /home/runner/work/release
@@ -64,11 +66,13 @@ jobs:
                   ]
       steps:
         - name: Checkout
-          uses: actions/checkout@v1
-        - name: Setup .NET Core SDK 6.x
-          uses: actions/setup-dotnet@v2
+          uses: actions/checkout@v3
+
+        - name: Setup .NET SDK 7.0.x
+          uses: actions/setup-dotnet@v3
           with:
-            dotnet-version: 6.x
+            dotnet-version: 7.0.x
+
         - name: Publish .NET app
           env:
               RID: ${{ matrix.targets }}
@@ -85,7 +89,7 @@ jobs:
               ls ../publish/
               Compress-Archive -Path ../publish/$($env:RID)/* -DestinationPath ../release/rdb-cli.$($env:VERSION).$($env:RID).aot.zip
         - name: Upload artifacts
-          uses: actions/upload-artifact@v2
+          uses: actions/upload-artifact@v3
           with:
               name: rdb-cli
               path: D:/a/rdb-tools/release
@@ -97,7 +101,7 @@ jobs:
     
         steps:          
           - name: Download build artifacts
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v3
             with:
               name: rdb-cli
           - name: list rdb-cli

@@ -5,7 +5,7 @@ using System.CommandLine.Invocation;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
-using clicb = RDBCli.Callbacks;
+using CliCB = RDBCli.Callbacks;
 
 namespace RDBCli.Commands
 {
@@ -51,7 +51,7 @@ namespace RDBCli.Commands
         private void Do(InvocationContext context, CommandOptions options)
         {
             var console = context.Console;
-            var cb = new clicb.MemoryCallback(options.IsIgnoreFole ?? false);
+            var cb = new CliCB.MemoryCallback(options.IsIgnoreFole ?? false);
             var rdbDataInfo = cb.GetRdbDataInfo();
 
             var counter = new RdbDataCounter(rdbDataInfo.Records, options.Separators, options.SepPrefixCount);
