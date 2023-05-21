@@ -8,10 +8,10 @@
 		<MicrosoftSourceLinkGitHubPackageVersion>1.1.*</MicrosoftSourceLinkGitHubPackageVersion>
 
 		<!-- TEST -->
-		<MicrosoftNETTestSdkPackageVersion>17.1.0</MicrosoftNETTestSdkPackageVersion>
-		<XunitPackageVersion>2.4.1</XunitPackageVersion>
-		<XunitRunnerVisualstudioPackageVersion>2.4.3</XunitRunnerVisualstudioPackageVersion>
-		<CoverletCollectorPackageVersion>3.1.2</CoverletCollectorPackageVersion>
+		<MicrosoftNETTestSdkPackageVersion>17.6.0</MicrosoftNETTestSdkPackageVersion>
+		<XunitPackageVersion>2.4.2</XunitPackageVersion>
+		<XunitRunnerVisualstudioPackageVersion>2.4.5</XunitRunnerVisualstudioPackageVersion>
+		<CoverletCollectorPackageVersion>3.2.0</CoverletCollectorPackageVersion>
 
 	</PropertyGroup>
 </Project>
