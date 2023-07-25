@@ -103,6 +103,7 @@ jobs:
             uses: actions/download-artifact@v3
             with:
               name: rdb-cli
+              path: rdb-cli
           - name: list rdb-cli
             run: ls rdb-cli    
           - name: Release
