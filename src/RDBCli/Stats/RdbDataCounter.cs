@@ -19,8 +19,9 @@ namespace RDBCli
 
         private readonly BlockingCollection<AnalysisRecord> _records;
         private readonly int _sepCount;
+        private readonly bool _keySuffixEnable;
 
-        public RdbDataCounter(BlockingCollection<AnalysisRecord> records, string separators = "", int sepCount = -1)
+        public RdbDataCounter(BlockingCollection<AnalysisRecord> records, string separators = "", int sepCount = -1, bool keySuffixEnable = false)
         {
             this._records = records;
             this._largestRecords = new PriorityQueue<Record, ulong>();
@@ -36,11 +37,12 @@ namespace RDBCli
             }
 
             _sepCount = sepCount > 0 ? sepCount : 1;
+            _keySuffixEnable =  keySuffixEnable;
         }
 
         public Task Count()
         {
-            System.Threading.CancellationTokenSource cts = new System.Threading.CancellationTokenSource();
+            System.Threading.CancellationTokenSource cts = new();
             var task = Task.Factory.StartNew(() => 
             {
                 while (!_records.IsCompleted)
@@ -192,23 +194,47 @@ namespace RDBCli
 
             var span = s.AsSpan();
 
-            var sepIdx = span.IndexOfAny(_separators);
-
-            if (sepIdx < 0) res.Add(s);
-
-            while (sepIdx > -1)
+            if (!_keySuffixEnable)
             {
-                var str = new string(span[..(sepIdx + 1)]);
+                var sepIdx = span.IndexOfAny(_separators);
 
-                if (res.Any())
+                if (sepIdx < 0) res.Add(s);
+
+                while (sepIdx > -1)
                 {
-                    str = string.Concat(res[^1], str);
+                    var str = new string(span[..(sepIdx + 1)]);
+
+                    if (res.Any())
+                    {
+                        str = string.Concat(res[^1], str);
+                    }
+
+                    res.Add(str);
+
+                    span = span[(sepIdx + 1)..];
+                    sepIdx = span.IndexOfAny(_separators);
                 }
+            }
+            else
+            {
+                var sepIdx = span.LastIndexOfAny(_separators);
 
-                res.Add(str);
+                if (sepIdx < 0) res.Add(s);
 
-                span = span[(sepIdx + 1)..];
-                sepIdx = span.IndexOfAny(_separators);
+                while (sepIdx > -1)
+                {
+                    var str = new string(span[(sepIdx + 1)..]) + span[sepIdx];
+
+                    if (res.Any())
+                    {
+                        str = string.Concat(res[^1], str);
+                    }
+
+                    res.Add(str);
+
+                    span = span[..sepIdx];
+                    sepIdx = span.LastIndexOfAny(_separators);
+                }
             }
 
             for (int i = 0; i < res.Count; i++)

@@ -22,6 +22,7 @@ namespace RDBCli.Commands
         private static Option<int> _sepPrefixCountOption = CommonCLIOptions.SepPrefixCountOption();
         private static Option<bool?> _isPermanentOption = CommonCLIOptions.IsPermanentOption();
         private static Option<bool?> _isIgnoreFieldOfLargestElemOption = CommonCLIOptions.IsIgnoreFieldOfLargestElemOption();
+        private static Option<bool?> _keySuffixEnableOption = CommonCLIOptions.KeySuffixEnableOption();
         private static Argument<string> _fileArg = CommonCLIArguments.FileArgument();
 
         public MemoryCommand()
@@ -38,6 +39,7 @@ namespace RDBCli.Commands
             this.AddOption(_sepPrefixCountOption);
             this.AddOption(_isPermanentOption);
             this.AddOption(_isIgnoreFieldOfLargestElemOption);
+            this.AddOption(_keySuffixEnableOption);
             this.AddArgument(_fileArg);
 
             this.SetHandler((InvocationContext context) =>
@@ -54,7 +56,7 @@ namespace RDBCli.Commands
             var cb = new CliCB.MemoryCallback(options.IsIgnoreFole ?? false);
             var rdbDataInfo = cb.GetRdbDataInfo();
 
-            var counter = new RdbDataCounter(rdbDataInfo.Records, options.Separators, options.SepPrefixCount);
+            var counter = new RdbDataCounter(rdbDataInfo.Records, options.Separators, options.SepPrefixCount, options.keySuffixEnable ?? false);
             var task = counter.Count();
 
             console.WriteLine($"");
@@ -159,6 +161,7 @@ namespace RDBCli.Commands
             public string Separators { get; set; }
             public int SepPrefixCount { get; set; }
             public bool? IsIgnoreFole { get; set; }
+            public bool? keySuffixEnable { get; set; }
 
 
             public static CommandOptions FromContext(InvocationContext context)
@@ -175,6 +178,7 @@ namespace RDBCli.Commands
                 var sepPrefixCount = context.ParseResult.GetValueForOption<int>(_sepPrefixCountOption);
                 var isPermanent = context.ParseResult.GetValueForOption<bool?>(_isPermanentOption);
                 var isIgnoreFole = context.ParseResult.GetValueForOption<bool?>(_isIgnoreFieldOfLargestElemOption);
+                var keySuffixEnable = context.ParseResult.GetValueForOption<bool?>(_keySuffixEnableOption);
 
                 var parseFilter = new RDBParser.ParserFilter()
                 {
@@ -195,6 +199,7 @@ namespace RDBCli.Commands
                     Separators = sep,
                     SepPrefixCount = sepPrefixCount,
                     IsIgnoreFole = isIgnoreFole,
+                    keySuffixEnable = keySuffixEnable,
                 };
             }
         }
@@ -334,6 +339,16 @@ namespace RDBCli.Commands
                 new Option<List<string>>(
                     aliases: new string[] { "--key-prefix" },
                     description: "The filter of redis key prefix.");
+
+            return option;
+        }
+
+        public static Option<bool?> KeySuffixEnableOption()
+        {
+            Option<bool?> option =
+                new Option<bool?>(
+                    aliases: new string[] { "--key-suffix-enable" },
+                    description: "Use the key suffix as the key prefix.");
 
             return option;
         }
