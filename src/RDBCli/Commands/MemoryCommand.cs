@@ -4,6 +4,7 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using CliCB = RDBCli.Callbacks;
 
@@ -87,6 +88,13 @@ namespace RDBCli.Commands
             dict.largestRecords = largestRecords;
             dict.expiryInfo = expiryInfo;
             dict.largestStreams = streamRecords;
+
+            var exp = expiryInfo.FirstOrDefault(x => x.Expiry.Equals(CommonHelper.AlreadyExpired));
+            var perm = expiryInfo.FirstOrDefault(x => x.Expiry.Equals(CommonHelper.Permanent));
+            dict.expCount = (int)(exp?.Num ?? 0);
+            dict.expMem = (long)(exp?.Bytes ?? 0);
+            dict.permCount = (int)(perm?.Num ?? 0);
+            dict.permMem = (long)(perm?.Bytes ?? 0);
 
             var path = WriteFile(dict, options.Output, options.OutputType);
 
@@ -213,6 +221,10 @@ namespace RDBCli.Commands
         public int rdbVer { get; set; }
         public string redisVer { get; set; }
         public long redisBits { get; set; }
+        public int expCount { get; set; }
+        public int permCount { get; set; }
+        public long expMem { get; set; }
+        public long permMem { get; set; }
         public List<TypeRecord> typeRecords { get; set; }
         public List<Record> largestRecords { get; set; }
         public List<PrefixRecord> largestKeyPrefix { get; set; }

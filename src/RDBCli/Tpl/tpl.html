@@ -60,6 +60,41 @@
             </div>
         </div>
         <br />
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card" style="height: 100px;">
+                    <div class="card-body text-center">
+                        <div id="expKeyNum" class="lead text-primary display-6"></div>
+                        <p class="small text-muted">Expired Keys</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card" style="height: 100px;">
+                    <div class="card-body text-center">
+                        <div id="expKeyBytes" class="lead text-primary display-6"></div>
+                        <p class="small text-muted">Memory Usage by Expired Keys</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card" style="height: 100px;">
+                    <div class="card-body text-center">
+                        <div id="permKeyNum" class="lead text-primary display-6"></div>
+                        <p class="small text-muted">Permanent Keys</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card" style="height: 100px;">
+                    <div class="card-body text-center">
+                        <div id="permKeyBytes" class="lead text-primary display-6"></div>
+                        <p class="small text-muted">Memory Usage by Permanent Keys</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br />
         <div class="page-header border-start border-light border-3">
             <h3>
                 Details Information
@@ -125,6 +160,10 @@
         $('#redisVer').text(cliData.redisVer);
         $('#totalKeyBytes').text(formatBytes(cliData.usedMem));
         $('#totalKeyNum').text(formatNumber(cliData.count));
+        $('#expKeyNum').text(formatNumber(cliData.expCount));
+        $('#permKeyNum').text(formatNumber(cliData.permCount));
+        $('#expKeyBytes').text(formatBytes(cliData.expMem));
+        $('#permKeyBytes').text(formatBytes(cliData.permMem));
 
         buildTypeNumChart();
         buildTypeByteChart();
