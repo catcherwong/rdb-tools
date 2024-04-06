@@ -20,7 +20,11 @@ namespace RDBCli.Callbacks
 
         private Record _currentRecord = new Record();
 
+        private int _idleOrFreq = -1;
+
         public RdbDataInfo GetRdbDataInfo() => _rdbDataInfo;
+
+        public int GetIdleOrFreq() => _idleOrFreq;
 
         public MemoryCallback(bool isIgnorefole = false)
         {
@@ -266,6 +270,8 @@ namespace RDBCli.Callbacks
                 Expiry = expiry,
                 Database = _dbNum,
                 LenOfLargestElem = length,
+                Freq = info.Freq,
+                Idle = info.Idle,
             };
 
             _rdbDataInfo.TotalMem += record.Bytes;
@@ -305,6 +311,8 @@ namespace RDBCli.Callbacks
                 Encoding = info.Encoding,
                 Expiry = expiry,
                 Database = _dbNum,
+                Freq = info.Freq,
+                Idle = info.Idle,
             };
         }
 
@@ -324,6 +332,8 @@ namespace RDBCli.Callbacks
                 Encoding = encoding,
                 Expiry = expiry,
                 Database = _dbNum,
+                Freq = info.Freq,
+                Idle = info.Idle,
             };
         }
 
@@ -343,6 +353,8 @@ namespace RDBCli.Callbacks
                 Expiry = expiry,
                 NumOfElem = 1,
                 Database = _dbNum,
+                Freq = info.Freq,
+                Idle = info.Idle,
             };
 
             return false;
@@ -386,6 +398,8 @@ namespace RDBCli.Callbacks
                 Encoding = info.Encoding,
                 Expiry = expiry,
                 Database = _dbNum,
+                Freq = info.Freq,
+                Idle = info.Idle,
             };
         }
 
@@ -406,6 +420,8 @@ namespace RDBCli.Callbacks
                 Encoding = info.Encoding,
                 Expiry = expiry,
                 Database = _dbNum,
+                Freq = info.Freq,
+                Idle = info.Idle,
             };
         }
 
@@ -455,6 +471,11 @@ namespace RDBCli.Callbacks
             });
 
             _rdbDataInfo.TotalMem += FunctionOverhead(engine, libName, code);
+        }
+
+        public void SetIdleOrFreq(int val)
+        {
+            _idleOrFreq = val;
         }
     }
 }

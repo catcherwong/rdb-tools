@@ -63,6 +63,11 @@ namespace RDBCli
         /// The key prefix's total elements
         /// </summary>
         public ulong Elements { get; set; }
+
+        /// <summary>
+        /// LRU idle time.
+        /// </summary>
+        public ulong Idle { get; set; }
     }
 
     internal class CommonStatValue

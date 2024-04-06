@@ -310,5 +310,9 @@ namespace RDBParserTests
 
             _functions[engine].Add(libName);
         }
+
+        public void SetIdleOrFreq(int val)
+        {
+        }
     }
 }

@@ -216,5 +216,11 @@ namespace RDBParser
         /// Called to indicate we have completed parsing of the dump file
         /// </summary>
         void EndRDB();
+
+        /// <summary>
+        /// Record Idle or Freq
+        /// </summary>
+        /// <param name="val"></param>
+        void SetIdleOrFreq(int val);
     }
 }

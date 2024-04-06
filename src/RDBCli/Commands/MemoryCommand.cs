@@ -55,9 +55,9 @@ namespace RDBCli.Commands
         {
             var console = context.Console;
             var cb = new CliCB.MemoryCallback(options.IsIgnoreFole ?? false);
-            var rdbDataInfo = cb.GetRdbDataInfo();
+            //var rdbDataInfo = cb.GetRdbDataInfo();
 
-            var counter = new RdbDataCounter(rdbDataInfo.Records, options.Separators, options.SepPrefixCount, options.keySuffixEnable ?? false);
+            var counter = new RdbDataCounter(cb, options.Separators, options.SepPrefixCount, options.keySuffixEnable ?? false);
             var task = counter.Count();
 
             console.WriteLine($"");
@@ -80,14 +80,16 @@ namespace RDBCli.Commands
             var largestKeyPrefix = counter.GetLargestKeyPrefixes(options.TopPrefixCount);
             var typeRecords = counter.GetTypeRecords();
             var expiryInfo = counter.GetExpiryInfo();
-            var streamRecords = counter.GetStreamRecords(); 
+            var streamRecords = counter.GetStreamRecords();
+            var idleOrFreqInfo = counter.GetIdleOrFreqInfo();
 
-            var dict = MemoryAnslysisResult.BuildBasicFromRdbDataInfo(rdbDataInfo);
+            var dict = MemoryAnslysisResult.BuildBasicFromRdbDataInfo(cb.GetRdbDataInfo());
             dict.typeRecords = typeRecords;
             dict.largestKeyPrefix = largestKeyPrefix;
             dict.largestRecords = largestRecords;
             dict.expiryInfo = expiryInfo;
             dict.largestStreams = streamRecords;
+            dict.idleOrFreqInfo = idleOrFreqInfo;
 
             var exp = expiryInfo.FirstOrDefault(x => x.Expiry.Equals(CommonHelper.AlreadyExpired));
             var perm = expiryInfo.FirstOrDefault(x => x.Expiry.Equals(CommonHelper.Permanent));
@@ -229,6 +231,7 @@ namespace RDBCli.Commands
         public List<Record> largestRecords { get; set; }
         public List<PrefixRecord> largestKeyPrefix { get; set; }
         public List<ExpiryRecord> expiryInfo { get; set; }
+        public List<IdleOrFreqRecord> idleOrFreqInfo { get; set; }
         public List<FunctionsRecord> functions { get; set; }
         public List<StreamsRecord> largestStreams { get; set; }
 

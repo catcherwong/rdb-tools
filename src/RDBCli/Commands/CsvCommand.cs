@@ -128,7 +128,7 @@ namespace RDBCli.Commands
                 {
                     // overwrite
                     fs.SetLength(0);
-                    var header = Encoding.UTF8.GetBytes("database,type,key,size_in_bytes,encoding,num_elements,len_largest_element,expiry\n");
+                    var header = Encoding.UTF8.GetBytes("database,type,key,size_in_bytes,encoding,num_elements,len_largest_element,expiry,idle\n");
                     fs.Write(header);
 
                     while (!_records.IsCompleted)
@@ -137,7 +137,7 @@ namespace RDBCli.Commands
                         {
                             if (_records.TryTake(out var item))
                             {
-                                var line = Encoding.UTF8.GetBytes($"{item.Record.Database},{item.Record.Type},{item.Record.Key},{item.Record.Bytes},{item.Record.Encoding},{item.Record.NumOfElem},{item.Record.LenOfLargestElem},{CommonHelper.GetExpireString(item.Record.Expiry)}\n");
+                                var line = Encoding.UTF8.GetBytes($"{item.Record.Database},{item.Record.Type},{item.Record.Key},{item.Record.Bytes},{item.Record.Encoding},{item.Record.NumOfElem},{item.Record.LenOfLargestElem},{CommonHelper.GetExpireString(item.Record.Expiry)},{item.Record.Idle}\n");
                                 fs.Write(line);
                             }
                             else

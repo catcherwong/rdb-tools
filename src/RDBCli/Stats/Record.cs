@@ -46,6 +46,16 @@
         /// The field of this record's largest element
         /// </summary>
         public string FieldOfLargestElem { get; set; }
+
+        /// <summary>
+        /// LRU idle time.
+        /// </summary>
+        public ulong Idle { get; set; }
+
+        /// <summary>
+        /// LFU frequency.
+        /// </summary>
+        public int Freq { get; set; }
     }
 
     public class StreamsRecord

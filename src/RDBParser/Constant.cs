@@ -5,7 +5,13 @@
         public static class RdbVersion
         { 
             public const int Min = 1;
-            public const int Max = 10;
+
+            // Redis 6.2.14   9
+            // Redis 7.0-rc1  10
+            // Redis 7.0.15   10
+            // Redis 7.2-rc1  11
+            // Redis 7.2.4    11
+            public const int Max = 11;
         }
 
         public static class MagicCount

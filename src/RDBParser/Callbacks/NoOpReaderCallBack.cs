@@ -68,6 +68,10 @@ namespace RDBParser
         {
         }
 
+        public void SetIdleOrFreq(int val)
+        {
+        }
+
         public void StartDatabase(int database)
         {
         }

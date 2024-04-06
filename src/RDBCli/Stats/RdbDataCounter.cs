@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RDBCli.Callbacks;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,20 +17,24 @@ namespace RDBCli
         private Dictionary<string, TypeKeyValue> _keyPrefix;
         private Dictionary<string, CommonStatValue> _typeDict;
         private Dictionary<string, CommonStatValue> _expiryDict;
+        private Dictionary<string, CommonStatValue> _idleOrFreqDict;
 
+        private readonly MemoryCallback _cb;
         private readonly BlockingCollection<AnalysisRecord> _records;
         private readonly int _sepCount;
         private readonly bool _keySuffixEnable;
 
-        public RdbDataCounter(BlockingCollection<AnalysisRecord> records, string separators = "", int sepCount = -1, bool keySuffixEnable = false)
+        public RdbDataCounter(MemoryCallback cb, string separators = "", int sepCount = -1, bool keySuffixEnable = false)
         {
-            this._records = records;
+            this._cb = cb;
+            this._records = cb.GetRdbDataInfo().Records;
             this._largestRecords = new PriorityQueue<Record, ulong>();
             this._largestStreams = new PriorityQueue<StreamsRecord, ulong>();
             this._largestKeyPrefixes = new PriorityQueue<PrefixRecord, PrefixRecord>(PrefixRecord.Comparer);
             this._keyPrefix = new Dictionary<string, TypeKeyValue>();
             this._typeDict = new Dictionary<string, CommonStatValue>();
             this._expiryDict = new Dictionary<string, CommonStatValue>();
+            this._idleOrFreqDict = new Dictionary<string, CommonStatValue>();
 
             if (!string.IsNullOrWhiteSpace(separators))
             {
@@ -53,6 +58,7 @@ namespace RDBCli
                         {
                             this.CountLargestEntries(item.Record, 500);
                             this.CounteByType(item.Record);
+                            this.CounteByIdleOrFreq(item.Record);
                             this.CountByKeyPrefix(item.Record);
                             this.CountExpiry(item.Record);
                             this.CountStreams(item.StreamsRecord, 500);
@@ -108,6 +114,14 @@ namespace RDBCli
                .ToList();
         }
 
+        public List<IdleOrFreqRecord> GetIdleOrFreqInfo()
+        {
+            return _idleOrFreqDict
+               .Select(x => new IdleOrFreqRecord { Category = x.Key, Num = x.Value.Num, Bytes = x.Value.Bytes })
+               .OrderBy(x => x.Category)
+               .ToList();
+        }
+
         public List<StreamsRecord> GetStreamRecords(int num = 100)
         {
             return _largestStreams.UnorderedItems
@@ -136,6 +150,7 @@ namespace RDBCli
                     Bytes = item.Value.Bytes,
                     Num = item.Value.Num,
                     Elements = item.Value.Elements,
+                    Idle = item.Value.Idle
                 };
 
                 _largestKeyPrefixes.Enqueue(ent, ent);
@@ -175,6 +190,7 @@ namespace RDBCli
                     this._keyPrefix[tKey.ToString()].Num++;
                     this._keyPrefix[tKey.ToString()].Bytes += record.Bytes;
                     this._keyPrefix[tKey.ToString()].Elements += record.NumOfElem;
+                    this._keyPrefix[tKey.ToString()].Idle += record.Idle;
                 }
                 else
                 {
@@ -182,7 +198,8 @@ namespace RDBCli
                     {
                         Num = 1,
                         Bytes = record.Bytes,
-                        Elements = record.NumOfElem
+                        Elements = record.NumOfElem,
+                        Idle = record.Idle
                     };
                 }
             }
@@ -260,6 +277,22 @@ namespace RDBCli
         private void CounteByType(Record record)
         {
             InitOrAddStat(this._typeDict, record.Type, record.Bytes);
+        }
+
+        private void CounteByIdleOrFreq(Record record)
+        {
+            if (_cb.GetIdleOrFreq() == 1)
+            {
+                var key = CommonHelper.GetIdleString(record.Idle);
+
+                InitOrAddStat(this._idleOrFreqDict, key, record.Bytes);
+            }
+            else if (_cb.GetIdleOrFreq() == 2)
+            {
+                var key = CommonHelper.GetFreqString(record.Freq);
+
+                InitOrAddStat(this._idleOrFreqDict, key, record.Bytes);
+            }
         }
 
         private void InitOrAddStat(Dictionary<string, CommonStatValue> dict, string key, ulong bytes)

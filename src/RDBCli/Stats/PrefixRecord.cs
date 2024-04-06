@@ -29,9 +29,14 @@ namespace RDBCli
         /// </summary>
         public ulong Elements { get; set; }
 
+        /// <summary>
+        /// LRU idle time.
+        /// </summary>
+        public ulong Idle { get; set; }
+
         public override string ToString()
         {
-            return $"{Type}-{Prefix}-{Bytes}-{Num}-{Elements}";
+            return $"{Type}-{Prefix}-{Bytes}-{Num}-{Elements}-{Idle}";
         }
 
         public static PrefixRecordComparer Comparer = new();
@@ -105,6 +110,29 @@ namespace RDBCli
         public override string ToString()
         {
             return $"{Expiry}-{Bytes}-{Num}";
+        }
+    }
+
+    public class IdleOrFreqRecord
+    {
+        /// <summary>
+        /// The category.
+        /// </summary>
+        public string Category { get; set; }
+
+        /// <summary>
+        /// The expiry category's total bytes
+        /// </summary>
+        public ulong Bytes { get; set; }
+
+        /// <summary>
+        /// The expiry category's total count
+        /// </summary>
+        public ulong Num { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Category}-{Bytes}-{Num}";
         }
     }
 
