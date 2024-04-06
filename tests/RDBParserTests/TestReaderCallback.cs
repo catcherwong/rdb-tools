@@ -17,6 +17,8 @@ namespace RDBParserTests
         private Dictionary<int, Dictionary<byte[], Dictionary<byte[], double>>> _sortedSets = new Dictionary<int, Dictionary<byte[], Dictionary<byte[], double>>>();
         private Dictionary<int, Dictionary<byte[], List<StreamEntity>>> _streamGroup = new Dictionary<int, Dictionary<byte[], List<StreamEntity>>>();
         private Dictionary<byte[], List<byte[]>> _functions = new Dictionary<byte[], List<byte[]>>(ByteArrayComparer.Default);
+        private Dictionary<int, Dictionary<byte[], Info>> _infos = new Dictionary<int, Dictionary<byte[], Info>>();
+        private int _idleOrFreq = -99;
 
         public TestReaderCallback(Xunit.Abstractions.ITestOutputHelper output)
         {
@@ -49,6 +51,12 @@ namespace RDBParserTests
 
         public Dictionary<byte[], List<byte[]>> GetFunctions()
           => _functions;
+
+        public int GetIdleOrFreq()
+          => _idleOrFreq;
+
+        public Dictionary<int, Dictionary<byte[], Info>> GetInfos()
+         => _infos;
 
         public void AuxField(byte[] key, byte[] value)
         {
@@ -168,6 +176,8 @@ namespace RDBParserTests
 
             if (expiry > 0)
                 _expiries[_database][key] = expiry;
+
+            _infos[_database][key] = info;
         }
 
         public void StartDatabase(int database)
@@ -180,6 +190,7 @@ namespace RDBParserTests
             _sets[_database] = new Dictionary<byte[], List<byte[]>>(ByteArrayComparer.Default);
             _sortedSets[_database] = new Dictionary<byte[], Dictionary<byte[], double>>(ByteArrayComparer.Default);
             _streamGroup[_database] = new Dictionary<byte[], List<StreamEntity>>(ByteArrayComparer.Default);
+            _infos[_database] = new Dictionary<byte[], Info>(ByteArrayComparer.Default);
         }
 
         public void StartHash(byte[] key, long length, long expiry, Info info)
@@ -196,6 +207,8 @@ namespace RDBParserTests
                 _lengths[_database] = new Dictionary<byte[], long>(ByteArrayComparer.Default);
 
             _lengths[_database][key] = length;
+
+            _infos[_database][key] = info;
         }
 
         public void StartList(byte[] key, long expiry, Info info)
@@ -212,6 +225,7 @@ namespace RDBParserTests
             if (expiry > 0)
                 _expiries[_database][key] = expiry;
 
+            _infos[_database][key] = info;
         }
 
         public bool StartModule(byte[] key, string module_name, long expiry, Info info)
@@ -226,6 +240,8 @@ namespace RDBParserTests
             }
 
             if (expiry > 0) _expiries[_database][key] = expiry;
+
+            _infos[_database][key] = info;
 
             return false;
         }
@@ -252,6 +268,8 @@ namespace RDBParserTests
             if (!_lengths.ContainsKey(_database))
                 _lengths[_database] = new Dictionary<byte[], long>();
 
+            _infos[_database][key] = info;
+
             _lengths[_database][key] = cardinality;
         }
 
@@ -269,6 +287,8 @@ namespace RDBParserTests
                 _lengths[_database] = new Dictionary<byte[], long>();
 
             _lengths[_database][key] = length;
+
+            _infos[_database][key] = info;
         }
 
         public void StartStream(byte[] key, long listpacks_count, long expiry, Info info)
@@ -280,6 +300,8 @@ namespace RDBParserTests
 
             if (expiry > 0)
                 _expiries[_database][key] = expiry;
+
+            _infos[_database][key] = info;
         }
 
         public void StreamListPack(byte[] key, byte[] entry_id, byte[] data)
@@ -313,6 +335,7 @@ namespace RDBParserTests
 
         public void SetIdleOrFreq(int val)
         {
+            _idleOrFreq = val;
         }
     }
 }

@@ -29,14 +29,9 @@ namespace RDBCli
         /// </summary>
         public ulong Elements { get; set; }
 
-        /// <summary>
-        /// LRU idle time.
-        /// </summary>
-        public ulong Idle { get; set; }
-
         public override string ToString()
         {
-            return $"{Type}-{Prefix}-{Bytes}-{Num}-{Elements}-{Idle}";
+            return $"{Type}-{Prefix}-{Bytes}-{Num}-{Elements}";
         }
 
         public static PrefixRecordComparer Comparer = new();

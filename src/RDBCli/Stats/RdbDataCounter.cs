@@ -149,8 +149,7 @@ namespace RDBCli
                     Prefix = tk.Key,
                     Bytes = item.Value.Bytes,
                     Num = item.Value.Num,
-                    Elements = item.Value.Elements,
-                    Idle = item.Value.Idle
+                    Elements = item.Value.Elements
                 };
 
                 _largestKeyPrefixes.Enqueue(ent, ent);
