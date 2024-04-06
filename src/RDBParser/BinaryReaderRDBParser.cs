@@ -238,6 +238,17 @@ namespace RDBParser
                 }
             }
 
+            if (_filter.MinIdle.HasValue)
+            {
+                return _idle > _filter.MinIdle.Value;
+            }
+
+
+            if (_filter.MinFreq.HasValue)
+            {
+                return _freq > _filter.MinFreq.Value;
+            }
+
             return true;
         }
 

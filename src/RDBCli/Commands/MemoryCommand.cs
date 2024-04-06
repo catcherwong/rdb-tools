@@ -407,5 +407,25 @@ namespace RDBCli.Commands
 
             return option;
         }
+
+        public static Option<ulong> MinIdleOption()
+        {
+            Option<ulong> option =
+                new Option<ulong>(
+                    aliases: new string[] { "--min-idle" },
+                    description: "The minimum idle time of the key(must lru policy)");
+
+            return option;
+        }
+
+        public static Option<int> MinFreqOption()
+        {
+            Option<int> option =
+                new Option<int>(
+                    aliases: new string[] { "--min-freq" },
+                    description: "The minimum frequency of the key(must lfu policy)");
+
+            return option;
+        }
     }
 }
