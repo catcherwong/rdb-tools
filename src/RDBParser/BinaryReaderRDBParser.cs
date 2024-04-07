@@ -13,6 +13,7 @@ namespace RDBParser
         private long _expiry = 0;
         private ulong _idle = 0;
         private int _freq = 0;
+        private int _mem_policy = -1; // 1 - lru | 2 - lfu
 
         public BinaryReaderRDBParser(IReaderCallback callback, ParserFilter filter = null)
         {
@@ -55,14 +56,31 @@ namespace RDBParser
 
                         if (opType == Constant.OpCode.IDLE)
                         {
+                            // What the value means? It means that the key was not accessed in `_idle` seconds
+                            // For example(volatile-lru), `set e1 v1 ex 6000`, `set e2 v2 ex 600`
+                            // get e1 at 01:00:00, get e2 at 01:00:05, bgsave at 01:00:10
+                            // e1's idle = 10s, e2's idle = 5s
                             _idle = br.ReadLength();
                             opType = br.ReadByte();
+
+                            if (_mem_policy == -1)
+                            {
+                                _mem_policy = 1;
+                                _callback.SetIdleOrFreq(1);
+                            }
                         }
 
                         if (opType == Constant.OpCode.FREQ)
                         {
+                            // 0 ~ 255
                             _freq = br.ReadByte();
                             opType = br.ReadByte();
+
+                            if (_mem_policy == -1)
+                            {
+                                _mem_policy = 2;
+                                _callback.SetIdleOrFreq(2);
+                            }
                         }
 
                         if (opType == Constant.OpCode.SELECTDB)
@@ -218,6 +236,17 @@ namespace RDBParser
                 {
                     return _expiry != 0;
                 }
+            }
+
+            if (_filter.MinIdle.HasValue)
+            {
+                return _idle > _filter.MinIdle.Value;
+            }
+
+
+            if (_filter.MinFreq.HasValue)
+            {
+                return _freq > _filter.MinFreq.Value;
             }
 
             return true;

@@ -17,6 +17,8 @@ namespace RDBCli.Commands
         private static Option<List<int>> _databasesOption = CommonCLIOptions.DBsOption();
         private static Option<List<string>> _typesOption = CommonCLIOptions.TypesOption();
         private static Option<List<string>> _keyPrefixesOption = CommonCLIOptions.KeyPrefixesOption();
+        private static Option<ulong> _minIdleOption = CommonCLIOptions.MinIdleOption();
+        private static Option<int> _minFreqOption = CommonCLIOptions.MinFreqOption();
         private static Argument<string> _fileArg = CommonCLIArguments.FileArgument();
 
         public CsvCommand()
@@ -26,6 +28,8 @@ namespace RDBCli.Commands
             this.AddOption(_databasesOption);
             this.AddOption(_typesOption);
             this.AddOption(_keyPrefixesOption);
+            this.AddOption(_minIdleOption);
+            this.AddOption(_minFreqOption);
             this.AddArgument(_fileArg);
 
             this.SetHandler((InvocationContext context) =>
@@ -76,12 +80,16 @@ namespace RDBCli.Commands
                 var databases = context.ParseResult.GetValueForOption<List<int>>(_databasesOption);
                 var types = context.ParseResult.GetValueForOption<List<string>>(_typesOption);
                 var keyPrefixes = context.ParseResult.GetValueForOption<List<string>>(_keyPrefixesOption);
+                var minIdle = context.ParseResult.GetValueForOption<ulong>(_minIdleOption);
+                var minFreq = context.ParseResult.GetValueForOption<int>(_minFreqOption);
 
                 var parseFilter = new RDBParser.ParserFilter()
                 {
                     Databases = databases,
                     Types = types,
                     KeyPrefixes = keyPrefixes,
+                    MinFreq = minFreq,
+                    MinIdle = minIdle
                 };
 
                 return new CommandOptions
@@ -128,7 +136,7 @@ namespace RDBCli.Commands
                 {
                     // overwrite
                     fs.SetLength(0);
-                    var header = Encoding.UTF8.GetBytes("database,type,key,size_in_bytes,encoding,num_elements,len_largest_element,expiry\n");
+                    var header = Encoding.UTF8.GetBytes("database,type,key,size_in_bytes,encoding,num_elements,len_largest_element,expiry,idle,freq\n");
                     fs.Write(header);
 
                     while (!_records.IsCompleted)
@@ -137,7 +145,7 @@ namespace RDBCli.Commands
                         {
                             if (_records.TryTake(out var item))
                             {
-                                var line = Encoding.UTF8.GetBytes($"{item.Record.Database},{item.Record.Type},{item.Record.Key},{item.Record.Bytes},{item.Record.Encoding},{item.Record.NumOfElem},{item.Record.LenOfLargestElem},{CommonHelper.GetExpireString(item.Record.Expiry)}\n");
+                                var line = Encoding.UTF8.GetBytes($"{item.Record.Database},{item.Record.Type},{item.Record.Key},{item.Record.Bytes},{item.Record.Encoding},{item.Record.NumOfElem},{item.Record.LenOfLargestElem},{CommonHelper.GetExpireString(item.Record.Expiry)},{item.Record.Idle},{item.Record.Freq}\n");
                                 fs.Write(line);
                             }
                             else

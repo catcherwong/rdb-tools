@@ -86,6 +86,11 @@ namespace RDBParser
             Console.WriteLine($"Set, Key={GetString(key)}, value={GetString(value)}, expiry={expiry}, Info={info}");
         }
 
+        public void SetIdleOrFreq(int val)
+        {
+            Console.WriteLine($"SetIdleOrFreq, val={val}");
+        }
+
         public void StartDatabase(int database)
         {
             Console.WriteLine($"Start database = {database}");

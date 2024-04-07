@@ -1,4 +1,5 @@
 ﻿using RDBParser;
+using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.Linq;
@@ -22,15 +23,15 @@ namespace RDBCli.Callbacks
         {
             var keyStr = System.Text.Encoding.UTF8.GetString(key);
 
-            if(CheckPreifx(keyStr))
+            if (CheckPreifx(keyStr))
             {
-                if(_isPermanent.HasValue)
+                if (_isPermanent.HasValue)
                 {
-                    if(_isPermanent.Value && expiry == 0)
+                    if (_isPermanent.Value && expiry == 0)
                     {
                         _console.WriteLine(keyStr);
                     }
-                    else if(!_isPermanent.Value && expiry != 0)
+                    else if (!_isPermanent.Value && expiry != 0)
                     {
                         _console.WriteLine(keyStr);
                     }
@@ -176,6 +177,10 @@ namespace RDBCli.Callbacks
         }
 
         public void ZAdd(byte[] key, double score, byte[] member)
+        {
+        }
+
+        public void SetIdleOrFreq(int val)
         {
         }
     }

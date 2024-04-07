@@ -108,6 +108,29 @@ namespace RDBCli
         }
     }
 
+    public class IdleOrFreqRecord
+    {
+        /// <summary>
+        /// The category.
+        /// </summary>
+        public string Category { get; set; }
+
+        /// <summary>
+        /// The expiry category's total bytes
+        /// </summary>
+        public ulong Bytes { get; set; }
+
+        /// <summary>
+        /// The expiry category's total count
+        /// </summary>
+        public ulong Num { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Category}-{Bytes}-{Num}";
+        }
+    }
+
     public class FunctionsRecord
     {
         public string Engine { get; set; }

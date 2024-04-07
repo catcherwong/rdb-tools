@@ -23,5 +23,17 @@ namespace RDBParser
         /// Whether the key's expiry is permanent or not
         /// </summary>
         public bool? IsPermanent { get; set; }
+
+        /// <summary>
+        /// The minimum idle time of the key
+        /// _idle > MinIdle
+        /// </summary>
+        public ulong? MinIdle { get; set; }
+
+        /// <summary>
+        /// The minimum frequency of the key
+        /// _freq > MinFreq
+        /// </summary>
+        public int? MinFreq { get; set; }
     }
 }
