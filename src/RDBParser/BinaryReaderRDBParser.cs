@@ -238,6 +238,24 @@ namespace RDBParser
                 }
             }
 
+            if (_filter.IsExpired.HasValue)
+            {
+                if (_expiry == 0)
+                { 
+                    return false;
+                }
+
+                var sub = DateTimeOffset.FromUnixTimeMilliseconds(_expiry).Subtract(DateTimeOffset.UtcNow);
+                if (_filter.IsExpired.Value)
+                {
+                    return sub.TotalHours <= 0;
+                }
+                else
+                { 
+                    return sub.TotalHours > 0;
+                }
+            }
+
             if (_filter.MinIdle.HasValue)
             {
                 return _idle > _filter.MinIdle.Value;
