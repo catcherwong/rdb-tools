@@ -17,8 +17,10 @@ namespace RDBCli.Commands
         private static Option<List<int>> _databasesOption = CommonCLIOptions.DBsOption();
         private static Option<List<string>> _typesOption = CommonCLIOptions.TypesOption();
         private static Option<List<string>> _keyPrefixesOption = CommonCLIOptions.KeyPrefixesOption();
-        private static Option<ulong> _minIdleOption = CommonCLIOptions.MinIdleOption();
-        private static Option<int> _minFreqOption = CommonCLIOptions.MinFreqOption();
+        private static Option<ulong?> _minIdleOption = CommonCLIOptions.MinIdleOption();
+        private static Option<int?> _minFreqOption = CommonCLIOptions.MinFreqOption();
+        private static Option<bool?> _permanentOption = CommonCLIOptions.IsPermanentOption();
+        private static Option<bool?> _expiredOption = CommonCLIOptions.IsExpiredOption();
         private static Argument<string> _fileArg = CommonCLIArguments.FileArgument();
 
         public CsvCommand()
@@ -30,6 +32,8 @@ namespace RDBCli.Commands
             this.AddOption(_keyPrefixesOption);
             this.AddOption(_minIdleOption);
             this.AddOption(_minFreqOption);
+            this.AddOption(_permanentOption);
+            this.AddOption(_expiredOption);
             this.AddArgument(_fileArg);
 
             this.SetHandler((InvocationContext context) =>
@@ -80,8 +84,10 @@ namespace RDBCli.Commands
                 var databases = context.ParseResult.GetValueForOption<List<int>>(_databasesOption);
                 var types = context.ParseResult.GetValueForOption<List<string>>(_typesOption);
                 var keyPrefixes = context.ParseResult.GetValueForOption<List<string>>(_keyPrefixesOption);
-                var minIdle = context.ParseResult.GetValueForOption<ulong>(_minIdleOption);
-                var minFreq = context.ParseResult.GetValueForOption<int>(_minFreqOption);
+                var minIdle = context.ParseResult.GetValueForOption<ulong?>(_minIdleOption);
+                var minFreq = context.ParseResult.GetValueForOption<int?>(_minFreqOption);
+                var permanent = context.ParseResult.GetValueForOption<bool?>(_permanentOption);
+                var expired = context.ParseResult.GetValueForOption<bool?>(_expiredOption);
 
                 var parseFilter = new RDBParser.ParserFilter()
                 {
@@ -89,7 +95,9 @@ namespace RDBCli.Commands
                     Types = types,
                     KeyPrefixes = keyPrefixes,
                     MinFreq = minFreq,
-                    MinIdle = minIdle
+                    MinIdle = minIdle,
+                    IsPermanent = permanent,
+                    IsExpired = expired
                 };
 
                 return new CommandOptions
@@ -119,12 +127,12 @@ namespace RDBCli.Commands
                 if(output.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                 {
                     var dir = Path.GetDirectoryName(output);
-                    if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);    
+                    if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
                     path = output;
                 }
                 else
                 {
-                    if (!Directory.Exists(output)) Directory.CreateDirectory(output);    
+                    if (!Directory.Exists(output)) Directory.CreateDirectory(output);
                     path = Path.Combine(output, $"dump.csv");
                 }
             }
