@@ -22,7 +22,6 @@ jobs:
                       "osx-x64",
                       "osx-arm64",
                       "win-x86",
-                      "win-arm",
                       "win-x64",
                       "win-arm64"
                   ]
@@ -55,49 +54,50 @@ jobs:
               name: rdb-cli
               path: /home/runner/work/release
 
-    publish_windows_x64_and_arm_aot:
-      name: Build and upload windows x64 and arm64 aot cli artifact
-      runs-on: windows-latest
-      strategy:
-          matrix:
-              targets:
-                  [
-                    "win-x64",
-                    "win-arm64"
-                  ]
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v4
+    # publish_windows_x64_and_arm_aot:
+    #   name: Build and upload windows x64 and arm64 aot cli artifact
+    #   runs-on: windows-latest
+    #   strategy:
+    #       matrix:
+    #           targets:
+    #               [
+    #                 "win-x64",
+    #                 "win-arm64"
+    #               ]
+    #   steps:
+    #     - name: Checkout
+    #       uses: actions/checkout@v4
 
-        - name: Setup .NET SDK 8.0.x
-          uses: actions/setup-dotnet@v4
-          with:
-            dotnet-version: 8.0.x
+    #     - name: Setup .NET SDK 8.0.x
+    #       uses: actions/setup-dotnet@v4
+    #       with:
+    #         dotnet-version: 8.0.x
 
-        - name: Publish .NET app
-          env:
-              RID: ${{ matrix.targets }}
-              VERSION: ${{ github.ref_name }}
-          run: dotnet publish src/RDBCli/RDBCli.csproj -c Release -r $($env:RID) -p:UseAot=true -p:DebugType=None -p:DebugSymbols=false --self-contained true --output ../publish/$($env:RID)
+    #     - name: Publish .NET app
+    #       env:
+    #           RID: ${{ matrix.targets }}
+    #           VERSION: ${{ github.ref_name }}
+    #       run: dotnet publish src/RDBCli/RDBCli.csproj -c Release -r $($env:RID) -p:UseAot=true -p:DebugType=None -p:DebugSymbols=false --self-contained true --output ../publish/$($env:RID)
 
-        - name: Package assets
-          env:
-              RID: ${{ matrix.targets }}
-              VERSION: ${{ github.ref_name }}
-          run: |
-              mkdir ../release
-              rm -fo ../publish/$($env:RID)/*.pdb
-              ls ../publish/
-              Compress-Archive -Path ../publish/$($env:RID)/* -DestinationPath ../release/rdb-cli.$($env:VERSION).$($env:RID).aot.zip
-        - name: Upload artifacts
-          uses: actions/upload-artifact@v4
-          with:
-              name: rdb-cli
-              path: D:/a/rdb-tools/release
+    #     - name: Package assets
+    #       env:
+    #           RID: ${{ matrix.targets }}
+    #           VERSION: ${{ github.ref_name }}
+    #       run: |
+    #           mkdir ../release
+    #           rm -fo ../publish/$($env:RID)/*.pdb
+    #           ls ../publish/
+    #           Compress-Archive -Path ../publish/$($env:RID)/* -DestinationPath ../release/rdb-cli.$($env:VERSION).$($env:RID).aot.zip
+    #     - name: Upload artifacts
+    #       uses: actions/upload-artifact@v4
+    #       with:
+    #           name: rdb-cli
+    #           path: D:/a/rdb-tools/release
 
     release_cli:
         name: Publish release
-        needs: ['publish_cli','publish_windows_x64_and_arm_aot']
+        # needs: ['publish_cli','publish_windows_x64_and_arm_aot']
+        needs: ['publish_cli']
         runs-on: ubuntu-latest
     
         steps:          
