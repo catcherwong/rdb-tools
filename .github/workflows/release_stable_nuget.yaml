@@ -13,13 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-    - name: Setup .NET Core 7.0.x
-      uses: actions/setup-dotnet@v3
+    - name: Setup .NET Core 8.0.x
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: |
-          7.0.x
+          8.0.x
           6.0.x
 
     - name: Build with dotnet
@@ -32,7 +32,7 @@ jobs:
         dotnet pack src/RDBCli/RDBCli.csproj -o /home/runner/work/nugetpkgs -c Release --no-build
     
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: nugetpkgs
         path: /home/runner/work/nugetpkgs  
@@ -44,7 +44,7 @@ jobs:
   
       steps:
         - name: Download build artifacts
-          uses: actions/download-artifact@v3
+          uses: actions/download-artifact@v4
           with:
             name: nugetpkgs
             path: nugetpkgs

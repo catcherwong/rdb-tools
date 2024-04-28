@@ -19,6 +19,7 @@ jobs:
                       "linux-arm",
                       "linux-arm64",
                       "osx-x64",
+                      "osx-arm64",
                       "win-x86",
                       "win-arm",
                       "win-x64",
@@ -26,12 +27,12 @@ jobs:
                   ]
       steps:
         - name: Checkout
-          uses: actions/checkout@v3
+          uses: actions/checkout@v4
 
-        - name: Setup .NET SDK 7.0.x
-          uses: actions/setup-dotnet@v3
+        - name: Setup .NET SDK 8.0.x
+          uses: actions/setup-dotnet@v4
           with:
-            dotnet-version: 7.0.x
+            dotnet-version: 8.0.x
 
         - name: Publish .NET app
           env:
@@ -48,7 +49,7 @@ jobs:
               ls /home/runner/work/clis/
               zip -j /home/runner/work/release/rdb-cli.$VERSION.$RID.zip /home/runner/work/clis/$RID/*
         - name: Upload artifacts
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v4
           with:
               name: rdb-cli
               path: /home/runner/work/release
@@ -65,12 +66,12 @@ jobs:
                   ]
       steps:
         - name: Checkout
-          uses: actions/checkout@v3
+          uses: actions/checkout@v4
 
-        - name: Setup .NET SDK 7.0.x
-          uses: actions/setup-dotnet@v3
+        - name: Setup .NET SDK 8.0.x
+          uses: actions/setup-dotnet@v4
           with:
-            dotnet-version: 7.0.x
+            dotnet-version: 8.0.x
             
         - name: Publish .NET app
           env:
@@ -88,7 +89,7 @@ jobs:
               ls ../publish/
               Compress-Archive -Path ../publish/$($env:RID)/* -DestinationPath ../release/rdb-cli.$($env:VERSION).$($env:RID).aot.zip
         - name: Upload artifacts
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v4
           with:
               name: rdb-cli
               path: D:/a/rdb-tools/release
@@ -100,7 +101,7 @@ jobs:
     
         steps:          
           - name: Download build artifacts
-            uses: actions/download-artifact@v3
+            uses: actions/download-artifact@v4
             with:
               name: rdb-cli
               path: rdb-cli

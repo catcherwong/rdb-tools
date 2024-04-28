@@ -2,7 +2,7 @@
 	<PropertyGroup>
 		<!-- RDBCli -->
 		<SystemCommandLinePackageVersion>2.0.0-beta4.22272.1</SystemCommandLinePackageVersion>
-		<MicrosoftDotNetILCompilerPackageVersion>7.0.0-*</MicrosoftDotNetILCompilerPackageVersion>
+		<MicrosoftDotNetILCompilerPackageVersion>8.0.0-*</MicrosoftDotNetILCompilerPackageVersion>
 
 		<!-- RDBParser -->
 		<MicrosoftSourceLinkGitHubPackageVersion>1.1.*</MicrosoftSourceLinkGitHubPackageVersion>
