@@ -369,7 +369,7 @@
 
         function buildIdleOrFreqByteChart() {
             const labels = cliData.idleOrFreqInfo.map(item => item.Category);
-            const data = cliData.idleOrFreqInfo.map(item => item.Num);
+            const data = cliData.idleOrFreqInfo.map(item => item.Bytes);
 
             buildBarChart(
                 labels,
