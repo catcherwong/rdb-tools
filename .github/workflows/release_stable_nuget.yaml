@@ -32,7 +32,7 @@ jobs:
         dotnet pack src/RDBCli/RDBCli.csproj -o /home/runner/work/nugetpkgs -c Release --no-build
     
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: nugetpkgs
         path: /home/runner/work/nugetpkgs  

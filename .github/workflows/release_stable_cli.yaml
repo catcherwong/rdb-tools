@@ -49,7 +49,7 @@ jobs:
               ls /home/runner/work/clis/
               zip -j /home/runner/work/release/rdb-cli.$VERSION.$RID.zip /home/runner/work/clis/$RID/*
         - name: Upload artifacts
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v3
           with:
               name: rdb-cli
               path: /home/runner/work/release/
@@ -89,7 +89,7 @@ jobs:
     #           ls ../publish/
     #           Compress-Archive -Path ../publish/$($env:RID)/* -DestinationPath ../release/rdb-cli.$($env:VERSION).$($env:RID).aot.zip
     #     - name: Upload artifacts
-    #       uses: actions/upload-artifact@v4
+    #       uses: actions/upload-artifact@v3
     #       with:
     #           name: rdb-cli
     #           path: D:/a/rdb-tools/release
