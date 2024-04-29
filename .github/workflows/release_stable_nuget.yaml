@@ -20,6 +20,7 @@ jobs:
       with:
         dotnet-version: |
           8.0.x
+          7.0.x
           6.0.x
 
     - name: Build with dotnet
@@ -29,7 +30,7 @@ jobs:
     - name: Pack with dotnet
       run: |
         dotnet pack src/RDBParser/RDBParser.csproj -o /home/runner/work/nugetpkgs -c Release --no-build
-        dotnet pack src/RDBCli/RDBCli.csproj -o /home/runner/work/nugetpkgs -c Release --no-build
+        dotnet pack src/RDBCli/RDBCli.csproj -f net8.0 -o /home/runner/work/nugetpkgs -c Release --no-build
     
     - name: Upload artifact
       uses: actions/upload-artifact@v3

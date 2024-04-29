@@ -38,7 +38,7 @@ jobs:
           env:
               RID: ${{ matrix.targets }}
               VERSION: ${{ github.ref_name }}
-          run: dotnet publish src/RDBCli/RDBCli.csproj -c Release -r $RID -p:PublishSingleFile=true -p:PublishTrimmed=true -p:DebugType=None -p:DebugSymbols=false -p:EnableCompressionInSingleFile=true --self-contained true --output /home/runner/work/clis/$RID
+          run: dotnet publish src/RDBCli/RDBCli.csproj -f net8.0 -c Release -r $RID -p:PublishSingleFile=true -p:PublishTrimmed=true -p:DebugType=None -p:DebugSymbols=false -p:EnableCompressionInSingleFile=true --self-contained true --output /home/runner/work/clis/$RID
 
         - name: Package assets
           env:
@@ -48,6 +48,46 @@ jobs:
               mkdir /home/runner/work/release
               ls /home/runner/work/clis/
               zip -j /home/runner/work/release/rdb-cli.$VERSION.$RID.zip /home/runner/work/clis/$RID/*
+        - name: Upload artifacts
+          uses: actions/upload-artifact@v3
+          with:
+              name: rdb-cli
+              path: /home/runner/work/release/
+
+    publish_cli_os_low_dependency:
+      name: Build and upload cli artifact
+      runs-on: ubuntu-latest    
+      strategy:
+          matrix:
+              targets:
+                  [
+                      "linux-x64", 
+                      "osx-x64",                  
+                      "win-x64"
+                  ]
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+
+        - name: Setup .NET SDK 7.0.x
+          uses: actions/setup-dotnet@v4
+          with:
+            dotnet-version: 7.0.x
+
+        - name: Publish .NET app
+          env:
+              RID: ${{ matrix.targets }}
+              VERSION: ${{ github.ref_name }}
+          run: dotnet publish src/RDBCli/RDBCli.csproj -f net7.0 -c Release -r $RID -p:PublishSingleFile=true -p:PublishTrimmed=true -p:DebugType=None -p:DebugSymbols=false -p:EnableCompressionInSingleFile=true --self-contained true --output /home/runner/work/clis/$RID
+
+        - name: Package assets
+          env:
+              RID: ${{ matrix.targets }}
+              VERSION: ${{ github.ref_name }}
+          run: |
+              mkdir /home/runner/work/release
+              ls /home/runner/work/clis/
+              zip -j /home/runner/work/release/rdb-cli.$VERSION.$RID_70.zip /home/runner/work/clis/$RID/*
         - name: Upload artifacts
           uses: actions/upload-artifact@v3
           with:
@@ -97,7 +137,7 @@ jobs:
     release_cli:
         name: Publish release
         # needs: ['publish_cli','publish_windows_x64_and_arm_aot']
-        needs: ['publish_cli']
+        needs: ['publish_cli', 'publish_cli_os_low_dependency']
         runs-on: ubuntu-latest
     
         steps:          
