@@ -55,7 +55,7 @@ jobs:
               path: /home/runner/work/release/
 
     publish_cli_os_low_dependency:
-      name: Build and upload cli artifact
+      name: Build and upload cli artifact 70
       runs-on: ubuntu-latest    
       strategy:
           matrix:
@@ -74,21 +74,21 @@ jobs:
           with:
             dotnet-version: 7.0.x
 
-        - name: Publish .NET app
+        - name: Publish .NET app 70
           env:
               RID: ${{ matrix.targets }}
               VERSION: ${{ github.ref_name }}
           run: dotnet publish src/RDBCli/RDBCli.csproj -f net7.0 -c Release -r $RID -p:PublishSingleFile=true -p:PublishTrimmed=true -p:DebugType=None -p:DebugSymbols=false -p:EnableCompressionInSingleFile=true --self-contained true --output /home/runner/work/clis/$RID
 
-        - name: Package assets
+        - name: Package assets 70
           env:
               RID: ${{ matrix.targets }}
               VERSION: ${{ github.ref_name }}
           run: |
               mkdir /home/runner/work/release
               ls /home/runner/work/clis/
-              zip -j /home/runner/work/release/rdb-cli.$VERSION.$RID_70.zip /home/runner/work/clis/$RID/*
-        - name: Upload artifacts
+              zip -j /home/runner/work/release/rdb-cli.${{env.VERSION}}.${{env.RID}}_70.zip /home/runner/work/clis/${{env.RID}}/*
+        - name: Upload artifacts 70
           uses: actions/upload-artifact@v3
           with:
               name: rdb-cli
