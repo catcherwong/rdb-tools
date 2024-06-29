@@ -132,7 +132,7 @@ namespace RDBCli.Commands
         private readonly char[] _separators;
         private readonly int _sepCount;
         private readonly bool _keySuffixEnable;
-        private Dictionary<string, (long, long)> _prefixDict = new Dictionary<string, (long, long)>();
+        private Dictionary<string, (long, long)> _prefixDict;
         public RdbCsvData(BlockingCollection<AnalysisRecord> records, string separators = "", int sepCount = -1, bool keySuffixEnable = false)
         {
             this._records = records;
@@ -142,6 +142,7 @@ namespace RDBCli.Commands
             }
             this._sepCount = sepCount > 0 ? sepCount : 1;
             this._keySuffixEnable = keySuffixEnable;
+            this._prefixDict = new Dictionary<string, (long, long)>();
         }
 
         public Task<string> Output(string output)
@@ -175,10 +176,14 @@ namespace RDBCli.Commands
 
                             foreach (var p in prefixs)
                             {
-                                if (_prefixDict.TryGetValue($"{item.Record.Database}!{item.Record.Type}!{p}", out var v))
+                                var key = $"{item.Record.Database}!{item.Record.Type}!{p}";
+                                if (_prefixDict.ContainsKey(key))
                                 {
-                                    v.Item1 += (long)item.Record.Bytes;
-                                    v.Item2 += 1;
+                                    var value = _prefixDict[key];
+                                    var i1 = value.Item1 + (long)item.Record.Bytes;
+                                    var i2 = value.Item2 + 1;
+                                    
+                                    _prefixDict[key] = (i1, i2);
                                 }
                                 else
                                 {
