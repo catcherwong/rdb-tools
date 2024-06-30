@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RDBCli
 {
@@ -190,6 +192,63 @@ namespace RDBCli
             }
 
             return key;
+        }
+
+        public static List<string> GetPrefixes(string s, char[] separators, int sepCount, bool keySuffixEnable)
+        {
+            var res = new List<string>();
+
+            var span = s.AsSpan();
+
+            if (!keySuffixEnable)
+            {
+                var sepIdx = span.IndexOfAny(separators);
+
+                if (sepIdx < 0) res.Add(s);
+
+                while (sepIdx > -1)
+                {
+                    var str = new string(span[..(sepIdx + 1)]);
+
+                    if (res.Any())
+                    {
+                        str = string.Concat(res[^1], str);
+                    }
+
+                    res.Add(str);
+
+                    span = span[(sepIdx + 1)..];
+                    sepIdx = span.IndexOfAny(separators);
+                }
+            }
+            else
+            {
+                var sepIdx = span.LastIndexOfAny(separators);
+
+                if (sepIdx < 0) res.Add(s);
+
+                while (sepIdx > -1)
+                {
+                    var str = new string(span[(sepIdx + 1)..]) + span[sepIdx];
+
+                    if (res.Any())
+                    {
+                        str = string.Concat(res[^1], str);
+                    }
+
+                    res.Add(str);
+
+                    span = span[..sepIdx];
+                    sepIdx = span.LastIndexOfAny(separators);
+                }
+            }
+
+            for (int i = 0; i < res.Count; i++)
+            {
+                res[i] = res[i].TrimEnd(separators);
+            }
+
+            return res.Distinct().Take(sepCount).ToList();
         }
     }
 }

@@ -174,7 +174,7 @@ namespace RDBCli
 
         private void CountByKeyPrefix(Record record)
         {
-            var prefixes = GetPrefixes(record.Key);
+            var prefixes = CommonHelper.GetPrefixes(record.Key, _separators, _sepCount, _keySuffixEnable);
 
             var tKey = new TypeKey { Type = record.Type };
 
@@ -202,63 +202,6 @@ namespace RDBCli
                     };
                 }
             }
-        }
-
-        private List<string> GetPrefixes(string s)
-        {
-            var res = new List<string>();
-
-            var span = s.AsSpan();
-
-            if (!_keySuffixEnable)
-            {
-                var sepIdx = span.IndexOfAny(_separators);
-
-                if (sepIdx < 0) res.Add(s);
-
-                while (sepIdx > -1)
-                {
-                    var str = new string(span[..(sepIdx + 1)]);
-
-                    if (res.Any())
-                    {
-                        str = string.Concat(res[^1], str);
-                    }
-
-                    res.Add(str);
-
-                    span = span[(sepIdx + 1)..];
-                    sepIdx = span.IndexOfAny(_separators);
-                }
-            }
-            else
-            {
-                var sepIdx = span.LastIndexOfAny(_separators);
-
-                if (sepIdx < 0) res.Add(s);
-
-                while (sepIdx > -1)
-                {
-                    var str = new string(span[(sepIdx + 1)..]) + span[sepIdx];
-
-                    if (res.Any())
-                    {
-                        str = string.Concat(res[^1], str);
-                    }
-
-                    res.Add(str);
-
-                    span = span[..sepIdx];
-                    sepIdx = span.LastIndexOfAny(_separators);
-                }
-            }
-
-            for (int i = 0; i < res.Count; i++)
-            {
-                res[i] = res[i].TrimEnd(_separators);
-            }
-
-            return res.Distinct().Take(_sepCount).ToList();
         }
 
         private void CountLargestEntries(Record record, int num)
