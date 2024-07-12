@@ -56,7 +56,11 @@ namespace RDBCli
         {
             var res = exp.ToString();
 
-            if (exp > 0)
+            if (exp >=  RDBParser.Constant.MaxExpireTimestamp)
+            {
+                res = ">7d";
+            }
+            else if (exp > 0)
             {
                 var sub = DateTimeOffset.FromUnixTimeMilliseconds(exp).Subtract(DateTimeOffset.UtcNow);
 
