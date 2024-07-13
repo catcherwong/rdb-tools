@@ -2,6 +2,9 @@
 {
     public static class Constant
     {
+        // 9999-12-31 23:59:59
+        public static long MaxExpireTimestamp = 253402300799999;
+
         public static class RdbVersion
         { 
             public const int Min = 1;

@@ -240,7 +240,7 @@ namespace RDBParser
 
             if (_filter.IsExpired.HasValue)
             {
-                if (_expiry == 0)
+                if (_expiry == 0 || _expiry >= Constant.MaxExpireTimestamp)
                 { 
                     return false;
                 }
