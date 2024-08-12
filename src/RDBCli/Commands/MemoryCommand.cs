@@ -109,10 +109,20 @@ namespace RDBCli.Commands
         {
             var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"res.{type}");
 
+            // the output contains file name with specific type
             if (!string.IsNullOrWhiteSpace(output))
             {
-                if (!Directory.Exists(output)) Directory.CreateDirectory(output);
-                path = Path.Combine(output, $"res.{type}");
+                if (output.EndsWith(type, StringComparison.OrdinalIgnoreCase))
+                {
+                    var dir = Path.GetDirectoryName(output);
+                    if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                    path = output;
+                }
+                else
+                {
+                    if (!Directory.Exists(output)) Directory.CreateDirectory(output);
+                    path = Path.Combine(output, $"res.{type}");
+                }
             }
 
             byte[] bytes = null;
