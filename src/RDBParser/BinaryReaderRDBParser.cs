@@ -160,7 +160,7 @@ namespace RDBParser
                         if (MatchFilter(database: (int)db))
                         {
                             _key = br.ReadStr();
-
+                            
                             if (MatchFilter(dataType: opType, key: _key))
                             {
                                 info.Idle = _idle;
@@ -172,14 +172,14 @@ namespace RDBParser
                             { 
                                 SkipObject(br, opType);
                             }
-                            
-                            _expiry = 0;
                         }
                         else
                         {
                             br.SkipStr();
                             SkipObject(br, opType);
                         }
+
+                        _expiry = 0;
                     }
                 }
             }
