@@ -172,5 +172,16 @@ namespace RDBCli.Commands
 
             return option;
         }
+
+        public static Option<string> CDNOption()
+        {
+            Option<string> option =
+                new Option<string>(
+                    aliases: new string[] { "--cdn" },
+                    getDefaultValue: () => "unpkg.com",
+                    description: "The cdn domain for html output");
+
+            return option;
+        }
     }
 }

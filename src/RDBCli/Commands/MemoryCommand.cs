@@ -24,6 +24,7 @@ namespace RDBCli.Commands
         private static Option<bool?> _isPermanentOption = CommonCLIOptions.IsPermanentOption();
         private static Option<bool?> _isIgnoreFieldOfLargestElemOption = CommonCLIOptions.IsIgnoreFieldOfLargestElemOption();
         private static Option<bool?> _keySuffixEnableOption = CommonCLIOptions.KeySuffixEnableOption();
+        private static Option<string> _cdnOption = CommonCLIOptions.CDNOption();
         private static Argument<string> _fileArg = CommonCLIArguments.FileArgument();
 
         public MemoryCommand()
@@ -41,6 +42,7 @@ namespace RDBCli.Commands
             this.AddOption(_isPermanentOption);
             this.AddOption(_isIgnoreFieldOfLargestElemOption);
             this.AddOption(_keySuffixEnableOption);
+            this.AddOption(_cdnOption);
             this.AddArgument(_fileArg);
 
             this.SetHandler((InvocationContext context) =>
@@ -98,14 +100,14 @@ namespace RDBCli.Commands
             dict.permCount = (int)(perm?.Num ?? 0);
             dict.permMem = (long)(perm?.Bytes ?? 0);
 
-            var path = WriteFile(dict, options.Output, options.OutputType);
+            var path = WriteFile(dict, options.Output, options.OutputType, options.CDN);
 
             sw.Stop();
             console.WriteLine($"total cost: {sw.ElapsedMilliseconds}ms");
             console.WriteLine($"result path: {path}\n");
         }
 
-        private string WriteFile(MemoryAnslysisResult dict, string output, string type)
+        private string WriteFile(MemoryAnslysisResult dict, string output, string type, string cdn)
         {
             var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"res.{type}");
 
@@ -137,6 +139,7 @@ namespace RDBCli.Commands
             {
                 var str = JsonSerializer.Serialize(dict, typeof(MemoryAnslysisResult), context);
                 var tpl = CommonHelper.TplHtmlString;
+                tpl = tpl.Replace("{{CDNDOMAIN}}", cdn);
                 tpl = tpl.Replace("{{CLIDATA}}", str);
 
                 bytes = System.Text.Encoding.UTF8.GetBytes(tpl);
@@ -182,6 +185,7 @@ namespace RDBCli.Commands
             public int SepPrefixCount { get; set; }
             public bool? IsIgnoreFole { get; set; }
             public bool? keySuffixEnable { get; set; }
+            public string CDN { get; set; }
 
 
             public static CommandOptions FromContext(InvocationContext context)
@@ -199,6 +203,7 @@ namespace RDBCli.Commands
                 var isPermanent = context.ParseResult.GetValueForOption<bool?>(_isPermanentOption);
                 var isIgnoreFole = context.ParseResult.GetValueForOption<bool?>(_isIgnoreFieldOfLargestElemOption);
                 var keySuffixEnable = context.ParseResult.GetValueForOption<bool?>(_keySuffixEnableOption);
+                var cdn = context.ParseResult.GetValueForOption<string>(_cdnOption);
 
                 var parseFilter = new RDBParser.ParserFilter()
                 {
@@ -220,6 +225,7 @@ namespace RDBCli.Commands
                     SepPrefixCount = sepPrefixCount,
                     IsIgnoreFole = isIgnoreFole,
                     keySuffixEnable = keySuffixEnable,
+                    CDN = cdn,
                 };
             }
         }
