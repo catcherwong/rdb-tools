@@ -6,13 +6,13 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>rdb-cli, offline key analysis</title>
-    <link rel="stylesheet" href="https://unpkg.com/bootstrap@5.1.3/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.19.1/dist/bootstrap-table.min.css">
+    <link rel="stylesheet" href="https://{{CDNDOMAIN}}/bootstrap@5.1.3/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://{{CDNDOMAIN}}/bootstrap-table@1.19.1/dist/bootstrap-table.min.css">
     <style> .bootstrap-table .fixed-table-pagination > .pagination-detail .page-list { display: none }</style>
-    <script src="https://unpkg.com/jquery@3.6.0/dist/jquery.min.js"></script>
-    <script src="https://unpkg.com/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
-    <script src="https://unpkg.com/chart.js@3.7.1/dist/chart.min.js"></script>
-    <script src="https://unpkg.com/bootstrap-table@1.19.1/dist/bootstrap-table.min.js"></script>
+    <script src="https://{{CDNDOMAIN}}/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://{{CDNDOMAIN}}/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+    <script src="https://{{CDNDOMAIN}}/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://{{CDNDOMAIN}}/bootstrap-table@1.19.1/dist/bootstrap-table.min.js"></script>
 </head>
 
 <body>
@@ -117,6 +117,11 @@
         </div>
         <br /><br />
         <div class="row">
+            <div class="col-md-6"><canvas id="databaseNum" width="400" height="400"></canvas></div>
+            <div class="col-md-6"><canvas id="databaseByte" width="400" height="400"></canvas></div>
+        </div>
+        <br /><br />
+        <div class="row">
             <div class="col-md-12">
                 <ul class="nav nav-tabs" role="tablist">
                     <li class="nav-item">
@@ -176,6 +181,8 @@
         buildExpiryByteChart();
         buildIdleOrFreqNumChart();
         buildIdleOrFreqByteChart();
+        buildDatabaseNumChart();
+        buildDatabaseByteChart();
 
         $('#topPrefixTable').bootstrapTable({
             data: cliData.largestKeyPrefix,
@@ -352,6 +359,32 @@
                 'Distribution of Key Expiration Time (Memory)',
                 formatBytes,
                 'expiryByte');
+        };
+
+        function buildDatabaseNumChart() {
+            const dbLabels = cliData.dbInfo.map(item => item.DB);
+            const dbData = cliData.dbInfo.map(item => item.Num);
+
+            buildBarChart(
+                dbLabels,
+                dbData,
+                'Total Keys',
+                'Distribution of Key Database (Quantity)',
+                formatNumber,
+                'databaseNum');
+        };
+
+        function buildDatabaseByteChart() {
+            const dbLabels = cliData.dbInfo.map(item => item.DB);
+            const dbData = cliData.dbInfo.map(item => item.Bytes);
+
+            buildBarChart(
+                dbLabels,
+                dbData,
+                'Memory Usage of Keys',
+                'Distribution of Key Database (Memory)',
+                formatBytes,
+                'databaseByte');
         };
 
         function buildIdleOrFreqNumChart() {

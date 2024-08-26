@@ -84,6 +84,7 @@ namespace RDBCli.Commands
             var expiryInfo = counter.GetExpiryInfo();
             var streamRecords = counter.GetStreamRecords();
             var idleOrFreqInfo = counter.GetIdleOrFreqInfo();
+            var dbInfo = counter.GetDatabaseInfo();
 
             var dict = MemoryAnslysisResult.BuildBasicFromRdbDataInfo(cb.GetRdbDataInfo());
             dict.typeRecords = typeRecords;
@@ -92,6 +93,7 @@ namespace RDBCli.Commands
             dict.expiryInfo = expiryInfo;
             dict.largestStreams = streamRecords;
             dict.idleOrFreqInfo = idleOrFreqInfo;
+            dict.dbInfo = dbInfo;
 
             var exp = expiryInfo.FirstOrDefault(x => x.Expiry.Equals(CommonHelper.AlreadyExpired));
             var perm = expiryInfo.FirstOrDefault(x => x.Expiry.Equals(CommonHelper.Permanent));
@@ -250,6 +252,7 @@ namespace RDBCli.Commands
         public List<IdleOrFreqRecord> idleOrFreqInfo { get; set; }
         public List<FunctionsRecord> functions { get; set; }
         public List<StreamsRecord> largestStreams { get; set; }
+        public List<DBRecord> dbInfo { get; set; }
 
         internal static MemoryAnslysisResult BuildBasicFromRdbDataInfo(RdbDataInfo rdbDataInfo)
         {
