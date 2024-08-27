@@ -85,6 +85,29 @@ namespace RDBCli
         }
     }
 
+    public class DBRecord
+    {
+        /// <summary>
+        /// The redis type, such as string hash..
+        /// </summary>
+        public string DB { get; set; }
+
+        /// <summary>
+        /// The redis type's total bytes
+        /// </summary>
+        public ulong Bytes { get; set; }
+
+        /// <summary>
+        /// The redis type's total count
+        /// </summary>
+        public ulong Num { get; set; }
+
+        public override string ToString()
+        {
+            return $"{DB}-{Bytes}-{Num}";
+        }
+    }
+
     public class ExpiryRecord
     {
         /// <summary>

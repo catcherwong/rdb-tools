@@ -18,6 +18,7 @@ namespace RDBCli
         private Dictionary<string, CommonStatValue> _typeDict;
         private Dictionary<string, CommonStatValue> _expiryDict;
         private Dictionary<string, CommonStatValue> _idleOrFreqDict;
+        private Dictionary<string, CommonStatValue> _dbDict;
 
         private readonly MemoryCallback _cb;
         private readonly BlockingCollection<AnalysisRecord> _records;
@@ -35,6 +36,7 @@ namespace RDBCli
             this._typeDict = new Dictionary<string, CommonStatValue>();
             this._expiryDict = new Dictionary<string, CommonStatValue>();
             this._idleOrFreqDict = new Dictionary<string, CommonStatValue>();
+            this._dbDict = new Dictionary<string, CommonStatValue>();
 
             if (!string.IsNullOrWhiteSpace(separators))
             {
@@ -61,6 +63,7 @@ namespace RDBCli
                             this.CounteByIdleOrFreq(item.Record);
                             this.CountByKeyPrefix(item.Record);
                             this.CountExpiry(item.Record);
+                            this.CountDb(item.Record);
                             this.CountStreams(item.StreamsRecord, 500);
                         }
                         else
@@ -99,6 +102,15 @@ namespace RDBCli
                 .ToList();
         }
 
+        public List<DBRecord> GetDatabaseInfo(int num = 10)
+        {
+            return _dbDict
+               .Select(x => new DBRecord { DB = x.Key, Num = x.Value.Num, Bytes = x.Value.Bytes })
+               .OrderByDescending(x => x.Bytes)
+               .Take(num)
+               .ToList();
+        }
+
         public List<TypeRecord> GetTypeRecords()
         {
             return _typeDict
@@ -129,6 +141,12 @@ namespace RDBCli
                 .Select(x => x.Element)
                 .Take(num)
                 .ToList();
+        }
+
+        private void CountDb(Record record)
+        {
+            var key = $"db{record.Database}";
+            InitOrAddStat(this._dbDict, key, record.Bytes);
         }
 
         private void CountExpiry(Record item)
