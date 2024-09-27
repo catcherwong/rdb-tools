@@ -10,10 +10,9 @@
             public const int Min = 1;
 
             // Redis 6.2.14   9
-            // Redis 7.0-rc1  10
-            // Redis 7.0.15   10
-            // Redis 7.2-rc1  11
-            // Redis 7.2.4    11
+            // Redis 7.0-rc1~~7.0.15  10
+            // Redis 7.2-rc1~~7.4.0  11
+            // Valkey 7.2.4-rc1~~8.0.0  11
             public const int Max = 11;
         }
 

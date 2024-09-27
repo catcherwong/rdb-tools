@@ -49,10 +49,16 @@ namespace RDBCli.Callbacks
             else if (keyStr.Equals("redis-bits"))
             {
                 _rdbDataInfo.RedisBits = RedisRdbObjectHelper.ConvertBytesToInteger(value);
+                _rdbDataInfo.RedisType = "Redis";
             }
             else if (keyStr.Equals("ctime"))
             {
                 _rdbDataInfo.CTime = RedisRdbObjectHelper.ConvertBytesToInteger(value);
+            }
+            else if (keyStr.Equals("valkey-ver"))
+            {
+                _rdbDataInfo.RedisVer = System.Text.Encoding.UTF8.GetString(value);
+                _rdbDataInfo.RedisType = "Valkey";
             }
         }
 
