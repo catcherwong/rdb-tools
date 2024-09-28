@@ -51,5 +51,10 @@ namespace RDBCli
         /// The information about the functions and libraries
         /// </summary>
         public List<FunctionsRecord> Functions { get; set; } = new List<FunctionsRecord>();
+
+        /// <summary>
+        /// The information about the redis type, Redis or Valkey
+        /// </summary>
+        public string RedisType { get; set; } = "Redis";
     }
 }

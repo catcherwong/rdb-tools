@@ -37,7 +37,7 @@
                             RDB Version: <b id="rdbVer"></b>
                         </div>
                         <div class="lead display-7">
-                            Redis Version: <b id="redisVer"></b>
+                            <label id="redisType">Redis</label> Version: <b id="redisVer"></b>
                         </div>
                     </div>
                 </div>
@@ -168,6 +168,7 @@
 
         $('#rdbVer').text(cliData.rdbVer);
         $('#redisVer').text(cliData.redisVer);
+        $('#redisType').text(cliData.redisType);
         $('#totalKeyBytes').text(formatBytes(cliData.usedMem));
         $('#totalKeyNum').text(formatNumber(cliData.count));
         $('#expKeyNum').text(formatNumber(cliData.expCount));
