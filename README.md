@@ -1,6 +1,6 @@
 # rdb-tools
 
-`rdb-tools` is a tool to parse/analysis redis rdb files that is implemented by csharp.
+`rdb-tools` is a tool to parse/analysis [Redis](https://redis.io/)/[Valkey](https://valkey.io/) rdb files that is implemented by csharp.
 
 This repository is inspired by [redis-rdb-tools](https://github.com/sripathikrishnan/redis-rdb-tools) and [rdr](https://github.com/xueqiu/rdr).
 
@@ -23,7 +23,7 @@ Show help information:
 ```
 [~] ./rdb-cli -h      
 Description:
-  rdb-cli is a command line tool, analysis redis rdb files.
+  rdb-cli is a command line tool, analysis redis/valkey rdb files.
 
 Usage:
   rdb-cli [command] [options]
@@ -35,6 +35,8 @@ Options:
 Commands:
   keys <file>    Get all keys from rdb files
   memory <file>  Get memory info from rdb files
+  test <file>    Try to parser rdb files without operation
+  csv <file>     Convert rdb file to csv.
 ```
 
 The usage of `memory` is as follow:
@@ -52,11 +54,18 @@ Arguments:
 
 Options:
   -o, --output <output>                                  The output path of parsing result.
-  -ot, --output-type <html|json>                         The output type of parsing result. [default: json]
+  -ot, --output-type <csv|html|json>                     The output type of parsing result. [default: json]
   -tp, --top-prefixes <top-prefixes>                     The number of top key prefixes. [default: 50]
   -tb, --top-bigkeys <top-bigkeys>                       The number of top big keys. [default: 50]
   --db <db>                                              The filter of redis databases.
   --type <hash|list|module|set|sortedset|stream|string>  The filter of redis types.
+  --key-prefix <key-prefix>                              The filter of redis key prefix.
+  --separators <separators>                              The separators of redis key prefix.
+  --sep-count <sep-count>                                The count of separating a key to prefix.
+  --permanent                                            Whether the key is permanent.
+  --ignore-fole                                          Whether ignore the field of largest elem.
+  --key-suffix-enable                                    Use the key suffix as the key prefix.
+  --cdn <cdn>                                            The cdn domain for html output [default: unpkg.com]
   -?, -h, --help                                         Show help and usage information
 ```
 
@@ -84,7 +93,8 @@ Sample json result is as follow:
     "count": 7615333,
     "rdbVer": 9,
     "redisVer": "5.2.0",
-    "redisBits": 0,
+    "redisType": "Redis",
+    "redisBits": 13366,
     "typeRecords": [
         {
             "Type": "sortedset",
@@ -102,7 +112,18 @@ Sample json result is as follow:
             "Expiry": 0,
             "NumOfElem": 8318,
             "LenOfLargestElem": 0,
-            "FieldOfLargestElem": null
+            "FieldOfLargestElem": null,
+            "Idle": 0,
+            "Freq": 0
+        }
+     ],
+     "largestKeyPrefix": [
+        {
+            "Type": "string",
+            "Prefix": "key4",
+            "Bytes": 116,
+            "Num": 1,
+            "Elements": 2
         }
     ],
     "expiryInfo": [
@@ -112,7 +133,14 @@ Sample json result is as follow:
             "Num": 4345021
         }
     ],
-     "functions": [
+    "idleOrFreqInfo": [
+        {
+            "Category": "0~50",
+            "Bytes":1,
+            "Num":1
+        }
+    ],
+    "functions": [
         {
             "Engine": "lua",
             "LibraryName": "mylib"
@@ -127,6 +155,13 @@ Sample json result is as follow:
             "MaxDeletedEntryId": "0-0",
             "EntriesAdded": 5,
             "CGroups": 0
+        }
+    ],
+    "dbInfo": [
+        {
+            "DB": "db0",
+            "Bytes": 116,
+            "Num": 1
         }
     ]
 }
