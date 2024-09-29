@@ -246,7 +246,6 @@ namespace RDBParser
             var bytes = lpGetTotalBytes(rd);
             // <size>
             var numEle = lpGetNumElements(rd);
-            if (numEle % 2 != 0) throw new RDBParserException($"Expected even number of elements, but found {numEle} for key {_key}");
 
             var numEntries = (ushort)numEle;
 
