@@ -91,6 +91,12 @@
             public const int ZSET_LISTPACK = 17;
             public const int LIST_QUICKLIST_2 = 18;
             public const int STREAM_LISTPACKS_2 = 19;
+            public const int SET_LISTPACK = 20;
+            public const int STREAM_LISTPACKS_3 = 21;
+            public const int HASH_METADATA_PRE_GA = 22;
+            public const int HASH_LISTPACK_EX_PRE_GA = 23;
+            public const int HASH_METADATA = 24;
+            public const int HASH_LISTPACK_EX = 25;
 
             public static readonly System.Collections.Generic.Dictionary<int, string> MAPPING = new System.Collections.Generic.Dictionary<int, string>
             {
@@ -113,6 +119,12 @@
                 { 17, "sortedset" },
                 { 18, "list" },
                 { 19, "stream" },
+                { 20, "set" },
+                { 21, "stream" },
+                { 22, "hash" },
+                { 23, "hash" },
+                { 24, "hash" },
+                { 25, "hash" },
             };
         }
 

@@ -104,6 +104,26 @@ namespace RDBParserTests
             {
                 Assert.Contains(Encoding.UTF8.GetBytes(item), sets[0][Encoding.UTF8.GetBytes("regular_set")]);
             }
-        }        
+        }
+
+        [Fact]
+        public void TestListPackSet_72()
+        {
+            var path = TestHelper.GetRDBPath("redis_72_set_listpack.rdb");
+
+            var callback = new TestReaderCallback(_output);
+            var parser = new BinaryReaderRDBParser(callback);
+            parser.Parse(path);
+
+            var sets = callback.GetSets();
+            var lengths = callback.GetLengths();
+
+            Assert.Equal(2, lengths[0][Encoding.UTF8.GetBytes("testrdb")]);
+
+            foreach (var item in new List<string> { "v1", "v2" })
+            {
+                Assert.Contains(Encoding.UTF8.GetBytes(item), sets[0][Encoding.UTF8.GetBytes("testrdb")]);
+            }
+        }
     }
 }

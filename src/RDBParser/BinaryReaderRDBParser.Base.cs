@@ -108,7 +108,8 @@ namespace RDBParser
                 ReadModule(br);
             }
             else if (encType == Constant.DataType.STREAM_LISTPACKS
-                || encType == Constant.DataType.STREAM_LISTPACKS_2)
+                || encType == Constant.DataType.STREAM_LISTPACKS_2
+                || encType == Constant.DataType.STREAM_LISTPACKS_3)
             {
                 ReadStream(br, encType);
             }
@@ -119,6 +120,10 @@ namespace RDBParser
             else if (encType == Constant.DataType.ZSET_LISTPACK)
             {
                 ReadZSetFromListPack(br);
+            }
+            else if (encType == Constant.DataType.SET_LISTPACK)
+            {
+                ReadSetFromListPack(br);
             }
             else
             {
@@ -204,6 +209,10 @@ namespace RDBParser
                 skip = 1;
             }
             else if (encType == Constant.DataType.ZSET_LISTPACK)
+            {
+                skip = 1;
+            }
+            else if (encType == Constant.DataType.SET_LISTPACK)
             {
                 skip = 1;
             }

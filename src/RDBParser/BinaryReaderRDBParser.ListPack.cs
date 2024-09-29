@@ -235,6 +235,41 @@ namespace RDBParser
             _callback.EndSortedSet(_key);
         }
 
+        private void ReadSetFromListPack(BinaryReader br)
+        {
+            // <total_bytes><size><entry><entry>..<entry><end>
+            var rawString = br.ReadStr();
+            using MemoryStream stream = new MemoryStream(rawString);
+            using var rd = new BinaryReader(stream);
+
+            // <total_bytes>
+            var bytes = lpGetTotalBytes(rd);
+            // <size>
+            var numEle = lpGetNumElements(rd);
+            if (numEle % 2 != 0) throw new RDBParserException($"Expected even number of elements, but found {numEle} for key {_key}");
+
+            var numEntries = (ushort)numEle;
+
+            Info info = new Info();
+            info.Idle = _idle;
+            info.Freq = _freq;
+            info.Encoding = Constant.ObjEncoding.LISTPACK;
+            info.SizeOfValue = rawString.Length;
+            _callback.StartSet(_key, numEntries, _expiry, info);
+
+            for (int i = 0; i < numEntries; i++)
+            {
+                var entry = ReadListPackEntry(rd);
+
+                _callback.SAdd(_key, entry.data);
+            }
+
+            var lpEnd = rd.ReadByte();
+            if (lpEnd != 0xFF) throw new RDBParserException($"Invalid list pack end - {lpEnd} for key {_key}");
+
+            _callback.EndSet(_key);
+        }
+
         private uint lpGetTotalBytes(BinaryReader br)
         {
             return (uint)br.ReadByte() << 0 |
