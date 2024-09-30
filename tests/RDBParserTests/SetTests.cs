@@ -118,9 +118,9 @@ namespace RDBParserTests
             var sets = callback.GetSets();
             var lengths = callback.GetLengths();
 
-            Assert.Equal(2, lengths[0][Encoding.UTF8.GetBytes("testrdb")]);
+            Assert.Equal(7, lengths[0][Encoding.UTF8.GetBytes("testrdb")]);
 
-            foreach (var item in new List<string> { "v1", "v2" })
+            foreach (var item in new List<string> { "v1", "v2", "100", "-1000", 0x7ffe.ToString(), 0x7ffefffe.ToString(), 0x7ffefffefffefffe .ToString()})
             {
                 Assert.Contains(Encoding.UTF8.GetBytes(item), sets[0][Encoding.UTF8.GetBytes("testrdb")]);
             }
