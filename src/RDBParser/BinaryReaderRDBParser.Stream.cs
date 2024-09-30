@@ -37,7 +37,7 @@ namespace RDBParser
             var firstEntryId = "0-0";
             var maxDeletedEntryId = "0-0";
             ulong entriesAdded = items;
-            if (encType == Constant.DataType.STREAM_LISTPACKS_2)
+            if (encType >= Constant.DataType.STREAM_LISTPACKS_2)
             {
                 // the first entry ID
                 var firstMs = br.ReadLength();
@@ -53,18 +53,21 @@ namespace RDBParser
                 entriesAdded = br.ReadLength();
             }
 
+            // Consumer groups loading
             var cgroups = br.ReadLength();
             var cgroupsData = new List<StreamCGEntity>();
             while (cgroups > 0)
             {
                 var cgName = br.ReadStr();
+                // ms
                 var l = br.ReadLength();
+                // seq
                 var r = br.ReadLength();
                 var lastCgEntryId = $"{l}-{r}";
 
                 // group offset
                 ulong cgOffset = 0;
-                if (encType == Constant.DataType.STREAM_LISTPACKS_2)
+                if (encType >= Constant.DataType.STREAM_LISTPACKS_2)
                 {
                     cgOffset = br.ReadLength();
                 }
@@ -96,6 +99,12 @@ namespace RDBParser
                     var cname = br.ReadStr();
                     var seenTime = br.ReadUInt64();
 
+                    var activeTime = seenTime;
+                    if (encType >= Constant.DataType.STREAM_LISTPACKS_3)
+                    {
+                        activeTime = br.ReadUInt64();
+                    }
+
                     // the PEL about entries owned by this specific consumer
                     pelSize = br.ReadLength();
                     var consumerPendingEntries = new List<StreamConsumerPendingEntity>();
@@ -115,6 +124,7 @@ namespace RDBParser
                     {
                         Name = cname,
                         SeenTime = seenTime,
+                        ActiveTime = activeTime,
                         Pending = consumerPendingEntries
                     });
 
@@ -162,7 +172,7 @@ namespace RDBParser
             _ = br.ReadLength();
             _ = br.ReadLength();
 
-            if (encType == Constant.DataType.STREAM_LISTPACKS_2)
+            if (encType >= Constant.DataType.STREAM_LISTPACKS_2)
             {
                 // the first entry ID
                 _ = br.ReadLength();
@@ -183,7 +193,7 @@ namespace RDBParser
                 _ = br.ReadLength();
                 _ = br.ReadLength();
 
-                if (encType == Constant.DataType.STREAM_LISTPACKS_2)
+                if (encType >= Constant.DataType.STREAM_LISTPACKS_2)
                 {
                     _ = br.ReadLength();
                 }
@@ -202,6 +212,10 @@ namespace RDBParser
                 {
                     br.SkipStr();
                     br.ReadBytes(8);
+                    if (encType >= Constant.DataType.STREAM_LISTPACKS_3)
+                    {
+                        br.ReadBytes(8);
+                    }
                     pending = br.ReadLength();
                     br.ReadBytes((int)(pending * 16));
 
