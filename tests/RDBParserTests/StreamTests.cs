@@ -153,5 +153,76 @@ namespace RDBParserTests
             var streamId = RedisRdbObjectHelper.GetStreamId(pending.Id);
             Assert.Equal("1526919030474-56", streamId);
         }
+
+        [Fact]
+        public void TestStreamsWithRedis72AndGroup()
+        {
+            // xadd mystream 1526919030474-55 message 1
+            // xadd mystream 1526919030474-56 message 2
+            // xadd mystream 1526919030474-57 message 3
+            // XGROUP create mystream sg 0-0
+            // XREADGROUP group sg c1 count 1 streams mystream >
+            // XACK mystream sg "1526919030474-55"
+            // XREADGROUP group sg c1 count 1 streams mystream >
+            // bgsave
+            var path = TestHelper.GetRDBPath("redis_72_stream.rdb");
+
+            var callback = new TestReaderCallback(_output);
+            var parser = new BinaryReaderRDBParser(callback);
+            parser.Parse(path);
+
+            var lengths = callback.GetLengths();
+            var streamEntities = callback.GetStreamEntities();
+
+            Assert.Equal(3, lengths[0][Encoding.UTF8.GetBytes("mystream")]);
+
+            var streamEntity = streamEntities[0][Encoding.UTF8.GetBytes("mystream")];
+            Assert.Single(streamEntity);
+
+            var se = streamEntity.Single();
+
+            Assert.Equal("1526919030474-55", se.FirstId);
+            Assert.Equal("1526919030474-57", se.LastId);
+
+            var sgList = se.CGroups;
+            Assert.Single(sgList);
+
+            var sg = sgList.Single();
+            Assert.Equal(Encoding.UTF8.GetBytes("sg"), sg.Name);
+            Assert.Equal("1526919030474-56", sg.LastEntryId);
+            Assert.Single(sg.Consumers);
+            Assert.Single(sg.Pending);
+            Assert.Equal((ulong)2, sg.EntriesRead);
+
+            var consumer = sg.Consumers.Single();
+            Assert.Equal(Encoding.UTF8.GetBytes("c1"), consumer.Name);
+            Assert.Single(consumer.Pending);
+
+            var pending = sg.Pending.Single();
+            var streamId = RedisRdbObjectHelper.GetStreamId(pending.Id);
+            Assert.Equal("1526919030474-56", streamId);
+        }
+
+        [Fact]
+        public void SkipTestStreamsWithRedis72AndGroup()
+        {
+            // xadd mystream 1526919030474-55 message 1
+            // xadd mystream 1526919030474-56 message 2
+            // xadd mystream 1526919030474-57 message 3
+            // XGROUP create mystream sg 0-0
+            // XREADGROUP group sg c1 count 1 streams mystream >
+            // XACK mystream sg "1526919030474-55"
+            // XREADGROUP group sg c1 count 1 streams mystream >
+            // bgsave
+            var path = TestHelper.GetRDBPath("redis_72_stream_for_skip.rdb");
+
+            var callback = new TestReaderCallback(_output);
+            var parser = new BinaryReaderRDBParser(callback, new ParserFilter { Types = new System.Collections.Generic.List<string> { "string"} });
+            parser.Parse(path);
+
+            var lengths = callback.GetLengths();
+
+            Assert.Empty(lengths[0]);
+        }
     }
 }

@@ -11,9 +11,13 @@ namespace RDBParser
         /// </summary>
         public byte[] Name { get; set; }
         /// <summary>
-        /// Last time this consumer was active.
+        /// Last time this consumer tried to perform an action (attempted reading/claiming).
         /// </summary>
         public ulong SeenTime { get; set; }
+        /// <summary>
+        /// Last time this consumer was active (successful reading/claiming).
+        /// </summary>
+        public ulong ActiveTime { get; set; }
         /// <summary>
         /// Consumer specific pending entries list
         /// </summary>

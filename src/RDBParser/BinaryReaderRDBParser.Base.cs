@@ -200,7 +200,8 @@ namespace RDBParser
                 SkipModule(br);
             }
             else if (encType == Constant.DataType.STREAM_LISTPACKS
-                || encType == Constant.DataType.STREAM_LISTPACKS_2)
+                || encType == Constant.DataType.STREAM_LISTPACKS_2
+                || encType == Constant.DataType.STREAM_LISTPACKS_3)
             {
                 SkipStream(br, encType);
             }
