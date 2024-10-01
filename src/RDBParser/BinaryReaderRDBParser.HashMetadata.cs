@@ -21,7 +21,7 @@ namespace RDBParser
             Info info = new Info();
             info.Idle = _idle;
             info.Freq = _freq;
-            info.Encoding = "";
+            info.Encoding = Constant.ObjEncoding.HT;
             info.SizeOfValue = (int)len;
             _callback.StartHash(_key, (int)len, _expiry, info);
             
