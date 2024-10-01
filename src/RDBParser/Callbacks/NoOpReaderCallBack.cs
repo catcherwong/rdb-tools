@@ -52,7 +52,7 @@ namespace RDBParser
         {
         }
 
-        public void HSet(byte[] key, byte[] field, byte[] value)
+        public void HSet(byte[] key, byte[] field, byte[] value, long expiry = 0)
         {
         }
 

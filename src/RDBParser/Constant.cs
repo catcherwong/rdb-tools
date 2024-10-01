@@ -11,9 +11,10 @@
 
             // Redis 6.2.14   9
             // Redis 7.0-rc1~~7.0.15  10
-            // Redis 7.2-rc1~~7.4.0  11
+            // Redis 7.2-rc1~~7.2.5  11
             // Valkey 7.2.4-rc1~~8.0.0  11
-            public const int Max = 11;
+            // Redis 7.4-rc1~~7.4.0  12
+            public const int Max = 12;
         }
 
         public static class MagicCount
@@ -154,6 +155,7 @@
             public const string SKIPLIST = "skiplist";
             public const string QUICKLIST = "quicklist";
             public const string LISTPACK = "listpack";
+            public const string LISTPACK_EX = "listpack_ex";
             public const string LINKEDLIST = "linkedlist";
         }
     }

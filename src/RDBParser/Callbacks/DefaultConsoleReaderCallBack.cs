@@ -66,9 +66,9 @@ namespace RDBParser
             Console.WriteLine($"HandleModuleData, Key={GetString(key)}, opCode={opCode}, data={GetString(data)}");
         }
 
-        public void HSet(byte[] key, byte[] field, byte[] value)
+        public void HSet(byte[] key, byte[] field, byte[] value, long expiry = 0)
         {
-            Console.WriteLine($"HSet, Key={GetString(key)}, Field={GetString(field)}, Value={GetString(value)}");
+            Console.WriteLine($"HSet, Key={GetString(key)}, Field={GetString(field)}, Value={GetString(value)}, expire={expiry}");
         }
 
         public void RPush(byte[] key, byte[] value)

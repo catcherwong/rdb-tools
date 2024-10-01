@@ -113,9 +113,11 @@ namespace RDBParser
             {
                 ReadStream(br, encType);
             }
-            else if (encType == Constant.DataType.HASH_LISTPACK)
+            else if (encType == Constant.DataType.HASH_LISTPACK
+                || encType == Constant.DataType.HASH_LISTPACK_EX
+                || encType == Constant.DataType.HASH_LISTPACK_EX_PRE_GA)
             {
-                ReadHashFromListPack(br);
+                ReadHashFromListPack(br, encType);
             }
             else if (encType == Constant.DataType.ZSET_LISTPACK)
             {
@@ -124,6 +126,12 @@ namespace RDBParser
             else if (encType == Constant.DataType.SET_LISTPACK)
             {
                 ReadSetFromListPack(br);
+            }
+            else if(encType == Constant.DataType.HASH_METADATA_PRE_GA
+                || encType == Constant.DataType.HASH_METADATA)
+            {
+                // TODO: read hash metadata
+                throw new RDBParserException($"Invalid object type {encType} for {key} ");
             }
             else
             {
@@ -205,8 +213,15 @@ namespace RDBParser
             {
                 SkipStream(br, encType);
             }
-            else if (encType == Constant.DataType.HASH_LISTPACK)
+            else if (encType == Constant.DataType.HASH_LISTPACK
+                || encType == Constant.DataType.HASH_LISTPACK_EX
+                || encType == Constant.DataType.HASH_LISTPACK_EX_PRE_GA)
             {
+                if (encType == Constant.DataType.HASH_LISTPACK_EX)
+                {
+                    _ = br.ReadUInt64();
+                }
+               
                 skip = 1;
             }
             else if (encType == Constant.DataType.ZSET_LISTPACK)
@@ -216,6 +231,11 @@ namespace RDBParser
             else if (encType == Constant.DataType.SET_LISTPACK)
             {
                 skip = 1;
+            }
+            else if (encType == Constant.DataType.HASH_METADATA_PRE_GA
+               || encType == Constant.DataType.HASH_METADATA)
+            {
+                throw new RDBParserException($"Invalid object type {encType} for {_key} ");
             }
             else
             {
