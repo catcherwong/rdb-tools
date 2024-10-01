@@ -168,7 +168,36 @@ namespace RDBParserTests
         {
             // hset mykey f1 v1 f2 v2
             // hexpire mykey 3000 FIELDS 1 f1
-            var path = TestHelper.GetRDBPath("redis74_hash_ttl.rdb");
+            var path = TestHelper.GetRDBPath("redis74_hash_ttl_listpack_ex.rdb");
+
+            var callback = new TestReaderCallback(_output);
+            var parser = new BinaryReaderRDBParser(callback);
+            parser.Parse(path);
+
+            var lengths = callback.GetLengths();
+            var hashs = callback.GetHashs();
+            var expires = callback.GetExpiries();
+
+            Assert.Equal(2, lengths[0][Encoding.UTF8.GetBytes("mykey")]);
+            var key = Encoding.UTF8.GetBytes("mykey");
+
+            Assert.Equal(Encoding.UTF8.GetBytes("v1"), hashs[0][key][Encoding.UTF8.GetBytes("f1")]);
+            Assert.Equal(Encoding.UTF8.GetBytes("v2"), hashs[0][key][Encoding.UTF8.GetBytes("f2")]);
+
+            var expiryKey = new byte[key.Length + Encoding.UTF8.GetBytes("f1").Length];
+            key.CopyTo(expiryKey, 0);
+            Encoding.UTF8.GetBytes("f1").CopyTo(expiryKey, key.Length);
+            var f1Exp = expires[0][expiryKey];
+            Assert.True(f1Exp > 0);
+        }
+
+        [Fact]
+        public void TestHashWithRedis74HashMetadata()
+        {
+            // config set hash-max-listpack-entries 0
+            // hset mykey f1 v1 f2 v2
+            // hexpire mykey 3000 FIELDS 1 f1
+            var path = TestHelper.GetRDBPath("redis74_hash_ttl_hash_metadata.rdb");
 
             var callback = new TestReaderCallback(_output);
             var parser = new BinaryReaderRDBParser(callback);

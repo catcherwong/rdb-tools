@@ -130,8 +130,7 @@ namespace RDBParser
             else if(encType == Constant.DataType.HASH_METADATA_PRE_GA
                 || encType == Constant.DataType.HASH_METADATA)
             {
-                // TODO: read hash metadata
-                throw new RDBParserException($"Invalid object type {encType} for {key} ");
+                ReadHashMetadata(br, encType);
             }
             else
             {
@@ -235,7 +234,7 @@ namespace RDBParser
             else if (encType == Constant.DataType.HASH_METADATA_PRE_GA
                || encType == Constant.DataType.HASH_METADATA)
             {
-                throw new RDBParserException($"Invalid object type {encType} for {_key} ");
+                SkipHashMetadata(br, encType);
             }
             else
             {
