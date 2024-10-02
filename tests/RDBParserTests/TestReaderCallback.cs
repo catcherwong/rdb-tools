@@ -143,7 +143,7 @@ namespace RDBParserTests
             //throw new System.NotImplementedException();
         }
 
-        public void HSet(byte[] key, byte[] field, byte[] value)
+        public void HSet(byte[] key, byte[] field, byte[] value, long expiry = 0)
         {
             if (!_hashs[_database].ContainsKey(key))
                 throw new System.Exception("0");
@@ -151,7 +151,16 @@ namespace RDBParserTests
             _output.WriteLine(Encoding.UTF8.GetString(key));
             _output.WriteLine(Encoding.UTF8.GetString(field));
             _output.WriteLine(Encoding.UTF8.GetString(value));
+            _output.WriteLine(expiry.ToString());
             _hashs[_database][key][field] = value;
+
+            if(expiry > 0)
+            {
+                var expiryKey = new byte[key.Length + field.Length];
+                key.CopyTo(expiryKey, 0);
+                field.CopyTo(expiryKey, key.Length);
+                _expiries[_database][expiryKey] = expiry;
+            }
         }
 
         public void RPush(byte[] key, byte[] value)

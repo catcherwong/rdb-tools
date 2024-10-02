@@ -151,8 +151,14 @@ namespace RDBParser
             }
         }
 
-        private void ReadHashFromListPack(BinaryReader br)
+        private void ReadHashFromListPack(BinaryReader br, int encType)
         {
+            // If Hash TTLs, Load next/min expiration time before the `encoded`
+            if (encType == Constant.DataType.HASH_LISTPACK_EX)
+            {
+                _ = br.ReadUInt64();
+            }
+
             // https://github.com/redis/redis/blob/7.0.8/src/rdb.c#L1703
             // https://github.com/redis/redis/blob/7.0.8/src/listpack.c#L1282
             // <total_bytes><size><entry><entry>..<entry><end>
@@ -164,24 +170,38 @@ namespace RDBParser
             var bytes = lpGetTotalBytes(rd);
             // <size>
             var numEle = lpGetNumElements(rd);
-            if (numEle % 2 != 0) throw new RDBParserException($"Expected even number of elements, but found {numEle} for key {_key}");
 
-            var numEntries = (ushort)(numEle / 2);
+            var isListpackEx = encType == Constant.DataType.HASH_LISTPACK_EX || encType == Constant.DataType.HASH_LISTPACK_EX_PRE_GA;
+            var tupleLen = isListpackEx ? 3 : 2;
+
+            if (numEle % tupleLen != 0) throw new RDBParserException($"Unexpected number of elements, isListpackEx = {isListpackEx}, found {numEle} for key {_key}");
+            var numEntries = (ushort)(numEle / tupleLen);
+            
 
             Info info = new Info();
             info.Idle = _idle;
             info.Freq = _freq;
-            info.Encoding = Constant.ObjEncoding.LISTPACK;
+            info.Encoding = isListpackEx ? Constant.ObjEncoding.LISTPACK_EX : Constant.ObjEncoding.LISTPACK;
             info.SizeOfValue = rawString.Length;
             _callback.StartHash(_key, numEntries, _expiry, info);
-            
+
             // <entry>
+            // simple hash field-value pair
+            // hash with TTL field-value-ttl pair
             for (int i = 0; i < numEntries; i++)
             {
                 // <encode><val><backlen>
                 var field = ReadListPackEntry(rd);
                 var value = ReadListPackEntry(rd);
-                _callback.HSet(_key, field.data, value.data);
+
+                long ttl = 0;
+                if(isListpackEx)
+                {
+                    var tmp = ReadListPackEntry(rd);
+                    ttl = long.Parse(Encoding.UTF8.GetString(tmp.data));
+                }
+
+                _callback.HSet(_key, field.data, value.data, ttl);
             }
 
             var lpEnd = rd.ReadByte();

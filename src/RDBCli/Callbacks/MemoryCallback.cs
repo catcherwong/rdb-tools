@@ -165,7 +165,7 @@ namespace RDBCli.Callbacks
         {
         }
 
-        public void HSet(byte[] key, byte[] field, byte[] value)
+        public void HSet(byte[] key, byte[] field, byte[] value, long expiry = 0)
         {
             var lenOfElem = ElementLength(field) + ElementLength(value);
             if (lenOfElem > _currentRecord.LenOfLargestElem)

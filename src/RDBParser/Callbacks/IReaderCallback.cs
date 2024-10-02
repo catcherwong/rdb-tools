@@ -87,7 +87,8 @@ namespace RDBParser
         /// <param name="key">the redis key for this hash</param>
         /// <param name="field">a string</param>
         /// <param name="value">the value to store for this field</param>
-        void HSet(byte[] key, byte[] field, byte[] value);
+        /// <param name="expiry">a `datetime` object. 0 means the object does not expire, work for >7.4</param>
+        void HSet(byte[] key, byte[] field, byte[] value, long expiry = 0);
 
         /// <summary>
         /// Called when there are no more elements in the hash
