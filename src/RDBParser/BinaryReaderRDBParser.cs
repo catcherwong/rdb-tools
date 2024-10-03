@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace RDBParser
@@ -14,6 +16,8 @@ namespace RDBParser
         private ulong _idle = 0;
         private int _freq = 0;
         private int _mem_policy = -1; // 1 - lru | 2 - lfu
+        private int _version = -1;
+        private HashSet<string> _auxKey = new HashSet<string>();
 
         public BinaryReaderRDBParser(IReaderCallback callback, ParserFilter filter = null)
         {
@@ -32,6 +36,7 @@ namespace RDBParser
 
                     var versionBytes = br.ReadBytes(Constant.MagicCount.VERSION);
                     var version = BinaryReaderBasicVerify.CheckAndGetRDBVersion(versionBytes);
+                    _version = version;
                     _callback.StartRDB(version);
 
                     ulong db = 0;
@@ -99,6 +104,10 @@ namespace RDBParser
                             var auxKey = br.ReadStr();
                             var auxVal = br.ReadStr();
                             _callback.AuxField(auxKey, auxVal);
+
+                            var k = Encoding.UTF8.GetString(auxKey);
+                            _auxKey.Add(k);
+
                             continue;
                         }
 
@@ -187,6 +196,9 @@ namespace RDBParser
 
         public Task ParseAsync(string path)
             => Task.Run(() => Parse(path));
+
+        public bool IsValkey()
+            => _auxKey.Contains("valkey-ver");
 
         private bool MatchFilter(int database = -1, int dataType = -1, byte[] key = null)
         {
