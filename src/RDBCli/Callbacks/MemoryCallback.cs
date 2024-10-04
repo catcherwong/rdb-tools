@@ -483,5 +483,9 @@ namespace RDBCli.Callbacks
         {
             _idleOrFreq = val;
         }
+
+        public void SetSlotInfo(ulong slotId, ulong slotSize, ulong expireSlotSize)
+        {
+        }
     }
 }

@@ -88,6 +88,15 @@ namespace RDBParser
                             }
                         }
 
+                        if (opType == Constant.OpCode.SLOTINFO)
+                        {
+                            var slotId = br.ReadLength();
+                            var slotSize = br.ReadLength();
+                            var expireSlotSize = br.ReadLength();
+                            _callback.SetSlotInfo(slotId, slotSize, expireSlotSize);
+                            continue;
+                        }
+
                         if (opType == Constant.OpCode.SELECTDB)
                         {
                             if (!isFirstDb)

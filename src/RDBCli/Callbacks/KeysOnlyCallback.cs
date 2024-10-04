@@ -183,5 +183,9 @@ namespace RDBCli.Callbacks
         public void SetIdleOrFreq(int val)
         {
         }
+
+        public void SetSlotInfo(ulong slotId, ulong slotSize, ulong expireSlotSize)
+        {
+        }
     }
 }

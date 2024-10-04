@@ -72,6 +72,10 @@ namespace RDBParser
         {
         }
 
+        public void SetSlotInfo(ulong slotId, ulong slotSize, ulong expireSlotSize)
+        {
+        }
+
         public void StartDatabase(int database)
         {
         }
