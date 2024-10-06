@@ -17,6 +17,7 @@ namespace RDBParser
         private int _freq = 0;
         private int _mem_policy = -1; // 1 - lru | 2 - lfu
         private int _version = -1;
+        private ulong _slotId = 0;
         private HashSet<string> _auxKey = new HashSet<string>();
 
         public BinaryReaderRDBParser(IReaderCallback callback, ParserFilter filter = null)
@@ -86,6 +87,19 @@ namespace RDBParser
                                 _mem_policy = 2;
                                 _callback.SetIdleOrFreq(2);
                             }
+                        }
+
+                        if (opType == Constant.OpCode.SLOTINFO)
+                        {
+                            // cluster keyslot yourkey
+                            _slotId = br.ReadLength();
+
+                            // slotSize
+                            _ = br.ReadLength();
+
+                            // expireSlotSize
+                            _ = br.ReadLength();
+                            continue;
                         }
 
                         if (opType == Constant.OpCode.SELECTDB)
@@ -174,6 +188,7 @@ namespace RDBParser
                             {
                                 info.Idle = _idle;
                                 info.Freq = _freq;
+                                info.SlotId = _slotId;
 
                                 ReadObject(br, _key, opType, _expiry, info);
                             }

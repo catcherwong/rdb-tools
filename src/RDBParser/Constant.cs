@@ -31,6 +31,10 @@
 
         public static class OpCode
         {
+            /// <summary>
+            /// Individual slot info, such as slot id and size (cluster mode only).
+            /// </summary>
+            public const int SLOTINFO = 244;
             public const int FUNCTION2 = 245;
             public const int FUNCTION = 246;
             public const int MODULE_AUX = 247;
