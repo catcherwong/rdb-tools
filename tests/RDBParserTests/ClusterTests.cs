@@ -17,7 +17,8 @@ namespace RDBParserTests
         [Fact]
         public void TestSoltInfo()
         {
-            // set mykey v1
+            // set key{v1} v1
+            // set key{v12} v12
             // bgsave
             var path = TestHelper.GetRDBPath("redis74_cluster_slotinfo.rdb");
 

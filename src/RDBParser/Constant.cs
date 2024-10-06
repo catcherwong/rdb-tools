@@ -1,6 +1,4 @@
-﻿using System.Dynamic;
-
-namespace RDBParser
+﻿namespace RDBParser
 {
     public static class Constant
     {
