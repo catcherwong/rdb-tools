@@ -346,10 +346,5 @@ namespace RDBParserTests
         {
             _idleOrFreq = val;
         }
-
-        public void SetSlotInfo(ulong slotId, ulong slotSize, ulong expireSlotSize)
-        {
-            System.Diagnostics.Trace.WriteLine($"{slotId}, {slotSize}, {expireSlotSize}");
-        }
     }
 }

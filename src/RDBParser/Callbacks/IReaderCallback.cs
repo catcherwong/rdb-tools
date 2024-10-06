@@ -223,13 +223,5 @@ namespace RDBParser
         /// </summary>
         /// <param name="val"></param>
         void SetIdleOrFreq(int val);
-
-        /// <summary>
-        /// Record Slot Info
-        /// </summary>
-        /// <param name="slotId"></param>
-        /// <param name="slotSize"></param>
-        /// <param name="expireSlotSize"></param>
-        void SetSlotInfo(ulong slotId, ulong slotSize, ulong expireSlotSize);
     }
 }

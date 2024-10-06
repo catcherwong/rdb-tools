@@ -91,11 +91,6 @@ namespace RDBParser
             Console.WriteLine($"SetIdleOrFreq, val={val}");
         }
 
-        public void SetSlotInfo(ulong slotId, ulong slotSize, ulong expireSlotSize)
-        {
-            Console.WriteLine($"SetSlotInfo, slotId={slotId}, slotSize={slotSize}, expireSlotSize={expireSlotSize}");
-        }
-
         public void StartDatabase(int database)
         {
             Console.WriteLine($"Start database = {database}");

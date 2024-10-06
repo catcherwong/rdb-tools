@@ -12,6 +12,8 @@
 
         public ulong Zips { get; set; }
 
+        public ulong SlotId { get; set; }
+
         public override string ToString()
         {
             return $"Info{{Encoding={Encoding},Idle={Idle},Freq={Freq},SizeOfValue={SizeOfValue},Zips={Zips}}}";
