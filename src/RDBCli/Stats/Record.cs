@@ -56,6 +56,11 @@
         /// LFU frequency.
         /// </summary>
         public int Freq { get; set; }
+
+        /// <summary>
+        /// hash slot
+        /// </summary>
+        public ulong SlotId { get; set; }
     }
 
     public class StreamsRecord

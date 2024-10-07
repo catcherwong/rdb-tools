@@ -1,5 +1,4 @@
 ﻿using RDBParser;
-using System.Collections.Generic;
 
 namespace RDBCli.Callbacks
 {
@@ -278,6 +277,7 @@ namespace RDBCli.Callbacks
                 LenOfLargestElem = length,
                 Freq = info.Freq,
                 Idle = info.Idle,
+                SlotId = info.SlotId,
             };
 
             _rdbDataInfo.TotalMem += record.Bytes;
@@ -319,6 +319,7 @@ namespace RDBCli.Callbacks
                 Database = _dbNum,
                 Freq = info.Freq,
                 Idle = info.Idle,
+                SlotId = info.SlotId,
             };
         }
 
@@ -340,6 +341,7 @@ namespace RDBCli.Callbacks
                 Database = _dbNum,
                 Freq = info.Freq,
                 Idle = info.Idle,
+                SlotId = info.SlotId,
             };
         }
 
@@ -361,6 +363,7 @@ namespace RDBCli.Callbacks
                 Database = _dbNum,
                 Freq = info.Freq,
                 Idle = info.Idle,
+                SlotId = info.SlotId,
             };
 
             return false;
@@ -406,6 +409,7 @@ namespace RDBCli.Callbacks
                 Database = _dbNum,
                 Freq = info.Freq,
                 Idle = info.Idle,
+                SlotId = info.SlotId,
             };
         }
 
@@ -428,6 +432,7 @@ namespace RDBCli.Callbacks
                 Database = _dbNum,
                 Freq = info.Freq,
                 Idle = info.Idle,
+                SlotId = info.SlotId,
             };
         }
 
