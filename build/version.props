@@ -1,8 +1,8 @@
 <Project>
 	<PropertyGroup>
 
-		<RDBParserVersion>0.9.5</RDBParserVersion>
-		<RDBCliVersion>0.9.5</RDBCliVersion>
+		<RDBParserVersion>0.9.6</RDBParserVersion>
+		<RDBCliVersion>0.9.6</RDBCliVersion>
 
 	</PropertyGroup>
 </Project>
